@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
+import RepeatSentenceSession from './RepeatSentenceSession';
 
 function Practice() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Speaking');
     const [activeSubTab, setActiveSubTab] = useState('Read Aloud');
     const [readAloudQuestions, setReadAloudQuestions] = useState([]);
+    const [repeatSentenceQuestions, setRepeatSentenceQuestions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [activeSpeechQuestion, setActiveSpeechQuestion] = useState(false);
+    const [speechQuestion, setSpeechQuestion] = useState(null);
 
     // Fetch Read Aloud Questions
     useEffect(() => {
@@ -44,7 +48,17 @@ function Practice() {
     ];
 
     // Decide which questions to show
-    const displayQuestions = activeSubTab === 'Read Aloud' ? readAloudQuestions : mockQuestions;
+   const displayQuestions = (() => {
+  switch (activeSubTab) {
+    case 'Read Aloud':
+      return readAloudQuestions;
+    case 'Repeat Sentence':
+      return repeatSentenceQuestions;
+    default:
+      return []; // or mockQuestions for other tabs
+  }
+})();
+
 
     const tabs = [
         { id: 'Speaking', icon: 'mic' },
@@ -53,17 +67,54 @@ function Practice() {
         { id: 'Listening', icon: 'headphones' },
     ];
 
-    const subTabs = [
-        { id: 'Read Aloud', isAi: true },
-        { id: 'Repeat Sentence', isAi: true },
-        { id: 'Describe Image', isAi: true },
-        { id: 'Re-tell Lecture', isAi: true },
-        { id: 'Answer Short Question', isAi: true },
-    ];
+    // const subTabs = [
+    //     { id: 'Read Aloud', isAi: true },
+    //     { id: 'Repeat Sentence', isAi: true },
+    //     { id: 'Describe Image', isAi: true },
+    //     { id: 'Re-tell Lecture', isAi: true },
+    //     { id: 'Answer Short Question', isAi: true },
+    // ];
+
+const fetchRepeatSentences = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+        const response = await fetch('/api/repeat-sentence/all');
+        const data = await response.json();
+            setRepeatSentenceQuestions(data);
+            console.log('Repeat Sentence Questions:', data);
+    } catch (err) {
+        setError('Error connecting to server');
+        console.error('Fetch error:', err);
+    } finally {
+        setLoading(false);
+    }
+};
+
+    // Suppose you have this inside your component
+const subTabs = [
+  {
+    id: 'Read Aloud',
+    isAi: true,
+    onClick: () => console.log('Read Aloud clicked'), // placeholder
+  },
+  {
+    id: 'Repeat Sentence',
+    isAi: true,
+    onClick: () => {
+      if (repeatSentenceQuestions.length === 0) fetchRepeatSentences();
+    },
+  },
+  { id: 'Describe Image', isAi: true, onClick: () => console.log('Describe Image clicked') },
+  { id: 'Re-tell Lecture', isAi: true, onClick: () => console.log('Re-tell Lecture clicked') },
+  { id: 'Answer Short Question', isAi: true, onClick: () => console.log('Answer Short Question clicked') },
+];
+
 
     return (
         <DashboardLayout>
-            <div className="space-y-6">
+           {!activeSpeechQuestion ? (
+            <div className="p-6 space-y-6 w-full">
                 {/* Page Title */}
                 <h1 className="text-2xl font-bold text-slate-800">Practice</h1>
 
@@ -95,7 +146,7 @@ function Practice() {
                     <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                     </button>
-
+{/* 
                     {subTabs.map((sub) => (
                         <button
                             key={sub.id}
@@ -113,7 +164,31 @@ function Practice() {
                                 </span>
                             )}
                         </button>
-                    ))}
+                    ))} */}
+
+
+                    {subTabs.map((sub) => (
+                        <button
+                            key={sub.id}
+                            onClick={() => {
+                            setActiveSubTab(sub.id); // Always set active tab
+                            sub.onClick();           // Call the tab-specific function
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5
+                            ${activeSubTab === sub.id
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                        >
+                            {sub.id}
+                            {sub.isAi && (
+                            <span className={`text-[10px] px-1 rounded font-bold ${activeSubTab === sub.id ? 'bg-white/20 text-white' : 'bg-purple-100 text-purple-600'}`}>
+                                Ai+
+                            </span>
+                            )}
+                        </button>
+                        ))}
+
 
                     {/* Forward Arrow */}
                     <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 flex-shrink-0">
@@ -173,7 +248,16 @@ function Practice() {
                             <div className="p-8 text-center text-slate-500">No questions found.</div>
                         ) : (
                             displayQuestions.map((q) => (
-                                <div key={q.id || q._id} onClick={() => navigate(`/practice/${q._id}`)} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-slate-50 transition-colors cursor-pointer">
+                                <div key={q.id || q._id} 
+                                onClick={() => {
+                                    if (activeSubTab === "Repeat Sentence") {
+                                        setActiveSpeechQuestion(true);
+                                        setSpeechQuestion(q);
+                                    } else {
+                                        navigate(`/practice/${q._id}`);
+                                    }
+                                    }}
+                                className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-slate-50 transition-colors cursor-pointer">
                                     <div className="col-span-8 flex items-center gap-3">
                                         <span className="font-semibold text-slate-700">{q.id || (q._id && 'RA_A_' + q._id.toString().substring(0, 4))}</span>
                                         <span className="text-slate-500 text-sm">({q.name || q.title})</span>
@@ -202,7 +286,7 @@ function Practice() {
                         )}
                     </div>
                 </div>
-            </div>
+            </div>):(<RepeatSentenceSession question={speechQuestion} setActiveSpeechQuestion={setActiveSpeechQuestion} activeTab={activeSubTab} mode={'practiceMode'}/>)}
         </DashboardLayout>
     );
 }

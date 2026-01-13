@@ -47,6 +47,7 @@ const PracticeCard = ({ title, icon, color, count, total }) => {
 };
 
 const Dashboard = () => {
+    
     return (
         <DashboardLayout>
             <div className="flex flex-col lg:flex-row gap-8">

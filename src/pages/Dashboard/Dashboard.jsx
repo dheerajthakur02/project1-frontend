@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 
 const PracticeCard = ({ title, icon, color, count, total }) => {
@@ -47,7 +48,9 @@ const PracticeCard = ({ title, icon, color, count, total }) => {
 };
 
 const Dashboard = () => {
-    
+    const { user } = useSelector((state) => state.auth);
+    const displayName = user?.name || "Student";
+
     return (
         <DashboardLayout>
             <div className="flex flex-col lg:flex-row gap-8">
@@ -63,7 +66,7 @@ const Dashboard = () => {
                             <div className="flex justify-between items-start mb-6">
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
-                                        <h1 className="text-2xl font-bold">Hi Dheeraj, 👋</h1>
+                                        <h1 className="text-2xl font-bold">Hi {displayName}, 👋</h1>
                                     </div>
                                     <div className="text-4xl font-bold mb-4">
                                         Let’s Target <span className="text-yellow-300">65+</span> Score
@@ -142,3 +145,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

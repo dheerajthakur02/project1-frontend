@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import RepeatSentenceSession from './RepeatSentenceSession';
 import DescribeImageModule from './DescribeImageModule';
+import { useSelector } from 'react-redux';
 
 function Practice() {
     const navigate = useNavigate();
@@ -49,6 +50,8 @@ function Practice() {
         { id: 'RA_A_1359', title: "Tesla's Betrayal", difficulty: 'Medium', status: 'Not Practiced', isPrediction: true },
     ];
 
+    const {user} = useSelector((state)=>state.auth)
+   
     // Decide which questions to show
    const displayQuestions = (() => {
   switch (activeSubTab) {
@@ -83,7 +86,7 @@ const fetchRepeatSentences = async () => {
     setLoading(true);
     setError(null);
     try {
-        const response = await fetch('/api/repeat-sentence/get/6965e4f3e96a5eed795a1265');
+        const response = await fetch(`/api/repeat-sentence/get/${user._id}`);
         const data = await response.json();
             setRepeatSentenceQuestions(data?.data);
     } catch (err) {
@@ -98,7 +101,7 @@ const fetchImageSentences = async () => {
     setLoading(true);
     setError(null);
     try {
-        const response = await fetch('/api/image/questions/6965e4f3e96a5eed795a1265');
+        const response = await fetch(`/api/image/questions/${user._id}`);
         const data = await response.json();
             setImageQuestions(data?.data);
     } catch (err) {

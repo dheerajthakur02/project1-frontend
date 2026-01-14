@@ -6,11 +6,12 @@ import {
 } from 'lucide-react';
 import { submitRepeatAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
+import { useSelector } from 'react-redux';
 
 const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
     const navigate = useNavigate();
     const transcriptRef = useRef("");
-
+     const {user} = useSelector((state)=>state.auth)
     const [status, setStatus] = useState('idle'); 
     const [timeLeft, setTimeLeft] = useState(0);
     const [maxTime, setMaxTime] = useState(0);
@@ -108,7 +109,7 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
         formData.append("questionId", question?._id);
         formData.append("transcript", finalTranscript); 
         formData.append("audio", audioBlob);
-        formData.append("userId", "6965e4f3e96a5eed795a1265");
+        formData.append("userId", user?._id);
         try {
             const response = await submitRepeatAttempt(formData);
             setResult(response.data);

@@ -6,13 +6,14 @@ import {
 } from 'lucide-react';
 import { submitDescribeImageAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
+import { useSelector } from 'react-redux';
 
 const DescribeImageModule = ({ question, setActiveSpeechQuestion }) => {
     const [status, setStatus] = useState('idle'); 
     const [timeLeft, setTimeLeft] = useState(25);
     const [maxTime, setMaxTime] = useState(25);
     const [result, setResult] = useState(null);
-
+     const {user} = useSelector((state)=>state.auth)
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
     const { transcript, resetTranscript } = useSpeechRecognition();
@@ -70,7 +71,7 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion }) => {
                     formData.append('audio', audioBlob, 'recording.webm');
                     formData.append('questionId', question._id);
                     formData.append('transcript', transcript || '');
-                    formData.append("userId", "6965e4f3e96a5eed795a1265"); // Target User ID
+                    formData.append("userId", user?._id); // Target User ID
 
                     const response = await submitDescribeImageAttempt(formData);
                     setResult(response.data); 

@@ -2,19 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import {
-    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle
+    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye
 } from 'lucide-react';
 import { submitRepeatAttempt } from '../../services/api';
+import ImageAttemptHistory from './ImageAttemptHistory';
 
 const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
     const navigate = useNavigate();
     const transcriptRef = useRef("");
 
-    // Lifecycle States: 'idle', 'prep', 'listening', 'recording', 'submitting', 'result'
     const [status, setStatus] = useState('idle'); 
     const [timeLeft, setTimeLeft] = useState(0);
     const [maxTime, setMaxTime] = useState(0);
     const [result, setResult] = useState(null);
+    const [audioDuration, setAudioDuration] = useState(0);
+    const [audioCurrentTime, setAudioCurrentTime] = useState(0);
 
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
@@ -26,7 +28,6 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
         transcriptRef.current = transcript;
     }, [transcript]);
 
-    // Main Timer Effect
     useEffect(() => {
         let interval;
         if ((status === 'prep' || status === 'recording') && timeLeft > 0) {
@@ -41,22 +42,30 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
         return () => clearInterval(interval);
     }, [status, timeLeft]);
 
-    // FLOW HANDLERS
     const handleStartClick = () => {
         setStatus('prep');
-        setTimeLeft(question.prepareTime || 5);
-        setMaxTime(question.prepareTime || 5);
+        setTimeLeft(3);
+        setMaxTime(3);
     };
 
     const handleStartListening = () => {
         setStatus('listening');
+        setAudioCurrentTime(0);
         if (questionAudioRef.current) {
+            questionAudioRef.current.currentTime = 0;
             questionAudioRef.current.play().catch(err => {
                 console.error("Playback blocked", err);
-                startRecording(); // Fallback if audio fails
+                startRecording();
             });
         }
     };
+
+
+      const handleSelectAttempt = (attempt) => {
+    setResult(attempt);
+    setStatus('result');
+  };
+
 
     const onAudioEnded = () => {
         startRecording();
@@ -66,11 +75,9 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
         resetTranscript();
         transcriptRef.current = "";
         setStatus('recording');
-        setTimeLeft(question.answerTime || 10);
-        setMaxTime(question.answerTime || 10);
-
+        setTimeLeft(15);
+        setMaxTime(15);
         SpeechRecognition.startListening({ continuous: true });
-
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             const recorder = new MediaRecorder(stream);
@@ -90,7 +97,6 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
             setStatus('submitting');
             mediaRecorderRef.current.onstop = async () => {
                 const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
-                // Short delay to allow final transcript processing
                 setTimeout(() => handleFinalSubmission(audioBlob), 300);
             };
         }
@@ -99,12 +105,10 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
     const handleFinalSubmission = async (audioBlob) => {
         const formData = new FormData();
         const finalTranscript = transcriptRef.current.trim() || "(No speech detected)";
-
         formData.append("questionId", question?._id);
         formData.append("transcript", finalTranscript); 
         formData.append("audio", audioBlob);
         formData.append("userId", "6965e4f3e96a5eed795a1265");
-
         try {
             const response = await submitRepeatAttempt(formData);
             setResult(response.data);
@@ -113,6 +117,16 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
             console.error("Submission error", err);
             setStatus("idle");
         }
+    };
+
+    // Function to view history
+    const handleViewHistory = (attempt) => {
+        setResult({
+            ...attempt,
+            // Ensure wordAnalysis exists for the results view to map over
+            wordAnalysis: attempt.wordAnalysis || [] 
+        });
+        setStatus('result');
     };
 
     const resetSession = () => {
@@ -126,14 +140,15 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
 
     return (
         <div className="max-w-5xl mx-auto space-y-6">
-            <audio 
-                ref={questionAudioRef} 
-                src={question.audioUrl} 
-                onEnded={onAudioEnded} 
-                className="hidden" 
+           <audio
+                ref={questionAudioRef}
+                src={question.audioUrl}
+                className="hidden"
+                onLoadedMetadata={(e) => setAudioDuration(Math.ceil(e.target.duration))}
+                onTimeUpdate={(e) => setAudioCurrentTime(Math.ceil(e.target.currentTime))}
+                onEnded={onAudioEnded}
             />
 
-            {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 hover:bg-slate-100 rounded-full">
@@ -145,8 +160,7 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
                 </div>
             </div>
 
-            {/* Main Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[400px] flex flex-col">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[450px] flex flex-col">
                 <div className="bg-slate-50 px-6 py-3 border-b flex justify-between items-center">
                     <div className="flex gap-4 items-center">
                         <span className="font-bold text-slate-700">#{question?._id?.slice(-5)?.toUpperCase()}</span>
@@ -157,24 +171,29 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
                     </div>
                 </div>
 
-                <div className="flex-1 p-12 flex flex-col items-center justify-center">
+                <div className="flex-1 p-8 flex flex-col items-center justify-center">
                     
-                    {/* 1. IDLE STATE */}
+                    {/* 1. IDLE STATE WITH HISTORY */}
                     {status === 'idle' && (
-                        <div className="text-center space-y-6">
-                            <div className="w-20 h-20 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
-                                <PlayCircle size={48} />
+                        <div className="w-full max-w-2xl text-center space-y-8">
+                            <div className="space-y-6">
+                                <div className="w-20 h-20 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                                    <PlayCircle size={48} />
+                                </div>
+                                <div className="space-y-2">
+                                    <h2 className="text-2xl font-bold text-slate-800">Ready to start?</h2>
+                                    <p className="text-slate-500">The audio will play after the preparation timer.</p>
+                                </div>
+                                <button 
+                                    onClick={handleStartClick}
+                                    className="bg-primary-600 hover:bg-primary-700 text-white px-10 py-3 rounded-full font-bold transition-all shadow-lg hover:shadow-primary-200 active:scale-95"
+                                >
+                                    Start Practice
+                                </button>
                             </div>
-                            <div className="space-y-2">
-                                <h2 className="text-2xl font-bold text-slate-800">Ready to start?</h2>
-                                <p className="text-slate-500">The audio will play after the preparation timer.</p>
-                            </div>
-                            <button 
-                                onClick={handleStartClick}
-                                className="bg-primary-600 hover:bg-primary-700 text-white px-10 py-3 rounded-full font-bold transition-all shadow-lg hover:shadow-primary-200 active:scale-95"
-                            >
-                                Start Practice
-                            </button>
+
+                            {/* LAST ATTEMPTS SECTION */}
+                            
                         </div>
                     )}
 
@@ -192,12 +211,17 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
                     {/* 3. LISTENING STATE */}
                     {status === 'listening' && (
                         <div className="flex flex-col items-center gap-6">
-                            <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center animate-bounce">
+                            <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center animate-pulse">
                                 <Volume2 size={40} />
                             </div>
-                            <div className="text-center">
+                            <div className="text-center space-y-1">
                                 <span className="font-bold text-blue-600 text-lg">Listening to Speaker...</span>
-                                <p className="text-slate-400 text-sm mt-1">Recording starts immediately after audio</p>
+                                <div className="text-slate-500 font-semibold text-sm">
+                                    {audioCurrentTime || 0} / {audioDuration || 0} sec
+                                </div>
+                            </div>
+                            <div className="w-64 h-2 bg-blue-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-600 transition-all duration-300" style={{ width: audioDuration ? `${(audioCurrentTime / audioDuration) * 100}%` : '0%' }} />
                             </div>
                         </div>
                     )}
@@ -209,10 +233,7 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
                                 <div className="w-3 h-3 bg-red-600 rounded-full animate-ping" />
                                 <span className="font-bold text-2xl">Recording... 00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}</span>
                             </div>
-                            <button 
-                                onClick={stopRecording} 
-                                className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 shadow-lg transition-colors"
-                            >
+                            <button onClick={stopRecording} className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 shadow-lg transition-colors">
                                 <Square size={18} fill="currentColor" /> Finish Recording
                             </button>
                         </div>
@@ -228,167 +249,73 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
 
                     {/* 6. RESULT STATE */}
                     {status === 'result' && result && (
-    <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4">
-        
-        {/* TOP ROW: SCORE GAUGE AND PARAMETERS */}
-        <div className="grid grid-cols-12 gap-6">
-            
-            {/* Left: Your Score Card */}
-            <div className="col-span-12 md:col-span-4 bg-white rounded-3xl border-4 border-purple-50 p-6 shadow-sm relative overflow-hidden">
-                <div className="absolute top-4 right-4 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
-                    <span className="text-lg">✦</span>
-                </div>
-                
-                <h3 className="text-center font-bold text-slate-700 mb-4">Your Score</h3>
-                
-                {/* Semi-Circle Gauge */}
-                <div className="relative flex justify-center items-center h-32">
-                    <svg className="w-48 h-24">
-                        <path
-                            d="M 10 90 A 70 70 0 0 1 180 90"
-                            fill="none"
-                            stroke="#f1f5f9"
-                            strokeWidth="12"
-                            strokeLinecap="round"
-                        />
-                        <path
-                            d="M 10 90 A 70 70 0 0 1 180 90"
-                            fill="none"
-                            stroke="url(#purpleGradient)"
-                            strokeWidth="12"
-                            strokeLinecap="round"
-                            strokeDasharray="267"
-                            strokeDashoffset={267 - (267 * (result.score / 13))} 
-                            className="transition-all duration-1000 ease-out"
-                        />
-                        <defs>
-                            <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#8b5cf6" />
-                                <stop offset="100%" stopColor="#ec4899" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <div className="absolute bottom-2 flex flex-col items-center">
-                        <span className="text-5xl font-black text-slate-800">{Math.round(result.score)}</span>
-                    </div>
-                    <div className="absolute bottom-2 left-4 text-xs font-bold text-slate-400">0</div>
-                    <div className="absolute bottom-2 right-4 text-xs font-bold text-slate-400">13</div>
-                </div>
+                        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                            {/* Alert Banner */}
+                            {result.score < 5 && (
+                                <div className="mb-6 bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
+                                    <Info size={16} />
+                                    Low score detected. Try to speak more clearly and fluently.
+                                </div>
+                            )}
+                            
+                            {/* SCORE GAUGE AND PARAMETERS */}
+                            <div className="grid grid-cols-12 gap-6">
+                                <div className="col-span-12 md:col-span-4 bg-white rounded-3xl border-4 border-purple-50 p-6 shadow-sm relative overflow-hidden">
+                                    <h3 className="text-center font-bold text-slate-700 mb-4">Your Score</h3>
+                                    <div className="relative flex justify-center items-center h-32">
+                                        <svg className="w-48 h-24">
+                                            <path d="M 10 90 A 70 70 0 0 1 180 90" fill="none" stroke="#f1f5f9" strokeWidth="12" strokeLinecap="round" />
+                                            <path d="M 10 90 A 70 70 0 0 1 180 90" fill="none" stroke="url(#purpleGradient)" strokeWidth="12" strokeLinecap="round" strokeDasharray="267" strokeDashoffset={267 - (267 * (result.score / 13))} className="transition-all duration-1000 ease-out" />
+                                            <defs>
+                                                <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                    <stop offset="0%" stopColor="#8b5cf6" />
+                                                    <stop offset="100%" stopColor="#ec4899" />
+                                                </linearGradient>
+                                            </defs>
+                                        </svg>
+                                        <div className="absolute bottom-2 flex flex-col items-center">
+                                            <span className="text-5xl font-black text-slate-800">{Math.round(result.score)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 space-y-2">
+                                        <div className="flex justify-between items-center bg-blue-50/50 p-2 rounded-lg">
+                                            <span className="text-sm font-medium text-slate-600">Speaking</span>
+                                            <span className="font-bold text-slate-700">{result.score.toFixed(1)}</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-                {/* Module Scores */}
-                <div className="mt-4 space-y-2">
-                    <div className="flex justify-between items-center bg-blue-50/50 p-2 rounded-lg">
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                            <span className="text-sm font-medium text-slate-600">Speaking</span>
-                        </div>
-                        <span className="font-bold text-slate-700">{result.score.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between items-center bg-pink-50/50 p-2 rounded-lg">
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-                            <span className="text-sm font-medium text-slate-600">Listening</span>
-                        </div>
-                        <span className="font-bold text-slate-700">{result.score.toFixed(2)}</span>
-                    </div>
-                </div>
-            </div>
+                                <div className="col-span-12 md:col-span-8 bg-white rounded-3xl border border-slate-100 p-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h3 className="flex items-center gap-2 font-bold text-slate-700">Scoring Parameters</h3>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <ParameterCard label="Content" score={result.content} max={5} />
+                                        <ParameterCard label="Pronunciation" score={result.pronunciation} max={5} />
+                                        <ParameterCard label="Oral Fluency" score={result.fluency} max={5} />
+                                    </div>
+                                </div>
+                            </div>
 
-            {/* Right: Scoring Parameters */}
-            <div className="col-span-12 md:col-span-8 bg-white rounded-3xl border border-slate-100 p-6 relative" 
-                 style={{ backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
-                
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="flex items-center gap-2 font-bold text-slate-700">
-                        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
-                            <BarChart2 size={16} />
-                        </div>
-                        Scoring Parameters
-                    </h3>
-                    <button className="text-xs font-bold border border-slate-200 px-4 py-1.5 rounded-full hover:bg-slate-50 flex items-center gap-2">
-                        Pro Evaluation <ChevronRight size={14} />
-                    </button>
-                </div>
+                            {/* AUDIO PLAYERS */}
+                            <div className="grid grid-cols-2 gap-6">
+                                <AudioPlayerCard label="Question" duration="0:04" url={question.audioUrl} />
+                                <AudioPlayerCard label="My Answer" duration="00:06" url={result.studentAudio?.url} isAnswer />
+                            </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                    <ParameterCard label="Content" score={result.content} max={3} />
-                    <ParameterCard label="Pronunciation" score={result.pronunciation} max={5} />
-                    <ParameterCard label="Oral Fluency" score={result.fluency} max={5} />
-                </div>
-
-                <div className="mt-8 flex justify-center">
-                    <div className="bg-slate-50 px-4 py-1.5 rounded-full border border-slate-100 text-[10px] text-slate-400 flex items-center gap-2">
-                        <span className="text-yellow-500">★</span> Parameters are based on PTE Scoring Standards
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {/* MIDDLE ROW: AUDIO PLAYERS */}
-        <div className="grid grid-cols-2 gap-6">
-            <AudioPlayerCard label="Question" duration="0:04" url={question.audioUrl} />
-            <AudioPlayerCard 
-                label="My Answer" 
-                duration="00:06" 
-                url={result.studentAudio?.url} 
-                extraInfo={`Speaking Speed: ${Math.round(result.wordAnalysis.length * 10)} wpm`}
-                isAnswer 
-            />
-        </div>
-
-        {/* BOTTOM ROW: TRANSCRIPT AND ANALYSIS */}
-        <div className="bg-white rounded-3xl border border-slate-100 p-8">
-            <div className="flex gap-8">
-                {/* Transcript Area */}
-                <div className="flex-1">
-                    <h3 className="font-bold text-slate-700 mb-4">My Answer</h3>
-                    
-                    {/* Speech Not Detected Alert (Conditional) */}
-                    {result.score < 2 && (
-                        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-center gap-3 text-red-500 text-sm mb-6">
-                            <Mic size={18} className="animate-pulse" />
-                            Speech is not detected properly. Adjust the microphone and speak again clearly.
+                            {/* TRANSCRIPT AREA */}
+                            <div className="bg-white rounded-3xl border border-slate-100 p-8">
+                                <h3 className="font-bold text-slate-700 mb-4">Transcript Analysis</h3>
+                                <div className="text-2xl leading-relaxed text-slate-400 font-medium">
+                                    {result.wordAnalysis?.length > 0 ? result.wordAnalysis.map((item, index) => (
+                                        <span key={index} className={`mx-1 ${item.status === 'correct' ? 'text-slate-700' : 'text-red-400'}`}>
+                                            {item.word}
+                                        </span>
+                                    )) : <span className="text-slate-300 italic text-lg">No word analysis available for this attempt.</span>}
+                                </div>
+                            </div>
                         </div>
                     )}
-
-                    <div className="text-2xl leading-relaxed text-slate-400 font-medium">
-                        {result.wordAnalysis.map((item, index) => (
-                            <span key={index} className={`mx-1 ${
-                                item.status === 'correct' ? 'text-slate-700' : 'text-red-400'
-                            }`}>
-                                {item.word}
-                            </span>
-                        ))}
-                    </div>
-
-                    <div className="mt-12 flex gap-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">0</div>
-                            <span className="text-xs text-slate-500">Good Pronun.</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center font-bold text-red-500 text-xs">0</div>
-                            <span className="text-xs text-slate-500">Bad Pronun. / Missing</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Grammar Info Sidebar */}
-                <div className="w-64">
-                    <div className="bg-slate-50 rounded-2xl p-4 text-[11px] text-slate-500 flex items-center gap-2 mb-4">
-                        <Info size={14} /> Click on the word to get the definition
-                    </div>
-                    <div className="bg-purple-50 rounded-2xl p-6 border border-purple-100">
-                        <p className="text-xs text-slate-600 mb-4">Improve the <span className="text-red-500 underline cursor-help">grammar</span> by so much percentage</p>
-                        <div className="bg-white p-3 rounded-xl shadow-sm text-[10px] text-slate-400">
-                            Get the Words' meaning, definition and sentence usage instantly
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-)}
                 </div>
             </div>
 
@@ -402,24 +329,17 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
                 <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" />
                 <ControlBtn icon={<ChevronRight />} label="Next" />
             </div>
+            {question.lastAttempts && question.lastAttempts.length > 0 && (
+                        <ImageAttemptHistory 
+            question={question} 
+            onSelectAttempt={handleSelectAttempt} 
+          />
+         )}
         </div>
     );
 };
 
-// Sub-components for cleaner code
-const ScoreCard = ({ label, score, color }) => {
-    const colors = {
-        blue: "bg-blue-50 border-blue-100 text-blue-700",
-        red: "bg-red-50 border-red-100 text-red-700",
-        orange: "bg-orange-50 border-orange-100 text-orange-700"
-    };
-    return (
-        <div className={`${colors[color]} p-4 rounded-xl text-center border`}>
-            <div className="text-[10px] uppercase font-bold opacity-60 mb-1">{label}</div>
-            <div className="text-lg font-black">{score}</div>
-        </div>
-    );
-};
+// ... Sub-components (ControlBtn, ParameterCard, AudioPlayerCard) remain the same as your original file
 
 const ControlBtn = ({ icon, label, onClick }) => (
     <button onClick={onClick} className="flex flex-col items-center gap-1 text-slate-400 hover:text-primary-600 transition-colors">
@@ -431,41 +351,31 @@ const ControlBtn = ({ icon, label, onClick }) => (
 );
 
 const ParameterCard = ({ label, score, max }) => (
-    <div className={`rounded-2xl border p-4 transition-all ${score === 0 ? 'border-blue-200' : 'border-slate-100'}`}>
+    <div className={`rounded-2xl border p-4 transition-all border-slate-100`}>
         <div className="text-xs font-semibold text-slate-500 mb-3">{label}</div>
         <div className="flex items-end justify-between">
             <div className="text-2xl font-black text-slate-800">
                 {score}<span className="text-slate-300 font-bold text-sm">/{max}</span>
             </div>
-            <div className="flex items-center gap-1 bg-red-50 text-red-500 text-[10px] font-bold px-2 py-1 rounded-md">
-                <Volume2 size={10} /> Bad
-            </div>
         </div>
     </div>
 );
 
-const AudioPlayerCard = ({ label, url, duration, extraInfo, isAnswer }) => (
+const AudioPlayerCard = ({ label, url, duration, isAnswer }) => (
     <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex items-center gap-4">
         <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-500">{label}</span>
-                    {isAnswer && <div className="bg-pink-50 text-pink-500 text-[10px] px-2 py-0.5 rounded font-bold">⏱ {duration}</div>}
-                </div>
-                {extraInfo && (
-                    <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
-                        <span className="text-green-500">📊</span> {extraInfo} <Info size={10} />
-                    </div>
-                )}
+                <span className="text-xs font-bold text-slate-500">{label}</span>
             </div>
             <div className="flex items-center gap-3">
-                <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200">
+                <button onClick={() => {
+                    const a = new Audio(url);
+                    a.play();
+                }} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200">
                     <Play size={14} fill="currentColor" />
                 </button>
-                <div className="text-[10px] text-slate-400 tabular-nums">0:00</div>
                 <div className="flex-1 h-1.5 bg-slate-100 rounded-full relative overflow-hidden">
                     <div className="absolute left-0 top-0 h-full bg-slate-500 w-1/3"></div>
-                    <div className="absolute left-1/3 top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-slate-500 rounded-full"></div>
                 </div>
                 <div className="text-[10px] text-slate-400 tabular-nums">{duration}</div>
             </div>

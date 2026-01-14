@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import RepeatSentenceSession from './RepeatSentenceSession';
+import DescribeImageModule from './DescribeImageModule';
 
 function Practice() {
     const navigate = useNavigate();
@@ -9,6 +10,7 @@ function Practice() {
     const [activeSubTab, setActiveSubTab] = useState('Read Aloud');
     const [readAloudQuestions, setReadAloudQuestions] = useState([]);
     const [repeatSentenceQuestions, setRepeatSentenceQuestions] = useState([]);
+    const [imageQuestions, setImageQuestions] = useState([])
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [activeSpeechQuestion, setActiveSpeechQuestion] = useState(false);
@@ -54,6 +56,8 @@ function Practice() {
       return readAloudQuestions;
     case 'Repeat Sentence':
       return repeatSentenceQuestions;
+    case 'Describe Image':
+        return imageQuestions;
     default:
       return []; // or mockQuestions for other tabs
   }
@@ -79,10 +83,24 @@ const fetchRepeatSentences = async () => {
     setLoading(true);
     setError(null);
     try {
-        const response = await fetch('/api/repeat-sentence/all');
+        const response = await fetch('/api/repeat-sentence/get/6965e4f3e96a5eed795a1265');
         const data = await response.json();
-            setRepeatSentenceQuestions(data);
-            console.log('Repeat Sentence Questions:', data);
+            setRepeatSentenceQuestions(data?.data);
+    } catch (err) {
+        setError('Error connecting to server');
+        console.error('Fetch error:', err);
+    } finally {
+        setLoading(false);
+    }
+};
+
+const fetchImageSentences = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+        const response = await fetch('/api/image/questions/6965e4f3e96a5eed795a1265');
+        const data = await response.json();
+            setImageQuestions(data?.data);
     } catch (err) {
         setError('Error connecting to server');
         console.error('Fetch error:', err);
@@ -105,7 +123,10 @@ const subTabs = [
       if (repeatSentenceQuestions.length === 0) fetchRepeatSentences();
     },
   },
-  { id: 'Describe Image', isAi: true, onClick: () => console.log('Describe Image clicked') },
+  { id: 'Describe Image', isAi: true, onClick: ()  => {
+      if (imageQuestions.length === 0) fetchImageSentences();
+    },
+ },
   { id: 'Re-tell Lecture', isAi: true, onClick: () => console.log('Re-tell Lecture clicked') },
   { id: 'Answer Short Question', isAi: true, onClick: () => console.log('Answer Short Question clicked') },
 ];
@@ -253,7 +274,11 @@ const subTabs = [
                                     if (activeSubTab === "Repeat Sentence") {
                                         setActiveSpeechQuestion(true);
                                         setSpeechQuestion(q);
-                                    } else {
+                                    } else if (activeSubTab === "Describe Image"){
+                                        setActiveSpeechQuestion(true);
+                                        setSpeechQuestion(q);
+                                    }
+                                    else  {
                                         navigate(`/practice/${q._id}`);
                                     }
                                     }}
@@ -275,10 +300,10 @@ const subTabs = [
                                     </div>
                                     <div className="col-span-2 flex justify-end">
                                         <button className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all
-                                            ${q.status === 'Not Practiced' || !q.status
+                                            ${q.status === 'Not Practiced' || !q.status 
                                                 ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
                                                 : 'bg-green-700 text-white hover:bg-green-800'}`}>
-                                            {q.status || 'Not Practiced'}
+                                            {q.status || q.attemptCount || 'Not Practiced'}
                                         </button>
                                     </div>
                                 </div>
@@ -286,7 +311,24 @@ const subTabs = [
                         )}
                     </div>
                 </div>
-            </div>):(<RepeatSentenceSession question={speechQuestion} setActiveSpeechQuestion={setActiveSpeechQuestion} activeTab={activeSubTab} mode={'practiceMode'}/>)}
+            </div>)
+             : (
+            // Logic to switch between different Session Components
+            activeSubTab === "Repeat Sentence" ? (
+                <RepeatSentenceSession 
+                    question={speechQuestion} 
+                    setActiveSpeechQuestion={setActiveSpeechQuestion} 
+                    activeTab={activeSubTab} 
+                    mode={'practiceMode'}
+                />
+            ) : (
+                <DescribeImageModule
+                    question={speechQuestion} 
+                    setActiveSpeechQuestion={setActiveSpeechQuestion} 
+                />
+            )
+        )
+        }
         </DashboardLayout>
     );
 }

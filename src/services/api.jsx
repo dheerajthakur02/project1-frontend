@@ -87,5 +87,20 @@ export const submitDescribeImageAttempt = async (formData) => {
   return res.data;
 };
 
+export const submitRespondSituationAttempt = async (formData) => {
+  const res = await axios.post(
+    `${API_BASE_URL}/respond-situation/submit`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    }
+  );
+     console.log("response", res?.data)
+  return res.data;
+};
+
+
 
 // You can add other services here like fetchQuestions, etc.

@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import ShortAnswer from './ShortAnswer';
 import SummarizeGroup from './SummarizeGroup';
 import ReTell from './Retell';
+import Respond from './RespondSituation';
 
 function Practice() {
     const navigate = useNavigate();
@@ -18,6 +19,7 @@ function Practice() {
     const [shortAnswerQuestion, setShortAnswerQuestion] = useState([])
     const [summarizeGroupQuestion, setSummarizeGroupQuestion] = useState([])
     const [retellQuestions, setRetellQuestions] = useState([]);
+    const [respondSituationQuestions, setRespondSituationQuestions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [activeSpeechQuestion, setActiveSpeechQuestion] = useState(false);
@@ -125,6 +127,8 @@ function Practice() {
         return summarizeGroupQuestion;
     case 'Re-tell Lecture':
         return retellQuestions;
+    case 'Respond to a Situation':
+        return respondSituationQuestions;
     default:
       return []; // or mockQuestions for other tabs
   }
@@ -207,13 +211,27 @@ const fetchSummarizeGroupQuestion = async () => {
     }
 };
 
+const fetchRespondSituationQuestion = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+        const response = await fetch(`/api/respond-situation/get/${user._id}`);
+        const data = await response.json(); 
+            setRespondSituationQuestions(data?.data);
+    } catch (err) {
+        setError('Error connecting to server');
+        console.error('Fetch error:', err);
+    } finally {
+        setLoading(false);
+    }
+};
+
 const fetchReTellQuestion = async () => {
     setLoading(true);
     setError(null);
     try {
         const response = await fetch(`/api/retell-lecture/get/${user._id}`);
         const data = await response.json();
-        console.log("Retell Lecture Data:", data?.data);
             setRetellQuestions(data?.data);
     } catch (err) {
         setError('Error connecting to server');
@@ -250,6 +268,10 @@ const subTabs = [
  },
   { id: 'Summarize Group Discussion', isAi: true,  onClick: ()  => {
       if (summarizeGroupQuestion.length === 0) fetchSummarizeGroupQuestion();
+    },
+ },
+  { id: 'Respond to a Situation', isAi: true,  onClick: ()  => {
+      if (respondSituationQuestions.length === 0) fetchRespondSituationQuestion();
     },
  }
 ];
@@ -394,7 +416,7 @@ const subTabs = [
                             displayQuestions.map((q) => (
                                 <div key={q.id || q._id} 
                                 onClick={() => {
-                                    if (activeSubTab === "Repeat Sentence" || activeSubTab === "Summarize Group Discussion" || activeSubTab === "Describe Image" || activeSubTab === "Answer Short Question" || activeSubTab === "Re-tell Lecture") {
+                                    if (activeSubTab === "Repeat Sentence" || activeSubTab === "Summarize Group Discussion" || activeSubTab === "Describe Image" || activeSubTab === "Answer Short Question" || activeSubTab === "Re-tell Lecture" || activeSubTab === "Respond to a Situation") {
                                         setActiveSpeechQuestion(true);
                                         setSpeechQuestion(q);
                                     }
@@ -480,6 +502,17 @@ const subTabs = [
                     shuffleButton={handleShuffleButton}
                 />
                 ):(
+                activeSubTab === "Respond to a Situation"?(
+                    <Respond
+                        question={speechQuestion} 
+                    setActiveSpeechQuestion={setActiveSpeechQuestion} 
+                    activeTab={activeSubTab} 
+                    mode={'practiceMode'}
+                      nextButton={handleNextButton}
+                    previousButton={handlePreviousButton}
+                    shuffleButton={handleShuffleButton}
+                />
+                ):(
                     <DescribeImageModule
                     question={speechQuestion} 
                     setActiveSpeechQuestion={setActiveSpeechQuestion} 
@@ -488,6 +521,7 @@ const subTabs = [
                     shuffleButton={handleShuffleButton}
                 />
                 )
+            )
             )
                 )
             )

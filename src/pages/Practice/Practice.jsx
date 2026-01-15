@@ -6,6 +6,7 @@ import DescribeImageModule from './DescribeImageModule';
 import { useSelector } from 'react-redux';
 import ShortAnswer from './ShortAnswer';
 import SummarizeGroup from './SummarizeGroup';
+import ReTell from './Retell';
 
 function Practice() {
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ function Practice() {
     const [imageQuestions, setImageQuestions] = useState([])
     const [shortAnswerQuestion, setShortAnswerQuestion] = useState([])
     const [summarizeGroupQuestion, setSummarizeGroupQuestion] = useState([])
+    const [retellQuestions, setRetellQuestions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [activeSpeechQuestion, setActiveSpeechQuestion] = useState(false);
@@ -55,6 +57,58 @@ function Practice() {
     ];
 
     const {user} = useSelector((state)=>state.auth)
+
+
+  const handlePreviousButton = () => {
+  if (!displayQuestions.length || !speechQuestion) return;
+
+  const currentIndex = displayQuestions.findIndex(
+    q => q._id === speechQuestion._id
+  );
+
+  if (currentIndex === -1) return;
+
+  const prevIndex =
+    currentIndex === 0
+      ? displayQuestions.length - 1
+      : currentIndex - 1;
+
+  setSpeechQuestion(displayQuestions[prevIndex]);
+  return displayQuestions[prevIndex];
+};
+
+    const handleNextButton = () => {
+
+  if (!displayQuestions.length || !speechQuestion) return;
+
+  const currentIndex = displayQuestions.findIndex(
+    q => q._id === speechQuestion._id
+  );
+
+  if (currentIndex === -1) return;
+
+  const nextIndex =
+    currentIndex === displayQuestions.length - 1
+      ? 0
+      : currentIndex + 1;
+
+  setSpeechQuestion(displayQuestions[nextIndex]);
+  return displayQuestions[nextIndex];
+};
+
+
+  const handleShuffleButton = () => {
+  if (!displayQuestions.length) return;
+
+  const randomIndex = Math.floor(
+    Math.random() * displayQuestions.length
+  );
+
+  setSpeechQuestion(displayQuestions[randomIndex]);
+  return displayQuestions[randomIndex];
+};
+
+
    
     // Decide which questions to show
    const displayQuestions = (() => {
@@ -69,6 +123,8 @@ function Practice() {
         return shortAnswerQuestion;
     case 'Summarize Group Discussion':
         return summarizeGroupQuestion;
+    case 'Re-tell Lecture':
+        return retellQuestions;
     default:
       return []; // or mockQuestions for other tabs
   }
@@ -151,6 +207,22 @@ const fetchSummarizeGroupQuestion = async () => {
     }
 };
 
+const fetchReTellQuestion = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+        const response = await fetch(`/api/retell-lecture/get/${user._id}`);
+        const data = await response.json();
+        console.log("Retell Lecture Data:", data?.data);
+            setRetellQuestions(data?.data);
+    } catch (err) {
+        setError('Error connecting to server');
+        console.error('Fetch error:', err);
+    } finally {
+        setLoading(false);
+    }
+};
+
     // Suppose you have this inside your component
 const subTabs = [
   {
@@ -169,7 +241,9 @@ const subTabs = [
       if (imageQuestions.length === 0) fetchImageSentences();
     },
  },
-  { id: 'Re-tell Lecture', isAi: true, onClick: () => console.log('Re-tell Lecture clicked') },
+  { id: 'Re-tell Lecture', isAi: true, onClick: ()  => {
+      if (retellQuestions.length === 0) fetchReTellQuestion();
+    }, },
   { id: 'Answer Short Question', isAi: true,  onClick: ()  => {
       if (shortAnswerQuestion.length === 0) fetchShortAnswerQuestion();
     },
@@ -320,7 +394,7 @@ const subTabs = [
                             displayQuestions.map((q) => (
                                 <div key={q.id || q._id} 
                                 onClick={() => {
-                                    if (activeSubTab === "Repeat Sentence" || activeSubTab === "Summarize Group Discussion" || activeSubTab === "Describe Image" || activeSubTab === "Answer Short Question") {
+                                    if (activeSubTab === "Repeat Sentence" || activeSubTab === "Summarize Group Discussion" || activeSubTab === "Describe Image" || activeSubTab === "Answer Short Question" || activeSubTab === "Re-tell Lecture") {
                                         setActiveSpeechQuestion(true);
                                         setSpeechQuestion(q);
                                     }
@@ -366,6 +440,9 @@ const subTabs = [
                     setActiveSpeechQuestion={setActiveSpeechQuestion} 
                     activeTab={activeSubTab} 
                     mode={'practiceMode'}
+                    nextButton={handleNextButton}
+                    previousButton={handlePreviousButton}
+                    shuffleButton={handleShuffleButton}
                 />
             ) : (
                 activeSubTab === "Answer Short Question"?(
@@ -374,6 +451,10 @@ const subTabs = [
                     setActiveSpeechQuestion={setActiveSpeechQuestion} 
                     activeTab={activeSubTab} 
                     mode={'practiceMode'}
+                      nextButton={handleNextButton}
+                    previousButton={handlePreviousButton}
+                    shuffleButton={handleShuffleButton}
+
                 />
                 ):(
                 activeSubTab === "Summarize Group Discussion"?(
@@ -382,12 +463,32 @@ const subTabs = [
                     setActiveSpeechQuestion={setActiveSpeechQuestion} 
                     activeTab={activeSubTab} 
                     mode={'practiceMode'}
+                      nextButton={handleNextButton}
+                    previousButton={handlePreviousButton}
+                    shuffleButton={handleShuffleButton}
+                />
+                ):(
+                   (
+                activeSubTab === "Re-tell Lecture"?(
+                    <ReTell
+                        question={speechQuestion} 
+                    setActiveSpeechQuestion={setActiveSpeechQuestion} 
+                    activeTab={activeSubTab} 
+                    mode={'practiceMode'}
+                      nextButton={handleNextButton}
+                    previousButton={handlePreviousButton}
+                    shuffleButton={handleShuffleButton}
                 />
                 ):(
                     <DescribeImageModule
                     question={speechQuestion} 
                     setActiveSpeechQuestion={setActiveSpeechQuestion} 
+                      nextButton={handleNextButton}
+                    previousButton={handlePreviousButton}
+                    shuffleButton={handleShuffleButton}
                 />
+                )
+            )
                 )
             )
             )

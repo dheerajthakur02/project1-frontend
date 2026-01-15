@@ -8,7 +8,7 @@ import { submitRepeatAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
 import { useSelector } from 'react-redux';
 
-const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
+const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, previousButton, shuffleButton }) => {
     const navigate = useNavigate();
     const transcriptRef = useRef("");
      const {user} = useSelector((state)=>state.auth)
@@ -350,13 +350,13 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion }) => {
 
             {/* Bottom Controls */}
             <div className="flex items-center justify-center gap-6 pb-10">
-                <ControlBtn icon={<ChevronLeft />} label="Previous" />
+                <ControlBtn icon={<ChevronLeft />} label="Previous" onClick={previousButton} />
                 <ControlBtn icon={<RefreshCw size={18} />} label="Redo" onClick={resetSession} />
                 <button className="w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 shadow-inner">
                     <CheckCircle size={24} />
                 </button>
-                <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" />
-                <ControlBtn icon={<ChevronRight />} label="Next" />
+                <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" onClick={shuffleButton} />
+                <ControlBtn icon={<ChevronRight />} label="Next" onClick={nextButton} />
             </div>
             {question.lastAttempts && question.lastAttempts.length > 0 && (
                         <ImageAttemptHistory 

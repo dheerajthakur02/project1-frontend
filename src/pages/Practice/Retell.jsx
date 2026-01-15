@@ -5,11 +5,11 @@ import {
     ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye, SkipForward,
     Target
 } from 'lucide-react';
-import { submitSummarizeGroupAttempt } from '../../services/api';
+import { submitReTellAttempt} from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
 import { useSelector } from 'react-redux';
 
-const SummarizeGroup = ({ question, setActiveSpeechQuestion, nextButton, previousButton, shuffleButton }) => {
+const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton, shuffleButton }) => {
     const navigate = useNavigate();
     const transcriptRef = useRef("");
     const { user } = useSelector((state) => state.auth);
@@ -53,8 +53,8 @@ const SummarizeGroup = ({ question, setActiveSpeechQuestion, nextButton, previou
 
     const handleStartClick = () => {
         setStatus('prep_start');
-        setTimeLeft(4);
-        setMaxTime(4);
+        setTimeLeft(3);
+        setMaxTime(3);
     };
 
     const handleStartAudio = () => {
@@ -116,8 +116,8 @@ const SummarizeGroup = ({ question, setActiveSpeechQuestion, nextButton, previou
         resetTranscript();
         transcriptRef.current = "";
         setStatus('recording');
-        setTimeLeft(120); // 2 Minutes
-        setMaxTime(120);
+        setTimeLeft(40); // 2 Minutes
+        setMaxTime(40);
         
         SpeechRecognition.startListening({ continuous: true });
         try {
@@ -153,7 +153,7 @@ const SummarizeGroup = ({ question, setActiveSpeechQuestion, nextButton, previou
         formData.append("audio", audioBlob);
         formData.append("userId", user?._id);
         try {
-            const response = await submitSummarizeGroupAttempt(formData);
+            const response = await submitReTellAttempt(formData);
             setResult(response.data);
             setStatus("result");
         } catch (err) {
@@ -194,7 +194,7 @@ const SummarizeGroup = ({ question, setActiveSpeechQuestion, nextButton, previou
                         <ArrowLeft size={20} />
                     </button>
                     <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        Summarize Spoken Text <span className="text-xs font-bold text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">Ai+</span>
+                        Retell Lecture <span className="text-xs font-bold text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">Ai+</span>
                     </h1>
                 </div>
             </div>
@@ -412,4 +412,4 @@ const ParameterCard = ({ label, score, max }) => (
     </div>
 );
 
-export default SummarizeGroup;
+export default ReTell;

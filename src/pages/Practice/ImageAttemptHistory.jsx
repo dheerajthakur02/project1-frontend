@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BarChart2, Shuffle, Play, Info, Eye } from "lucide-react";
 
-const ImageAttemptHistory = ({ question, onSelectAttempt }) => {
+const ImageAttemptHistory = ({ question, onSelectAttempt, module }) => {
   const [activeTab, setActiveTab] = useState("my_answer");
   const attempts = question?.lastAttempts || [];
 
@@ -104,6 +104,19 @@ const ImageAttemptHistory = ({ question, onSelectAttempt }) => {
               <div className="bg-slate-50 px-4 py-3 rounded-xl border w-full sm:w-auto">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Score</span>
                 <div className="flex items-baseline gap-1">
+                {module === "short-answer" ? (
+                  <span
+                    className={`text-2xl font-black ${
+                      attempt.score >= 1
+                        ? "text-green-600"
+                        : attempt.score >= 0.5
+                        ? "text-yellow-600"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {attempt.score}
+                  </span>
+                ) : (
                   <span
                     className={`text-2xl font-black ${
                       attempt.score >= 13
@@ -114,11 +127,11 @@ const ImageAttemptHistory = ({ question, onSelectAttempt }) => {
                     }`}
                   >
                     {attempt.score}
-                  </span>
-                  <span className="text-xs text-slate-400">/16</span>
+                  </span>)}
+                  <span className="text-xs text-slate-400">{module === "short-answer" ? "/1" : "/16"}</span>
                 </div>
 
-                <div className="flex gap-4 mt-2 text-xs text-slate-500">
+             {module !== "short-answer" && (   <div className="flex gap-4 mt-2 text-xs text-slate-500">
                   <div>
                     <span className="font-bold text-slate-700">{attempt.content}</span>
                     <div className="text-[9px] uppercase">Content</div>
@@ -131,7 +144,7 @@ const ImageAttemptHistory = ({ question, onSelectAttempt }) => {
                     <span className="font-bold text-slate-700">{attempt.pronunciation}</span>
                     <div className="text-[9px] uppercase">Pron</div>
                   </div>
-                </div>
+                </div>)}
               </div>
 
               {/* Audio Player */}

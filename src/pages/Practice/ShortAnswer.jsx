@@ -8,7 +8,7 @@ import { submitRepeatAttempt, submitShortAnswerAttempt } from '../../services/ap
 import ImageAttemptHistory from './ImageAttemptHistory';
 import { useSelector } from 'react-redux';
 
-const ShortAnswer = ({ question, setActiveSpeechQuestion }) => {
+const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousButton, shuffleButton }) => {
     const navigate = useNavigate();
     const transcriptRef = useRef("");
      const {user} = useSelector((state)=>state.auth)
@@ -76,8 +76,8 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion }) => {
         resetTranscript();
         transcriptRef.current = "";
         setStatus('recording');
-        setTimeLeft(15);
-        setMaxTime(15);
+        setTimeLeft(10);
+        setMaxTime(10);
         SpeechRecognition.startListening({ continuous: true });
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -94,17 +94,11 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion }) => {
 
     // HELPER: Generate AI feedback based on score
     const getAISuggestion = (score) => {
-        if (score >= 11) {
+        if (score >= 1) {
             return {
                 text: "Excellent work! You captured the main ideas and spoke with high clarity. Keep maintaining this pace.",
                 color: "text-green-700 bg-green-50 border-green-100",
                 icon: <CheckCircle className="w-5 h-5 text-green-600" />
-            };
-        } else if (score >= 7) {
-            return {
-                text: "Good attempt. Try to focus more on key supporting details and maintain a smoother flow to boost your score.",
-                color: "text-amber-700 bg-amber-50 border-amber-100",
-                icon: <Target className="w-5 h-5 text-amber-600" />
             };
         } else {
             return {
@@ -295,7 +289,7 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion }) => {
                                     <div className="relative flex justify-center items-center h-32">
                                         <svg className="w-48 h-24">
                                             <path d="M 10 90 A 70 70 0 0 1 180 90" fill="none" stroke="#f1f5f9" strokeWidth="12" strokeLinecap="round" />
-                                            <path d="M 10 90 A 70 70 0 0 1 180 90" fill="none" stroke="url(#purpleGradient)" strokeWidth="12" strokeLinecap="round" strokeDasharray="267" strokeDashoffset={267 - (267 * (result.score / 13))} className="transition-all duration-1000 ease-out" />
+                                            <path d="M 10 90 A 70 70 0 0 1 180 90" fill="none" stroke="url(#purpleGradient)" strokeWidth="12" strokeLinecap="round" strokeDasharray="267" strokeDashoffset={267 - (267 * (result.score / 1))} className="transition-all duration-1000 ease-out" />
                                             <defs>
                                                 <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                                     <stop offset="0%" stopColor="#8b5cf6" />
@@ -353,18 +347,19 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion }) => {
 
             {/* Bottom Controls */}
             <div className="flex items-center justify-center gap-6 pb-10">
-                <ControlBtn icon={<ChevronLeft />} label="Previous" />
+                <ControlBtn icon={<ChevronLeft />} label="Previous" onClick={previousButton}/>
                 <ControlBtn icon={<RefreshCw size={18} />} label="Redo" onClick={resetSession} />
                 <button className="w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 shadow-inner">
                     <CheckCircle size={24} />
                 </button>
-                <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" />
-                <ControlBtn icon={<ChevronRight />} label="Next" />
+                <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" onClick={shuffleButton}/>
+                <ControlBtn icon={<ChevronRight />} label="Next" onClick={nextButton}/>
             </div>
             {question.lastAttempts && question.lastAttempts.length > 0 && (
                         <ImageAttemptHistory 
             question={question} 
             onSelectAttempt={handleSelectAttempt} 
+            module={"short-answer"}
           />
          )}
         </div>

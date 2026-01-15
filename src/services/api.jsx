@@ -36,6 +36,26 @@ export const submitSummarizeGroupAttempt = async (attemptData) => {
     }
 };
 
+
+export const submitReTellAttempt = async (attemptData) => {
+    // attemptData should be a FormData object
+    try {
+        const response = await axios.post(
+            `${API_BASE_URL}/retell-lecture/submit`, 
+            attemptData,
+            { 
+                headers: { "Content-Type": "multipart/form-data" } 
+            }
+        );
+     
+        return response.data;
+    } catch (error) {
+        throw error.response ? error.response.data : new Error("Network Error");
+    }
+};
+
+
+
 export const submitShortAnswerAttempt = async (attemptData) => {
     // attemptData should be a FormData object
     try {

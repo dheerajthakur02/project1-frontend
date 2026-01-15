@@ -8,7 +8,7 @@ import { submitDescribeImageAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
 import { useSelector } from 'react-redux';
 
-const DescribeImageModule = ({ question, setActiveSpeechQuestion }) => {
+const DescribeImageModule = ({ question, setActiveSpeechQuestion , nextButton, previousButton, shuffleButton}) => {
     const [status, setStatus] = useState('idle'); 
     const [timeLeft, setTimeLeft] = useState(25);
     const [maxTime, setMaxTime] = useState(25);
@@ -246,13 +246,13 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion }) => {
             {/* Bottom Controls */}
             <div className="flex items-center justify-between bg-white px-8 py-5 rounded-2xl border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-8">
-                    <ControlBtn icon={<ChevronLeft size={20}/>} label="Previous" />
+                    <ControlBtn icon={<ChevronLeft size={20}/>} label="Previous" onClick={previousButton} />
                     <ControlBtn icon={<RefreshCw size={18}/>} label="Redo" onClick={() => { setStatus('idle'); setResult(null); }} />
                     <button className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:bg-green-600 hover:text-white transition-all">
                         <CheckCircle size={24} />
                     </button>
-                    <ControlBtn icon={<Shuffle size={18}/>} label="Shuffle" />
-                    <ControlBtn icon={<ChevronRight size={20}/>} label="Next" />
+                    <ControlBtn icon={<Shuffle size={18}/>} label="Shuffle" onClick={shuffleButton} />
+                    <ControlBtn icon={<ChevronRight size={20}/>} label="Next" onClick={nextButton} />
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-400 font-bold uppercase">Go to</span>

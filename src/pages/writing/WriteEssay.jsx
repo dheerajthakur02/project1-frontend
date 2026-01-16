@@ -50,14 +50,14 @@ const WriteEssay = ({ question, setActiveSpeechQuestion }) => {
     try {
       const timeTaken = MAX_TIME - timeLeft;
 
-      const data = await submitEssayAttempt({
+      const res = await submitEssayAttempt({
         questionId: question._id,
         essayText: answer,
         userId: user._id,
         timeTaken,
       });
 
-      
+      const data = res.data;
       setResult({
         score: data.score || 0,
         essayText: answer,

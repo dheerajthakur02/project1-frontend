@@ -102,6 +102,31 @@ export const submitRespondSituationAttempt = async (formData) => {
   return res.data;
 };
 
+export const submitSummarizeWrittenAttempt = async (data) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/summarize-text/submit`, 
+      data
+    );
+    console.log("submitSummarizeWrittenAttempt response:", response.data);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+}
+
+export const submitEssayAttempt = async (data) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/essay/submit`, 
+      data
+    );
+    console.log("submitEssayAttempt response:", response.data);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+}
 
 
 // You can add other services here like fetchQuestions, etc.

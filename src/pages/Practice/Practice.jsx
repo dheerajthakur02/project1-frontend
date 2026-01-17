@@ -13,6 +13,12 @@ import SummarizeGroup from './SummarizeGroup';
 import ReTell from './Retell';
 import Respond from './RespondSituation';
 import ReadingFIBDropdown from './ReadingFIBDropdown';
+import ReadingMultiChoiceMultiAnswer from './ReadingMultiChoiceMultiAnswer';
+import ReadingMultiChoiceSingleAnswer from './ReadingMultiChoiceSingleAnswer';
+import ReadingFIBDragDrop from './ReadingFIBDragDrop';
+import ReadingReorder from './ReadingReorder';
+
+
 
 // Writing Components (Create these if not already existing)
 // For now, I am assuming standard naming based on your imports.
@@ -39,6 +45,12 @@ function Practice() {
     const [retellQuestions, setRetellQuestions] = useState([]);
     const [respondSituationQuestions, setRespondSituationQuestions] = useState([]);
     const [readingFIBDropdownQuestions, setReadingFIBDropdownQuestions] = useState([]);
+    const [readingMultiChoiceMultiAnswerQuestions, setReadingMultiChoiceMultiAnswerQuestions] = useState([]);
+    const [readingMultiChoiceSingleAnswerQuestions, setReadingMultiChoiceSingleAnswerQuestions] = useState([]);
+    const [readingFIBDragDropQuestions, setReadingFIBDragDropQuestions] = useState([]);
+    const [readingReorderQuestions, setReadingReorderQuestions] = useState([]);
+
+
     const [summarizeTextQuestions, setSummarizeTextQuestions] = useState([]);
     const [essayQuestions, setEssayQuestions] = useState([]);
 
@@ -118,6 +130,26 @@ function Practice() {
         finally { setLoading(false); }
     };
 
+    const fetchReadingMultiChoiceMultiAnswer = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/reading-multi-choice-multi-answer/get/${user._id}`);
+            const data = await response.json();
+            setReadingMultiChoiceMultiAnswerQuestions(data?.data || []);
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
+    };
+
+    const fetchReadingMultiChoiceSingleAnswer = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/reading-multi-choice-single-answer/get/${user._id}`);
+            const data = await response.json();
+            setReadingMultiChoiceSingleAnswerQuestions(data?.data || []);
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
+    };
+
     const fetchReadingFIBDropdown = async () => {
         setLoading(true);
         try {
@@ -127,6 +159,30 @@ function Practice() {
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };
+
+    const fetchReadingFIBDragDrop = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/reading-fib-drag-drop/get/${user._id}`);
+            const data = await response.json();
+            setReadingFIBDragDropQuestions(data?.data || []);
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
+    };
+
+    const fetchReadingReorder = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/reading-reorder/get/${user._id}`);
+            const data = await response.json();
+            setReadingReorderQuestions(data?.data || []);
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
+    };
+
+
+
+
 
     const fetchSummarizeWrittenText = async () => {
         setLoading(true);
@@ -164,8 +220,15 @@ function Practice() {
             { id: 'Write Essay', isAi: true, onClick: fetchEssayQuestions }
         ],
         Reading: [
-            { id: 'Fill in the Blanks (Dropdown)', isAi: true, onClick: fetchReadingFIBDropdown }
+            { id: 'Fill in the Blanks (Dropdown)', isAi: true, onClick: fetchReadingFIBDropdown },
+            { id: 'Multiple Choice, Choose Multiple Answer', isAi: true, onClick: fetchReadingMultiChoiceMultiAnswer },
+            { id: 'Multiple Choice, Choose Single Answer', isAi: true, onClick: fetchReadingMultiChoiceSingleAnswer },
+            { id: 'Fill in the Blanks (Drag and Drop)', isAi: true, onClick: fetchReadingFIBDragDrop },
+            { id: 'Re-order Paragraph', isAi: true, onClick: fetchReadingReorder }
+
+
         ],
+
         Listening: []
     };
 
@@ -193,6 +256,11 @@ function Practice() {
             case 'Re-tell Lecture': return retellQuestions;
             case 'Respond to a Situation': return respondSituationQuestions;
             case 'Fill in the Blanks (Dropdown)': return readingFIBDropdownQuestions;
+            case 'Multiple Choice, Choose Multiple Answer': return readingMultiChoiceMultiAnswerQuestions;
+            case 'Multiple Choice, Choose Single Answer': return readingMultiChoiceSingleAnswerQuestions;
+            case 'Fill in the Blanks (Drag and Drop)': return readingFIBDragDropQuestions;
+            case 'Re-order Paragraph': return readingReorderQuestions;
+
             case 'Summarize Written Text': return summarizeTextQuestions;
             case 'Write Essay': return essayQuestions;
             default: return [];
@@ -238,6 +306,11 @@ function Practice() {
             case "Summarize Written Text": return <SummarizeWrittenText {...props} />;
             case "Write Essay": return <WriteEssay {...props} />;
             case "Fill in the Blanks (Dropdown)": return <ReadingFIBDropdown {...props} />;
+            case "Multiple Choice, Choose Multiple Answer": return <ReadingMultiChoiceMultiAnswer {...props} />;
+            case "Multiple Choice, Choose Single Answer": return <ReadingMultiChoiceSingleAnswer {...props} />;
+            case "Fill in the Blanks (Drag and Drop)": return <ReadingFIBDragDrop {...props} />;
+            case "Re-order Paragraph": return <ReadingReorder {...props} />;
+
             default: return <div>Component not found</div>;
         }
     };

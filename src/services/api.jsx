@@ -149,7 +149,105 @@ export const getReadingFIBDropdownAttempts = async (questionId) => {
     const response = await axios.get(`${API_BASE_URL}/reading-fib-dropdown/attempts/${questionId}`, {
       withCredentials: true
     });
-    console.log("All previous attempts of FIB:",response.data)
+    console.log("All previous attempts of FIB:", response.data)
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};
+
+export const submitReadingMultiChoiceMultiAnswerAttempt = async (data) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/reading-multi-choice-multi-answer/submit`,
+      data
+    );
+    console.log("submitReadingMultiChoiceMultiAnswerAttempt response:", response.data);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+}
+
+export const getReadingMultiChoiceMultiAnswerAttempts = async (questionId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/reading-multi-choice-multi-answer/attempts/${questionId}`, {
+      withCredentials: true
+    });
+    console.log("All previous attempts of Reading Multi Choice:", response.data)
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};
+
+export const submitReadingMultiChoiceSingleAnswerAttempt = async (data) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/reading-multi-choice-single-answer/submit`,
+      data
+    );
+    console.log("submitReadingMultiChoiceSingleAnswerAttempt response:", response.data);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+}
+
+export const getReadingMultiChoiceSingleAnswerAttempts = async (questionId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/reading-multi-choice-single-answer/attempts/${questionId}`, {
+      withCredentials: true
+    });
+    console.log("All previous attempts of Reading Multi Choice Single:", response.data)
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};
+
+export const submitReadingFIBDragDropAttempt = async (data) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/reading-fib-drag-drop/submit`,
+      data
+    );
+    console.log("submitReadingFIBDragDropAttempt response:", response.data);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+}
+
+export const getReadingFIBDragDropAttempts = async (questionId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/reading-fib-drag-drop/attempts/${questionId}`, {
+      withCredentials: true
+    });
+    console.log("All previous attempts of Reading FIB Drag Drop:", response.data)
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};
+
+export const submitReadingReorderAttempt = async (data) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/reading-reorder/submit`,
+      data
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+}
+
+export const getReadingReorderAttempts = async (questionId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/reading-reorder/attempts/${questionId}`, {
+      withCredentials: true
+    });
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : new Error("Network Error");

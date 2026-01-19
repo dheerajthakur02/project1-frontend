@@ -27,6 +27,7 @@ import WriteEssay from '../writing/WriteEssay';
 import SST from '../listening/SST';
 import HCS from '../listening/HCS';
 import ChooseSingleAnswer from '../listening/ChooseSingleAnswer';
+import SelectMissingWord from '../listening/SelectMissingWord';
 
 function Practice() {
     const navigate = useNavigate();
@@ -55,6 +56,7 @@ function Practice() {
 
 
 
+
     const [summarizeTextQuestions, setSummarizeTextQuestions] = useState([]);
     const [essayQuestions, setEssayQuestions] = useState([]);
 
@@ -62,6 +64,7 @@ function Practice() {
     const [sstQuestions, setSSTQuestions] = useState([]);
     const [hcsQuestions, setHCSQuestions] = useState([]);
     const [listeningMCQSingleQuestions, setListeningMCQSingleQuestions] = useState([]);
+    const [selectMissingWordQuestions, setSelectMissingWordQuestions] = useState([]);
     // Session State
     const [activeSpeechQuestion, setActiveSpeechQuestion] = useState(false);
     const [speechQuestion, setSpeechQuestion] = useState(null);
@@ -243,9 +246,30 @@ const fetchHighlightSummary = async() => {
         finally { setLoading(false); }
 };
 
-const fetchListeningMCQSingle = () => {
-  console.log("Listening MCQ Single clicked");
+const fetchListeningMCQSingle = async () => {
+    setLoading(true);
+        try {
+            const response = await fetch(`/api/choose-single-answer/${user._id}`);
+            const data = await response.json();
+            
+            setListeningMCQSingleQuestions(data?.data || []);
+          
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
 };
+
+const fetchSelectMissingWord = async () => {
+    setLoading(true);
+        try {
+            const response = await fetch(`/api/select-missing-word/${user._id}`);
+            const data = await response.json();
+            
+            setSelectMissingWordQuestions(data?.data || []);
+          
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
+};
+
 
     // --- CONFIGURATION ---
     const subTabsConfig = {
@@ -277,7 +301,8 @@ const fetchListeningMCQSingle = () => {
             { id: 'Listening Multiple, Choose Multiple Answer', isAi: true, onClick: fetchListeningMCQMultiple },
             { id: 'Fill in the blanks (Type In)', isAi: true, onClick: fetchListeningFillBlanks },
             { id: 'Highlight Correct Summary', isAi: true, onClick: fetchHighlightSummary },
-            { id: 'Listen: Multiple Choice, choose Single Answer', isAi: true, onClick: fetchListeningMCQSingle }
+            { id: 'Listen: Multiple Choice, choose Single Answer', isAi: true, onClick: fetchListeningMCQSingle },
+            { id: 'Select Missing Word', isAi: true, onClick: fetchSelectMissingWord }
 
         ]
     };
@@ -316,6 +341,7 @@ const fetchListeningMCQSingle = () => {
             case 'Summarize Spoken Text': return sstQuestions;
             case 'Highlight Correct Summary': return hcsQuestions;
             case 'Listen: Multiple Choice, choose Single Answer': return listeningMCQSingleQuestions;
+            case 'Select Missing Word': return selectMissingWordQuestions; // Implement when data and component are ready
             default: return [];
         }
     })();
@@ -366,6 +392,7 @@ const fetchListeningMCQSingle = () => {
             case "Summarize Spoken Text": return <SST {...props} />;
             case "Highlight Correct Summary": return <HCS {...props} />;
             case "Listen: Multiple Choice, choose Single Answer": return <ChooseSingleAnswer {...props} />;
+            case "Select Missing Word": return <SelectMissingWord {...props} />;
 
             default: return <div>Component not found</div>;
         }
@@ -456,7 +483,7 @@ const fetchListeningMCQSingle = () => {
                                         </div>
                                         <div className="col-span-2 flex justify-end">
                                             <button className="bg-amber-100 text-amber-700 px-4 py-1.5 rounded-lg text-xs font-bold">
-                                                {q.status || 'Not Practiced'}
+                                                {q.status || q.attemptCount || 'Not Practiced'}
                                             </button>
                                         </div>
                                     </div>

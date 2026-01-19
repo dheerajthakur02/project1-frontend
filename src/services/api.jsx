@@ -283,3 +283,27 @@ export const submitHighlightAttempt = async (attemptData) => {
     throw error.response ? error.response.data : new Error("Network Error");
   }
 };
+
+export const submitChooseSingleAnswerAttempt = async (attemptData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/choose-single-answer/submit`,
+      attemptData
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+}
+
+export const submitSelectMissingWordAttempt = async (attemptData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/select-missing-word/submit`,
+      attemptData
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+}

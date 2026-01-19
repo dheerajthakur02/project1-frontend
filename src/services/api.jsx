@@ -307,3 +307,14 @@ export const submitSelectMissingWordAttempt = async (attemptData) => {
     throw error.response ? error.response.data : new Error("Network Error");
   }
 }
+export const submitHIWAttempt =  async (attemptData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/hiw/submit`,
+      attemptData
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+}

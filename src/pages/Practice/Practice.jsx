@@ -28,7 +28,8 @@ import SST from '../listening/SST';
 import HCS from '../listening/HCS';
 import ChooseSingleAnswer from '../listening/ChooseSingleAnswer';
 import SelectMissingWord from '../listening/SelectMissingWord';
-import { HighlightIncorrectWords } from '../listening/HighLightIncorrectWords';
+import HighlightIncorrectWords from '../listening/HighLightIncorrectWords';
+
 
 function Practice() {
     const navigate = useNavigate();
@@ -275,7 +276,7 @@ const fetchSelectMissingWord = async () => {
 const fetchHighlightIncorrectWords = async () => {
     setLoading(true);
         try {
-            const response = await fetch(`/api/highlight-incorrect-words/${user._id}`);
+            const response = await fetch(`/api/hiw/${user._id}`);
             const data = await response.json();
             
             setHighlightIncorrectWordsQuestions(data?.data || []);

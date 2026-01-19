@@ -284,26 +284,37 @@ export const submitHighlightAttempt = async (attemptData) => {
   }
 };
 
-export const submitListeningFIBAttempt = async (attemptData) => {
+export const submitChooseSingleAnswerAttempt = async (attemptData) => {
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/listening-fib/submit`,
+      `${API_BASE_URL}/choose-single-answer/submit`,
       attemptData
     );
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : new Error("Network Error");
   }
-};
+}
 
-
-export const getListeningFIBQuestions = async (userId) => {
+export const submitSelectMissingWordAttempt = async (attemptData) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/listening-fib/questions/${userId}`);
+    const response = await axios.post(
+      `${API_BASE_URL}/select-missing-word/submit`,
+      attemptData
+    );
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : new Error("Network Error");
   }
-};
-
-
+}
+export const submitHIWAttempt =  async (attemptData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/hiw/submit`,
+      attemptData
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+}

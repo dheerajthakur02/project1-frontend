@@ -218,71 +218,71 @@ function Practice() {
     };
 
 
-    const fetchSummarizeSpokenText = async () => {
+    const fetchSummarizeSpokenText = async() => {
         setLoading(true);
         try {
             const response = await fetch(`/api/sst/questions/${user._id}`);
             const data = await response.json();
             setSSTQuestions(data?.data || []);
-
+          
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };
 
-    const fetchListeningMCQMultiple = () => {
-        console.log("Listening MCQ Multiple clicked");
-    };
+const fetchListeningMCQMultiple = () => {
+  console.log("Listening MCQ Multiple clicked");
+};
 
-    const fetchListeningFillBlanks = () => {
-        console.log("Listening Fill in the Blanks clicked");
-    };
+const fetchListeningFillBlanks = () => {
+  console.log("Listening Fill in the Blanks clicked");
+};
 
-    const fetchHighlightSummary = async () => {
-        setLoading(true);
+const fetchHighlightSummary = async() => {
+     setLoading(true);
         try {
             const response = await fetch(`/api/hsc/attempts/${user._id}`);
             const data = await response.json();
             setHCSQuestions(data?.data || []);
-
+          
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
-    };
+};
 
-    const fetchListeningMCQSingle = async () => {
-        setLoading(true);
+const fetchListeningMCQSingle = async () => {
+    setLoading(true);
         try {
             const response = await fetch(`/api/choose-single-answer/${user._id}`);
             const data = await response.json();
-
+            
             setListeningMCQSingleQuestions(data?.data || []);
-
+          
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
-    };
+};
 
-    const fetchSelectMissingWord = async () => {
-        setLoading(true);
+const fetchSelectMissingWord = async () => {
+    setLoading(true);
         try {
             const response = await fetch(`/api/select-missing-word/${user._id}`);
             const data = await response.json();
-
+            
             setSelectMissingWordQuestions(data?.data || []);
-
+          
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
-    };
+};
 
-    const fetchHighlightIncorrectWords = async () => {
-        setLoading(true);
+const fetchHighlightIncorrectWords = async () => {
+    setLoading(true);
         try {
             const response = await fetch(`/api/highlight-incorrect-words/${user._id}`);
             const data = await response.json();
-
+            
             setHighlightIncorrectWordsQuestions(data?.data || []);
-
+          
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
-    };
+};
 
 
     // --- CONFIGURATION ---
@@ -311,7 +311,7 @@ function Practice() {
         ],
 
         Listening: [
-            { id: 'Summarize Spoken Text', isAi: true, onClick: fetchSummarizeSpokenText },
+             { id: 'Summarize Spoken Text', isAi: true, onClick: fetchSummarizeSpokenText },
             { id: 'Listening Multiple, Choose Multiple Answer', isAi: true, onClick: fetchListeningMCQMultiple },
             { id: 'Fill in the blanks (Type In)', isAi: true, onClick: fetchListeningFillBlanks },
             { id: 'Highlight Correct Summary', isAi: true, onClick: fetchHighlightSummary },

@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ArrowLeft, Volume2, RotateCcw, ChevronRight, X, Play, CheckCircle2, Info, Headphones, BookOpen, Share2, History, Calendar, Trash2 } from "lucide-react";
-import { submitHighlightAttempt } from "../../services/api";
+import { submitChooseSingleAnswerAttempt, submitHighlightAttempt, submitSelectMissingWordAttempt } from "../../services/api";
 import { useSelector } from "react-redux";
 
-const PREP_TIME = 10;
+const PREP_TIME = 5;
 
-export default function HCS({ question, setActiveSpeechQuestion }) {
+export default function SelectMissingWord({ question, setActiveSpeechQuestion,nextButton, previousButton, shuffleButton }) {
+
   const [status, setStatus] = useState("idle");
   const [prepTimer, setPrepTimer] = useState(PREP_TIME);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -51,10 +52,10 @@ export default function HCS({ question, setActiveSpeechQuestion }) {
       score: attempt.isCorrect ? 1 : 0,
       readingScore: attempt.isCorrect ? 0.5 : 0,
       listeningScore: attempt.isCorrect ? 0.5 : 0,
-      myAnswer: String.fromCharCode(65 + attempt.selectedSummaryIndex),
-      correctAnswer: String.fromCharCode(65 + question.summaries.findIndex(s => s.isCorrect)),
-      myAnswerText: question.summaries[attempt.selectedSummaryIndex]?.text,
-      correctAnswerText: question.summaries.find(s => s.isCorrect)?.text,
+      myAnswer: String.fromCharCode(65 + attempt.selectedOptionIndex),
+      correctAnswer: String.fromCharCode(65 + question.options.findIndex(o => o.isCorrect)),
+      myAnswerText: question.options[attempt.selectedOptionIndex]?.text,
+      correctAnswerText: question.options.find(o => o.isCorrect)?.text,
       questionId: question.questionId || "HCS_RESULT",
       isHistory: true
     };
@@ -65,12 +66,13 @@ export default function HCS({ question, setActiveSpeechQuestion }) {
   /* ---------------- SUBMIT LOGIC ---------------- */
   const handleSubmit = async () => {
     try {
-      const res = await submitHighlightAttempt({
+      const res = await submitSelectMissingWordAttempt({
         questionId: question._id,
-        selectedSummaryIndex: selectedOption,
+        selectedOptionIndex: selectedOption,
         userId: user._id,
         timeTaken: Math.floor(audioRef.current?.currentTime || 0),
       });
+
 
       // Backend usually returns { success: true, data: { ... } }
       setResult(res.data); 
@@ -93,7 +95,7 @@ export default function HCS({ question, setActiveSpeechQuestion }) {
                 <ArrowLeft size={20} className="text-slate-600" />
               </button>
               <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                Highlight Correct Summary <Info size={16} className="text-blue-500" />
+                Select Missing Word <Info size={16} className="text-blue-500" />
               </h1>
             </div>
             <button className="flex items-center gap-2 text-blue-600 font-bold bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition">
@@ -156,7 +158,8 @@ export default function HCS({ question, setActiveSpeechQuestion }) {
             {/* OPTIONS BOX */}
             <div className="p-10 flex-1">
               <div className="border-2 border-dashed border-slate-100 rounded-[2rem] p-6 space-y-4">
-                {question.summaries.map((option, index) => {
+                <h2>{question.title}</h2>
+                {question.options.map((option, index) => {
                   const isSelected = selectedOption === index;
                   return (
                     <div
@@ -193,7 +196,7 @@ export default function HCS({ question, setActiveSpeechQuestion }) {
       </div>
           <div className="p-8 border-t bg-white flex justify-between items-center">
               <div className="flex gap-4">
-                <button className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
+                <button onClick={previousButton} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
                   <ArrowLeft size={20} /> Previous
                 </button>
                 <button onClick={() => { setSelectedOption(null); setStatus("idle"); setPrepTimer(PREP_TIME); }} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
@@ -210,7 +213,7 @@ export default function HCS({ question, setActiveSpeechQuestion }) {
               </button>
 
               <div className="flex items-center gap-4">
-                <button className="flex items-center gap-2 font-bold text-blue-600">Next <ChevronRight size={20} /></button>
+                <button onClick={nextButton} className="flex items-center gap-2 font-bold text-blue-600">Next <ChevronRight size={20} /></button>
               </div>
             </div>
          

@@ -28,6 +28,7 @@ import SST from '../listening/SST';
 import HCS from '../listening/HCS';
 import ChooseSingleAnswer from '../listening/ChooseSingleAnswer';
 import SelectMissingWord from '../listening/SelectMissingWord';
+import { HighlightIncorrectWords } from '../listening/HighLightIncorrectWords';
 
 function Practice() {
     const navigate = useNavigate();
@@ -65,6 +66,7 @@ function Practice() {
     const [hcsQuestions, setHCSQuestions] = useState([]);
     const [listeningMCQSingleQuestions, setListeningMCQSingleQuestions] = useState([]);
     const [selectMissingWordQuestions, setSelectMissingWordQuestions] = useState([]);
+    const [highlightIncorrectWordsQuestions, setHighlightIncorrectWordsQuestions] = useState([]);
     // Session State
     const [activeSpeechQuestion, setActiveSpeechQuestion] = useState(false);
     const [speechQuestion, setSpeechQuestion] = useState(null);
@@ -270,6 +272,18 @@ const fetchSelectMissingWord = async () => {
         finally { setLoading(false); }
 };
 
+const fetchHighlightIncorrectWords = async () => {
+    setLoading(true);
+        try {
+            const response = await fetch(`/api/highlight-incorrect-words/${user._id}`);
+            const data = await response.json();
+            
+            setHighlightIncorrectWordsQuestions(data?.data || []);
+          
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
+};
+
 
     // --- CONFIGURATION ---
     const subTabsConfig = {
@@ -302,7 +316,8 @@ const fetchSelectMissingWord = async () => {
             { id: 'Fill in the blanks (Type In)', isAi: true, onClick: fetchListeningFillBlanks },
             { id: 'Highlight Correct Summary', isAi: true, onClick: fetchHighlightSummary },
             { id: 'Listen: Multiple Choice, choose Single Answer', isAi: true, onClick: fetchListeningMCQSingle },
-            { id: 'Select Missing Word', isAi: true, onClick: fetchSelectMissingWord }
+            { id: 'Select Missing Word', isAi: true, onClick: fetchSelectMissingWord },
+            { id: 'Highlight Incorrect Words', isAi: true, onClick: fetchHighlightIncorrectWords }
 
         ]
     };
@@ -342,6 +357,7 @@ const fetchSelectMissingWord = async () => {
             case 'Highlight Correct Summary': return hcsQuestions;
             case 'Listen: Multiple Choice, choose Single Answer': return listeningMCQSingleQuestions;
             case 'Select Missing Word': return selectMissingWordQuestions; // Implement when data and component are ready
+            case 'Highlight Incorrect Words': return highlightIncorrectWordsQuestions; // Implement when data and component are ready
             default: return [];
         }
     })();
@@ -393,6 +409,7 @@ const fetchSelectMissingWord = async () => {
             case "Highlight Correct Summary": return <HCS {...props} />;
             case "Listen: Multiple Choice, choose Single Answer": return <ChooseSingleAnswer {...props} />;
             case "Select Missing Word": return <SelectMissingWord {...props} />;
+            case "Highlight Incorrect Words": return <HighlightIncorrectWords {...props} />;
 
             default: return <div>Component not found</div>;
         }

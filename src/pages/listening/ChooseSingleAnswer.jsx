@@ -5,8 +5,8 @@ import { useSelector } from "react-redux";
 
 const PREP_TIME = 5;
 
-export default function ChooseSingleAnswer({ question, setActiveSpeechQuestion }) {
-    console.log("ChooseSingleAnswer question prop:", question);
+export default function ChooseSingleAnswer({ question, setActiveSpeechQuestion, nextButton, previousButton, shuffleButton }) {
+
   const [status, setStatus] = useState("idle");
   const [prepTimer, setPrepTimer] = useState(PREP_TIME);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -197,7 +197,7 @@ export default function ChooseSingleAnswer({ question, setActiveSpeechQuestion }
       </div>
           <div className="p-8 border-t bg-white flex justify-between items-center">
               <div className="flex gap-4">
-                <button className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
+                <button onClick={previousButton} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
                   <ArrowLeft size={20} /> Previous
                 </button>
                 <button onClick={() => { setSelectedOption(null); setStatus("idle"); setPrepTimer(PREP_TIME); }} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
@@ -214,7 +214,7 @@ export default function ChooseSingleAnswer({ question, setActiveSpeechQuestion }
               </button>
 
               <div className="flex items-center gap-4">
-                <button className="flex items-center gap-2 font-bold text-blue-600">Next <ChevronRight size={20} /></button>
+                <button onClick={nextButton} className="flex items-center gap-2 font-bold text-blue-600">Next <ChevronRight size={20} /></button>
               </div>
             </div>
          

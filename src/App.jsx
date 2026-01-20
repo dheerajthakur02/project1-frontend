@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import Practice from './pages/Practice/Practice';
 import SelectProduct from './pages/SelectProduct/SelectProduct';
 import ReadAloudSession from './pages/Practice/ReadAloudSession';
+import MockTest from './pages/MockTest/MockTest';
 
 function App() {
   console.log('App: Rendering App component');
@@ -29,6 +30,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/practice" element={<Practice />} />
         <Route path="/practice/:id" element={<ReadAloudSession />} />
+        <Route path='mock-test' element={<MockTest />} />
       </Routes>
     </BrowserRouter>
   );

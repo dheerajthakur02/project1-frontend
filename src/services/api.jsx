@@ -307,7 +307,7 @@ export const submitSelectMissingWordAttempt = async (attemptData) => {
     throw error.response ? error.response.data : new Error("Network Error");
   }
 }
-export const submitHIWAttempt =  async (attemptData) => {
+export const submitHIWAttempt = async (attemptData) => {
   try {
     const response = await axios.post(
       `${API_BASE_URL}/hiw/submit`,
@@ -318,3 +318,46 @@ export const submitHIWAttempt =  async (attemptData) => {
     throw error.response ? error.response.data : new Error("Network Error");
   }
 }
+
+export const getListeningFIBQuestions = async (userId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/listening-fib/questions/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};
+
+export const submitListeningFIBAttempt = async (attemptData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/listening-fib/submit`,
+      attemptData
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};
+
+
+export const getListeningMCQMultipleQuestions = async (userId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/listening-multi-choice-multi-answer/questions/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};
+
+export const submitListeningMCQMultipleAttempt = async (attemptData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/listening-multi-choice-multi-answer/submit`,
+      attemptData
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};

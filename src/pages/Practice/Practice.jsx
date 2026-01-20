@@ -29,6 +29,8 @@ import HCS from '../listening/HCS';
 import ChooseSingleAnswer from '../listening/ChooseSingleAnswer';
 import SelectMissingWord from '../listening/SelectMissingWord';
 import HighlightIncorrectWords from '../listening/HighLightIncorrectWords';
+import ListeningFIB from '../listening/ListeningFIB';
+import ListeningMultiChoiceMultiAnswer from '../listening/ListeningMultiChoiceMultiAnswer';
 
 
 function Practice() {
@@ -68,6 +70,8 @@ function Practice() {
     const [listeningMCQSingleQuestions, setListeningMCQSingleQuestions] = useState([]);
     const [selectMissingWordQuestions, setSelectMissingWordQuestions] = useState([]);
     const [highlightIncorrectWordsQuestions, setHighlightIncorrectWordsQuestions] = useState([]);
+    const [listeningFIBQuestions, setListeningFIBQuestions] = useState([]);
+    const [listeningMCQMultipleQuestions, setListeningMCQMultipleQuestions] = useState([]);
     // Session State
     const [activeSpeechQuestion, setActiveSpeechQuestion] = useState(false);
     const [speechQuestion, setSpeechQuestion] = useState(null);
@@ -219,71 +223,83 @@ function Practice() {
     };
 
 
-    const fetchSummarizeSpokenText = async() => {
+    const fetchSummarizeSpokenText = async () => {
         setLoading(true);
         try {
             const response = await fetch(`/api/sst/questions/${user._id}`);
             const data = await response.json();
             setSSTQuestions(data?.data || []);
-          
+
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };
 
-const fetchListeningMCQMultiple = () => {
-  console.log("Listening MCQ Multiple clicked");
-};
+    const fetchListeningMCQMultiple = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/listening-multi-choice-multi-answer/questions/${user._id}`);
+            const data = await response.json();
+            setListeningMCQMultipleQuestions(data?.data || []);
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
+    };
 
-const fetchListeningFillBlanks = () => {
-  console.log("Listening Fill in the Blanks clicked");
-};
+    const fetchListeningFillBlanks = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/listening-fib/questions/${user._id}`);
+            const data = await response.json();
+            setListeningFIBQuestions(data?.data || []);
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
+    };
 
-const fetchHighlightSummary = async() => {
-     setLoading(true);
+    const fetchHighlightSummary = async () => {
+        setLoading(true);
         try {
             const response = await fetch(`/api/hsc/attempts/${user._id}`);
             const data = await response.json();
             setHCSQuestions(data?.data || []);
-          
+
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
-};
+    };
 
-const fetchListeningMCQSingle = async () => {
-    setLoading(true);
+    const fetchListeningMCQSingle = async () => {
+        setLoading(true);
         try {
             const response = await fetch(`/api/choose-single-answer/${user._id}`);
             const data = await response.json();
-            
+
             setListeningMCQSingleQuestions(data?.data || []);
-          
+
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
-};
+    };
 
-const fetchSelectMissingWord = async () => {
-    setLoading(true);
+    const fetchSelectMissingWord = async () => {
+        setLoading(true);
         try {
             const response = await fetch(`/api/select-missing-word/${user._id}`);
             const data = await response.json();
-            
+
             setSelectMissingWordQuestions(data?.data || []);
-          
+
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
-};
+    };
 
-const fetchHighlightIncorrectWords = async () => {
-    setLoading(true);
+    const fetchHighlightIncorrectWords = async () => {
+        setLoading(true);
         try {
             const response = await fetch(`/api/hiw/${user._id}`);
             const data = await response.json();
-            
+
             setHighlightIncorrectWordsQuestions(data?.data || []);
-          
+
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
-};
+    };
 
 
     // --- CONFIGURATION ---
@@ -312,8 +328,8 @@ const fetchHighlightIncorrectWords = async () => {
         ],
 
         Listening: [
-             { id: 'Summarize Spoken Text', isAi: true, onClick: fetchSummarizeSpokenText },
-            { id: 'Listening Multiple, Choose Multiple Answer', isAi: true, onClick: fetchListeningMCQMultiple },
+            { id: 'Summarize Spoken Text', isAi: true, onClick: fetchSummarizeSpokenText },
+            { id: 'Listening: Multiple Choice, Choose Multiple Answer', isAi: true, onClick: fetchListeningMCQMultiple },
             { id: 'Fill in the blanks (Type In)', isAi: true, onClick: fetchListeningFillBlanks },
             { id: 'Highlight Correct Summary', isAi: true, onClick: fetchHighlightSummary },
             { id: 'Listen: Multiple Choice, choose Single Answer', isAi: true, onClick: fetchListeningMCQSingle },
@@ -359,6 +375,8 @@ const fetchHighlightIncorrectWords = async () => {
             case 'Listen: Multiple Choice, choose Single Answer': return listeningMCQSingleQuestions;
             case 'Select Missing Word': return selectMissingWordQuestions; // Implement when data and component are ready
             case 'Highlight Incorrect Words': return highlightIncorrectWordsQuestions; // Implement when data and component are ready
+            case 'Fill in the blanks (Type In)': return listeningFIBQuestions;
+            case 'Listening: Multiple Choice, Choose Multiple Answer': return listeningMCQMultipleQuestions;
             default: return [];
         }
     })();
@@ -411,6 +429,10 @@ const fetchHighlightIncorrectWords = async () => {
             case "Listen: Multiple Choice, choose Single Answer": return <ChooseSingleAnswer {...props} />;
             case "Select Missing Word": return <SelectMissingWord {...props} />;
             case "Highlight Incorrect Words": return <HighlightIncorrectWords {...props} />;
+
+
+            case 'Fill in the blanks (Type In)': return <ListeningFIB {...props} />;
+            case 'Listening: Multiple Choice, Choose Multiple Answer': return <ListeningMultiChoiceMultiAnswer {...props} />;
 
             default: return <div>Component not found</div>;
         }

@@ -2,6 +2,19 @@ import axios from 'axios';
 
 const API_BASE_URL = "http://localhost:5000/api";
 
+
+
+// Add interceptor
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 403 && error.response.data.message === "PRACTICE_LIMIT_REACHED") {
+      window.dispatchEvent(new Event("practiceLimitReached"));
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const submitRepeatAttempt = async (attemptData) => {
   // attemptData should be a FormData object
   try {

@@ -8,6 +8,7 @@ import Practice from './pages/Practice/Practice';
 import SelectProduct from './pages/SelectProduct/SelectProduct';
 import ReadAloudSession from './pages/Practice/ReadAloudSession';
 import MockTest from './pages/MockTest/MockTest';
+import SecureExamWrapper from './pages/MockTest/SecureExamWrapper';
 
 function App() {
   console.log('App: Rendering App component');
@@ -31,6 +32,8 @@ function App() {
         <Route path="/practice" element={<Practice />} />
         <Route path="/practice/:id" element={<ReadAloudSession />} />
         <Route path='mock-test' element={<MockTest />} />
+       {/* Question attempt */}
+        <Route path="/question/:type" element={<SecureExamWrapper />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,186 +1,267 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { Trash2, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import DashboardLayout from "../../components/DashboardLayout/DashboardLayout";
+import api from "../../services/api";
 
-// Layout & Modules
-import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
-// ... (keep all your existing module imports here)
+/* ================= CONFIG ================= */
 
-function MockTest() {
-    const navigate = useNavigate();
-    const { user } = useSelector((state) => state.auth);
+const MAIN_TABS = ["Full Tests", "Section Tests", "Question Tests"];
 
-    // --- STATE ---
-    const [activeMainTab, setActiveMainTab] = useState('Question Tests'); // Default to Question Tests per your image
-    const [examType, setExamType] = useState('Academic'); // 'Academic' or 'Core'
-    const [activeSubTab, setActiveSubTab] = useState('All');
-    
-    // UI state
-    const [loading, setLoading] = useState(false);
-    const [activeSpeechQuestion, setActiveSpeechQuestion] = useState(false);
-    const [speechQuestion, setSpeechQuestion] = useState(null);
+const SECTION_TABS = ["All", "Speaking", "Writing", "Listening"];
 
-    // --- SUB-TAB CONFIGURATION ---
-    const getSubTabs = () => {
-        if (activeMainTab === 'Section Tests') {
-            return ['All', 'Speaking', 'Writing', 'Reading', 'Listening'];
-        }
-        if (activeMainTab === 'Question Tests') {
-            return ['All', 'RA', 'RS', 'DI', 'RL', 'SGD', 'RTS', 'WE', 'SWT', 'FIB', 'FIBD&D', 'RO', 'WFD', 'SST', 'FIB-L', 'HIW'];
-        }
-        return []; // Full Tests usually doesn't have sub-tabs in this UI
-    };
+const QUESTION_TABS = [
+  { id: "Q_ALL", label: "All", api: "all" },
+  { id: "RA", label: "Read Aloud", api: "ra" },
+  { id: "RS", label: "Repeat Sentence", api: "rs" },
+  { id: "DI", label: "Describe Image", api: "di" },
+  { id: "RL", label: "Re-tell Lecture", api: "rl" },
+  { id: "SST", label: "Summarize Spoken Text", api: "sst" },
+  { id: "HIW", label: "Highlight Incorrect Words", api: "hiw" },
+];
 
-    // --- FETCH LOGIC MAPPING ---
-    // Mapping the shorthand UI codes to your existing fetch functions
-    const handleSubTabClick = (tabId) => {
-        setActiveSubTab(tabId);
-        // Map shorthand to your fetchers
-        const fetchMap = {
-            'RA': fetchReadAloud,
-            'RS': fetchRepeatSentences,
-            'DI': fetchImageSentences,
-            'RL': fetchReTellQuestion,
-            'SST': fetchSummarizeSpokenText,
-            'HIW': fetchHighlightIncorrectWords,
-            'WE': fetchEssayQuestions,
-            'SWT': fetchSummarizeWrittenText,
-            // ... add others
-        };
-        if (fetchMap[tabId]) fetchMap[tabId]();
-    };
+/* ================= COMPONENT ================= */
 
-    // --- COMPONENTS ---
+export default function MockTest() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-    // 1. Promo Banner
-    const Banner = () => (
-        <div className="relative w-full h-40 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-2xl overflow-hidden mb-8 text-white flex items-center px-12">
-            <div className="z-10 space-y-2">
-                <p className="text-sm font-medium bg-white/20 inline-block px-3 py-1 rounded-full">I APEUni PTE Scored Mock Test I</p>
-                <h2 className="text-3xl font-bold">Real Test Experience and Scores</h2>
-                <button className="bg-white text-blue-600 px-6 py-2 rounded-full font-bold text-sm mt-4">Read More &gt;</button>
-            </div>
-            <img src="https://via.placeholder.com/300x200" alt="banner" className="absolute right-0 bottom-0 h-full opacity-80" />
+  const [activeMainTab, setActiveMainTab] = useState("Full Tests");
+  const [activeSubTab, setActiveSubTab] = useState(null);
+
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  /* ================= FETCH SECTION TESTS ================= */
+
+  const fetchSectionQuestions = async (section) => {
+    setLoading(true);
+    setQuestions([]);
+
+    try {
+      if (section === "All") {
+        const [speaking, writing, listening] = await Promise.all([
+          api.get("/speaking"),
+          api.get("/writing"),
+          api.get("/listening"),
+        ]);
+
+        const speakingQ = (speaking.data?.data || []).map(q => ({
+          ...q,
+          __section: "speaking",
+        }));
+
+        const writingQ = (writing.data?.data || []).map(q => ({
+          ...q,
+          __section: "writing",
+        }));
+
+        const listeningQ = (listening.data?.data || []).map(q => ({
+          ...q,
+          __section: "listening",
+        }));
+
+        setQuestions([...speakingQ, ...writingQ, ...listeningQ]);
+      } else {
+        const res = await api.get(`/${section.toLowerCase()}`);
+        setQuestions(
+          (res.data?.data || []).map(q => ({
+            ...q,
+            __section: section.toLowerCase(),
+          }))
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= FETCH QUESTION TESTS ================= */
+
+  const fetchQuestionType = async (tab) => {
+    setLoading(true);
+    setQuestions([]);
+
+    try {
+      if (tab.id === "Q_ALL") {
+        const requests = QUESTION_TABS
+          .filter(t => t.id !== "Q_ALL")
+          .map(t => api.get(`/${t.api}`));
+
+        const responses = await Promise.all(requests);
+
+        const combined = responses.flatMap((res, idx) =>
+          (res.data?.data || []).map(q => ({
+            ...q,
+            __questionType: QUESTION_TABS[idx + 1].id, // RA, RS, etc.
+          }))
+        );
+
+        setQuestions(combined);
+      } else {
+        const res = await api.get(`/${tab.api}`);
+        setQuestions(
+          (res.data?.data || []).map(q => ({
+            ...q,
+            __questionType: tab.id,
+          }))
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= URL → STATE ================= */
+
+  useEffect(() => {
+    const module = searchParams.get("module");
+    if (!module) return;
+
+    if (SECTION_TABS.includes(module)) {
+      setActiveMainTab("Section Tests");
+      setActiveSubTab(module);
+      fetchSectionQuestions(module);
+      return;
+    }
+
+    const qTab = QUESTION_TABS.find(q => q.id === module);
+    if (qTab) {
+      setActiveMainTab("Question Tests");
+      setActiveSubTab(qTab.id);
+      fetchQuestionType(qTab);
+    }
+  }, [searchParams]);
+
+  /* ================= HANDLERS ================= */
+
+  const handleMainTabClick = (tab) => {
+    setActiveMainTab(tab);
+    setActiveSubTab(null);
+    setQuestions([]);
+    navigate("/mock-test");
+  };
+
+  const handleSectionClick = (section) => {
+    setActiveSubTab(section);
+    navigate(`/mock-test?module=${section}`);
+  };
+
+  const handleQuestionClick = (tab) => {
+    setActiveSubTab(tab.id);
+    navigate(`/mock-test?module=${tab.id}`);
+  };
+
+  /* ================= CORRECT NAVIGATION ================= */
+
+  const handleQuestionNavigate = (q) => {
+    // Question Tests → RA / RS / DI / etc.
+    if (q.__questionType) {
+      navigate(`/question/${q.__questionType}?id=${q._id}`);
+      return;
+    }
+
+    // Section Tests → speaking / writing / listening
+    navigate(`/question/${q.__section}?id=${q._id}`);
+  };
+
+  /* ================= UI ================= */
+
+  return (
+    <DashboardLayout>
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
+
+        {/* MAIN TABS */}
+        <div className="flex border-b">
+          {MAIN_TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => handleMainTabClick(tab)}
+              className={`flex-1 py-4 font-bold ${
+                activeMainTab === tab
+                  ? "border-b-4 border-emerald-500 text-black"
+                  : "text-slate-400"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
-    );
 
-    // 2. My Tests Section
-    const MyTests = () => (
-        <div className="mb-10">
-            <h3 className="text-lg font-bold text-slate-700 mb-4">My Tests</h3>
-            <div className="space-y-3">
-                {[1, 2].map((item) => (
-                    <div key={item} className="bg-white p-5 rounded-2xl border flex items-center justify-between shadow-sm">
-                        <div className="space-y-1">
-                            <h4 className="font-bold text-slate-800 text-sm">【VIP Section Test】Listening Section Test 43B (7th Aug. new version)</h4>
-                            <p className="text-xs text-slate-400">Submitted at: 2026-01-20 10:33</p>
-                        </div>
-                        <div className="flex gap-3 items-center">
-                            <button className="p-2 text-red-400 bg-red-50 rounded-lg hover:bg-red-100 transition"><Trash2 size={18}/></button>
-                            <button className="bg-[#4CC9F0] text-white px-8 py-2 rounded-xl font-bold text-sm shadow-md">Continue</button>
-                        </div>
-                    </div>
-                ))}
-                <div className="flex justify-end pt-2">
-                    <button className="text-xs text-slate-400 flex items-center gap-1 font-medium">Show all tests <ChevronRight size={14}/></button>
-                </div>
-            </div>
+        {/* SUB TABS */}
+        <div className="flex flex-wrap gap-3">
+          {activeMainTab === "Section Tests" &&
+            SECTION_TABS.map(tab => (
+              <SubTab
+                key={tab}
+                label={tab}
+                active={activeSubTab === tab}
+                onClick={() => handleSectionClick(tab)}
+              />
+            ))}
+
+          {activeMainTab === "Question Tests" &&
+            QUESTION_TABS.map(tab => (
+              <SubTab
+                key={tab.id}
+                label={tab.label}
+                active={activeSubTab === tab.id}
+                onClick={() => handleQuestionClick(tab)}
+              />
+            ))}
         </div>
-    );
 
-    return (
-        <DashboardLayout>
-            {!activeSpeechQuestion ? (
-                <div className="max-w-6xl mx-auto p-6">
-                    <Banner />
-                    <MyTests />
-
-                    {/* Mock Tests Container */}
-                    <div className="bg-white rounded-[2rem] border shadow-sm overflow-hidden">
-                        
-                          <div className="flex justify-center mb-8">
-                                <div className="bg-slate-100 p-1 rounded-2xl flex w-[400px] relative overflow-hidden">
-                                    <div 
-                                        className={`absolute top-1 bottom-1 w-[49%] bg-[#00D1B2] rounded-xl transition-all duration-300 shadow-lg ${
-                                            examType === 'Academic' ? 'left-1' : 'left-[50%]'
-                                        }`}>    </div>
-                                    <button 
-                                        onClick={() => setExamType('Academic')}
-                                        className={`flex-1 py-3 text-sm font-black z-10 transition-colors ${examType === 'Academic' ? 'text-white' : 'text-slate-400'}`}
-                                    >
-                                        PTE Academic / UKVI
-                                    </button>
-                                    <button 
-                                        onClick={() => setExamType('Core')}
-                                        className={`flex-1 py-3 text-sm font-black z-10 transition-colors ${examType === 'Core' ? 'text-white' : 'text-slate-400'}`}
-                                    >
-                                        PTE Core
-                                    </button>
-                                </div>
-                            </div>
-
-                        {/* 1. Main Tabs (Full / Section / Question) */}
-                        <div className="flex border-b">
-                            {['Full Tests', 'Section Tests', 'Question Tests'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => {
-                                        setActiveMainTab(tab);
-                                        setActiveSubTab('All');
-                                    }}
-                                    className={`flex-1 py-5 text-sm font-bold transition-all relative ${
-                                        activeMainTab === tab ? 'text-slate-800' : 'text-slate-400'
-                                    }`}
-                                >
-                                    {tab}
-                                    {activeMainTab === tab && (
-                                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-[#00D1B2] rounded-t-full" />
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="p-8">
-                            {/* 2. Exam Type Toggle (Academic vs Core) */}
-                          
-
-                            {/* 3. Dynamic Sub-Tabs */}
-                            <div className="flex flex-wrap gap-3 mb-10">
-                                {getSubTabs().map((sub) => (
-                                    <button
-                                        key={sub}
-                                        onClick={() => handleSubTabClick(sub)}
-                                        className={`px-6 py-2 rounded-full text-xs font-bold transition-all ${
-                                            activeSubTab === sub 
-                                            ? 'bg-[#00D1B2] text-white shadow-lg scale-105' 
-                                            : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
-                                        }`}
-                                    >
-                                        {sub}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* 4. Results / Questions List */}
-                            <div className="space-y-4">
-                                {loading ? (
-                                    <div className="text-center py-20 text-slate-400 animate-pulse">Fetching questions...</div>
-                                ) : (
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {/* Your table row mapping logic here */}
-                                        <p className="text-center text-slate-300 text-sm font-medium italic">Select a category to view questions</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+        {/* QUESTIONS */}
+        <div className="bg-white border rounded-xl overflow-hidden">
+          {loading ? (
+            <p className="p-10 text-center text-slate-400">Loading…</p>
+          ) : questions.length === 0 ? (
+            <p className="p-10 text-center text-slate-400">
+              Select a category to view questions
+            </p>
+          ) : (
+            questions.map((q, index) => (
+              <div
+                key={q._id}
+                onClick={() => handleQuestionNavigate(q)}
+                className="flex justify-between items-center p-4 border-b hover:bg-slate-50 cursor-pointer"
+              >
+                <div>
+                  <p className="text-xs text-slate-400">
+                    {q.__questionType || q.__section} • Question {index + 1}
+                  </p>
+                  <h4 className="font-semibold">
+                    {q.title || q.name || "Untitled Question"}
+                  </h4>
                 </div>
-            ) : (
-                renderActiveModule()
-            )}
-        </DashboardLayout>
-    );
+                <span className="px-3 py-1 rounded-full text-xs bg-emerald-100 text-emerald-700">
+                  {q.difficulty || "Medium"}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </DashboardLayout>
+  );
 }
 
-export default MockTest;
+/* ================= SUB TAB ================= */
+
+function SubTab({ label, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-6 py-2 rounded-full text-xs font-bold transition ${
+        active
+          ? "bg-emerald-500 text-white"
+          : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}

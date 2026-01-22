@@ -9,11 +9,24 @@ import SelectProduct from './pages/SelectProduct/SelectProduct';
 import ReadAloudSession from './pages/Practice/ReadAloudSession';
 import MockTest from './pages/MockTest/MockTest';
 import SecureExamWrapper from './pages/MockTest/SecureExamWrapper';
+import Pricing from './pages/Pricing/Pricing';
+
+import PracticeLimitModal from './components/PracticeLimitModal';
+
 
 function App() {
-  console.log('App: Rendering App component');
+  const [showLimitModal, setShowLimitModal] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleLimitReached = () => setShowLimitModal(true);
+    window.addEventListener('practiceLimitReached', handleLimitReached);
+    return () => window.removeEventListener('practiceLimitReached', handleLimitReached);
+  }, []);
+
+ 
   return (
     <BrowserRouter>
+      <PracticeLimitModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
       <Routes>
         <Route path="/" element={<SignIn />} />
         <Route path="/signin" element={<SignIn />} />
@@ -32,8 +45,11 @@ function App() {
         <Route path="/practice" element={<Practice />} />
         <Route path="/practice/:id" element={<ReadAloudSession />} />
         <Route path='mock-test' element={<MockTest />} />
+
        {/* Question attempt */}
         <Route path="/question/:type" element={<SecureExamWrapper />} />
+        <Route path='/pricing' element={<Pricing />} />
+
       </Routes>
     </BrowserRouter>
   );

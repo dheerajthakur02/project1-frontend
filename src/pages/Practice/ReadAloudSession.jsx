@@ -57,8 +57,8 @@ const AttemptHistory = ({ questionId, currentAttemptId, onSelectAttempt }) => {
           <button
             onClick={() => setActiveTab('my_answer')}
             className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${activeTab === 'my_answer'
-                ? 'border-purple-600 text-purple-600'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+              ? 'border-purple-600 text-purple-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
               }`}
           >
             <div className="w-5 h-5 rounded bg-purple-100 flex items-center justify-center text-purple-600">
@@ -71,8 +71,8 @@ const AttemptHistory = ({ questionId, currentAttemptId, onSelectAttempt }) => {
           <button
             onClick={() => setActiveTab('community')}
             className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${activeTab === 'community'
-                ? 'border-purple-600 text-purple-600'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+              ? 'border-purple-600 text-purple-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
               }`}
           >
             <div className="w-5 h-5 rounded bg-slate-100 flex items-center justify-center text-slate-500">
@@ -100,8 +100,8 @@ const AttemptHistory = ({ questionId, currentAttemptId, onSelectAttempt }) => {
         <button
           onClick={() => setActiveTab('my_answer')}
           className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${activeTab === 'my_answer'
-              ? 'border-purple-600 text-purple-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700'
+            ? 'border-purple-600 text-purple-600'
+            : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
         >
           <div className="w-5 h-5 rounded bg-purple-100 flex items-center justify-center text-purple-600">
@@ -116,8 +116,8 @@ const AttemptHistory = ({ questionId, currentAttemptId, onSelectAttempt }) => {
         <button
           onClick={() => setActiveTab('community')}
           className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${activeTab === 'community'
-              ? 'border-purple-600 text-purple-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700'
+            ? 'border-purple-600 text-purple-600'
+            : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
         >
           <div className="w-5 h-5 rounded bg-slate-100 flex items-center justify-center text-slate-500">
@@ -176,10 +176,10 @@ const AttemptHistory = ({ questionId, currentAttemptId, onSelectAttempt }) => {
                   <div className="flex items-baseline gap-1">
                     <span
                       className={`text-xl font-bold ${attempt.score >= 12.5
-                          ? 'text-green-600'
-                          : attempt.score >= 7.5
-                            ? 'text-yellow-600'
-                            : 'text-red-500'
+                        ? 'text-green-600'
+                        : attempt.score >= 7.5
+                          ? 'text-yellow-600'
+                          : 'text-red-500'
                         }`}
                     >
                       {attempt.score}
@@ -426,6 +426,13 @@ const ReadAloudSession = () => {
       }
     } catch (err) {
       console.error('Submission error', err);
+
+      // Check if it's the practice limit error
+      if (err.response && err.response.status === 403 && err.response.data.message === "PRACTICE_LIMIT_REACHED") {
+        setStatus('prep'); // Reset to prep or handle as needed, but don't show result
+        return;
+      }
+
       const fallback = {
         score: 12.5,
         pronunciation: 4.5,
@@ -498,10 +505,10 @@ const ReadAloudSession = () => {
 
             <span
               className={`px-2 py-0.5 rounded text-xs font-bold ${question.difficulty === 'Hard'
-                  ? 'bg-red-100 text-red-600'
-                  : question.difficulty === 'Medium'
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-green-100 text-green-700'
+                ? 'bg-red-100 text-red-600'
+                : question.difficulty === 'Medium'
+                  ? 'bg-yellow-100 text-yellow-700'
+                  : 'bg-green-100 text-green-700'
                 }`}
             >
               {question.difficulty || 'Medium'}
@@ -568,48 +575,48 @@ const ReadAloudSession = () => {
                   </button>
                 </div>
               )}
-              
+
             </div>
-            
+
           </div>
-          
+
         </div>
         <div>
-                 {/* Footer Controls */}
-        <div className="flex items-center justify-center gap-6 pb-12">
-          <button onClick={() => navigate(-1)} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-              <ChevronLeft size={20} />
-            </div>
-            <span className="text-xs font-medium">Previous</span>
-          </button>
-
-          <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-              <RefreshCw size={18} />
-            </div>
-            <span className="text-xs font-medium">Redo</span>
-          </button>
-
-          <button className="w-12 h-12 rounded-xl bg-slate-300 flex items-center justify-center text-white shadow-inner">
-            <CheckCircle size={24} fill="currentColor" className="text-white" />
-          </button>
-
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-              <Shuffle size={18} />
-            </div>
-            <span className="text-xs font-medium">Shuffle</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-              <ChevronRight size={20} />
-            </div>
-            <span className="text-xs font-medium">Next</span>
-          </button>
-        </div>
+          {/* Footer Controls */}
+          <div className="flex items-center justify-center gap-6 pb-12">
+            <button onClick={() => navigate(-1)} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                <ChevronLeft size={20} />
               </div>
+              <span className="text-xs font-medium">Previous</span>
+            </button>
+
+            <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                <RefreshCw size={18} />
+              </div>
+              <span className="text-xs font-medium">Redo</span>
+            </button>
+
+            <button className="w-12 h-12 rounded-xl bg-slate-300 flex items-center justify-center text-white shadow-inner">
+              <CheckCircle size={24} fill="currentColor" className="text-white" />
+            </button>
+
+            <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                <Shuffle size={18} />
+              </div>
+              <span className="text-xs font-medium">Shuffle</span>
+            </button>
+
+            <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                <ChevronRight size={20} />
+              </div>
+              <span className="text-xs font-medium">Next</span>
+            </button>
+          </div>
+        </div>
 
         {/* Attempt History Section */}
         {question && (
@@ -624,7 +631,7 @@ const ReadAloudSession = () => {
           />
         )}
 
-       
+
 
         {/* =========================
             RESULT MODAL (works for previous attempts too)

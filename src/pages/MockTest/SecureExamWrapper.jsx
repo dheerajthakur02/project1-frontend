@@ -1,50 +1,63 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
+
+// Question Test Components
 import APEUniMockTest from "./SectionalTest/Speaking";
 import APEUniWritingMockTest from "./SectionalTest/Writing";
 import APEUniListeningTest from "./SectionalTest/Listening";
-import ReadAloudMockTest from "./QuestionTest/ReadAloud";
 import APEUniReadingTest from "./SectionalTest/Reading";
+import ReadAloudMockTest from "./QuestionTest/ReadAloud";
+import ReTellLectureMockTest from "./QuestionTest/ReTell";
+import DescribeImageMockTest from "./QuestionTest/DescribeImage";
+import RepeatSentenceMockTest from "./QuestionTest/RepeatSentence";
+import SSTGroup from "./QuestionTest/SSTGroup";
+import HIWGroup from "./QuestionTest/HIWGroup";
+import SGDGroup from "./QuestionTest/SGDGroup";
 
 export default function SecureExamWrapper() {
   const navigate = useNavigate();
-  const { type } = useParams(); // RA / RS / HIW
+  const { type } = useParams(); 
   const [searchParams] = useSearchParams();
   const questionId = searchParams.get("id");
-
 
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
 
-
-
+  /* ================= MAP TYPES TO COMPONENTS ================= */
+  const COMPONENT_MAP = {
+    speaking: APEUniMockTest,
+    writing: APEUniWritingMockTest,
+    reading: APEUniReadingTest,
+    listening: APEUniListeningTest,
+    RA: ReadAloudMockTest,
+    RL: ReTellLectureMockTest,
+    DI: DescribeImageMockTest,
+    RS: RepeatSentenceMockTest,
+    SST: SSTGroup,
+    HIW: HIWGroup,
+    SGD: SGDGroup,
+  };
 
   /* ================= FETCH QUESTION ================= */
-
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
         setLoading(true);
-
-        // 🔥 BACKEND API (adjust if needed)
-        const res = await api.get(
-          `/${type.toLowerCase()}/${questionId}`
-        );
+        const res = await api.get(`question/${type.toLowerCase()}/${questionId}`);
         setQuestion(res.data.data);
       } catch (err) {
         console.error(err);
-        // navigate("/mock-test");
+        // navigate("/mock-test"); // optionally redirect if not found
       } finally {
         setLoading(false);
       }
     };
 
-    fetchQuestion();
+    if (questionId && type) fetchQuestion();
   }, [type, questionId]);
 
   /* ================= UI ================= */
-
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center text-slate-400">
@@ -60,15 +73,9 @@ export default function SecureExamWrapper() {
       </div>
     );
   }
-  console.log("Rendering question of type:", type);
-return (
-  <>  
-    {type === "speaking" ? <APEUniMockTest backendData={question} /> : type === "writing" ? <APEUniWritingMockTest backendData={question} /> : 
-    type === "RA"?<ReadAloudMockTest backendData={question} /> : type==="listening" ?
-    <APEUniListeningTest backendData={question} /> : <APEUniReadingTest backendData={question}   />
-    
-    }
-  </>
-);
 
+  // dynamically select the component
+  const QuestionComponent = COMPONENT_MAP[type] || APEUniReadingTest;
+
+  return <QuestionComponent backendData={question} />;
 }

@@ -2,39 +2,51 @@ import React, { useState, useEffect, useRef } from "react";
 
 // --- MAIN WRAPPER ---
 export default function ReadAloudMockTest({ backendData }) {
-  const [step, setStep] = useState(0); // 0: Overview, 1: Headset, 2: Mic, 3: Intro, 4: Exam, 5: Result
+  const [step, setStep] = useState(0); 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flattenedQuestions, setFlattenedQuestions] = useState([]);
   const [userAnswers, setUserAnswers] = useState([]); 
+  const [globalTimeLeft, setGlobalTimeLeft] = useState(35 * 60);
 
   useEffect(() => {
-    // If backendData is provided, take only Read Aloud questions, max 5.
-    // Otherwise, it uses the provided structure.
-    if (!backendData || !backendData.readAloudQuestions) return;
-    
-    const sequence = backendData.readAloudQuestions
-      .slice(0, 5) // Limit to maximum 5 questions
-      .map((q) => ({ 
-        ...q, 
-        type: "READ_ALOUD", 
-        prepTime: 40, 
-        recTime: 40 
-      }));
-    
+    if (!backendData) return;
+    const rawData = Array.isArray(backendData) ? backendData : (backendData.readAloudQuestions || []);
+    const sequence = rawData.map((q) => ({ 
+      ...q, 
+      type: "READ_ALOUD", 
+      prepTime: q.prepTime || 40, 
+      recTime: q.recTime || 40 
+    }));
     setFlattenedQuestions(sequence);
   }, [backendData]);
+
+  // Global Timer (35 Mins)
+  useEffect(() => {
+    let timer;
+    if (step === 4 && globalTimeLeft > 0) {
+      timer = setInterval(() => setGlobalTimeLeft((prev) => prev - 1), 1000);
+    } else if (globalTimeLeft === 0) {
+      setStep(5);
+    }
+    return () => clearInterval(timer);
+  }, [step, globalTimeLeft]);
+
+  const formatGlobalTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
 
   const [testResult, setTestResult] = useState(null);
   const [isLoadingResult, setIsLoadingResult] = useState(false);
 
-  const handleNextQuestion = async (answerData) => {
+  const handleNextQuestion = (answerData) => {
     const updatedAnswers = [...userAnswers, { questionId: flattenedQuestions[currentIdx]._id, ...answerData }];
     setUserAnswers(updatedAnswers);
 
     if (currentIdx < flattenedQuestions.length - 1) {
       setCurrentIdx((prev) => prev + 1);
     } else {
-      // TEST ENDED
       setStep(5);
       calculateResults(updatedAnswers);
     }
@@ -43,51 +55,48 @@ export default function ReadAloudMockTest({ backendData }) {
   const calculateResults = async (answers) => {
     setIsLoadingResult(true);
     try {
-      // Replace with your actual scoring endpoint
       const response = await fetch("/api/speaking/calculate-readaloud", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          testId: backendData._id,
-          answers: answers,
-        }),
+        body: JSON.stringify({ testId: backendData._id, answers }),
       });
       const result = await response.json();
       setTestResult(result.data);
     } catch (err) {
-      console.error("Failed to fetch results", err);
+      console.error("Scoring Error:", err);
     } finally {
       setIsLoadingResult(false);
     }
   };
 
   if (!backendData || (flattenedQuestions.length === 0 && step !== 5)) {
-    return <div className="p-10 font-bold text-center text-gray-500">Loading Read Aloud Data...</div>;
+    return <div className="p-10 text-center font-bold text-gray-500">Loading Practice Data...</div>;
   }
 
   return (
     <div className="min-h-screen bg-[#f4f4f4] flex flex-col font-sans select-none overflow-hidden">
-      {/* Pearson Style Header */}
+      {/* Header */}
       <div className="bg-[#eeeeee] border-b border-gray-300">
         <div className="px-6 py-2 flex justify-between items-center text-sm font-bold text-gray-600">
-          <span>APEUni PTE - Read Aloud Practice</span>
+          <span>APEUni PTE - Read Aloud</span>
           <button className="bg-white border border-gray-400 px-3 py-1 rounded text-xs hover:bg-gray-100">Exit</button>
         </div>
         <div className="h-9 bg-[#008199] flex items-center justify-end px-6 space-x-6 text-white text-xs font-medium">
           {step === 4 && (
             <>
               <span className="bg-[#006b81] px-3 py-1 rounded">Question {currentIdx + 1} of {flattenedQuestions.length}</span>
-              <span>Section: Speaking</span>
+              <span>Time Remaining: {formatGlobalTime(globalTimeLeft)}</span>
             </>
           )}
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-grow flex flex-col overflow-y-auto bg-white w-full shadow-sm border border-gray-200">
+      {/* Main Container */}
+      <div className="flex-grow flex flex-col overflow-y-auto bg-white border border-gray-200">
+        
         {step === 0 && (
           <ReadAloudController 
-            key={flattenedQuestions[currentIdx]._id}
+            key={flattenedQuestions[currentIdx]._id} 
             question={flattenedQuestions[currentIdx]} 
             onNext={handleNextQuestion} 
           />
@@ -95,18 +104,14 @@ export default function ReadAloudMockTest({ backendData }) {
         {step === 1 && <ResultScreen testResult={testResult} isLoadingResult={isLoadingResult} />}
       </div>
 
-      {/* Footer Navigation */}
-      <div className="h-16 bg-[#eeeeee] border-t border-gray-300 flex items-center justify-between px-10">
-        <div className="text-gray-500 text-xs">PTE Academic Official Practice</div>
-        {step < 4 && (
-          <button 
-            onClick={() => setStep(step + 1)} 
-            className="bg-[#fb8c00] text-white px-10 py-2 rounded-sm text-sm font-bold shadow-md hover:bg-[#e67e00] uppercase tracking-wide"
-          >
+      {/* Footer Navigation (Only for Intro Steps) */}
+      {step < 4 && (
+        <div className="h-16 bg-[#eeeeee] border-t border-gray-300 flex items-center justify-end px-10">
+          <button onClick={() => setStep(step + 1)} className="bg-[#fb8c00] text-white px-10 py-2 rounded-sm text-sm font-bold shadow-md hover:bg-[#e67e00] uppercase">
             Next
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -114,17 +119,20 @@ export default function ReadAloudMockTest({ backendData }) {
 /* ===================== READ ALOUD CONTROLLER ===================== */
 
 function ReadAloudController({ question, onNext }) {
-  const [status, setStatus] = useState("PREPARING"); // PREPARING, RECORDING, FINISHED
+  const [status, setStatus] = useState("PREPARING"); // PREPARING or RECORDING
   const [timeLeft, setTimeLeft] = useState(question.prepTime);
-  const [recordedBlob, setRecordedBlob] = useState(null);
-
+  
+  const isTransitioningRef = useRef(false);
   const timerRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
 
   useEffect(() => {
     startTimer();
-    return () => clearInterval(timerRef.current);
+    return () => {
+      clearInterval(timerRef.current);
+      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    };
   }, [status]);
 
   const startTimer = () => {
@@ -135,8 +143,9 @@ function ReadAloudController({ question, onNext }) {
           clearInterval(timerRef.current);
           if (status === "PREPARING") {
             startRecording();
-          } else if (status === "RECORDING") {
-            stopRecording();
+          } else {
+            // Automatic move when recording time ends
+            stopAndSubmit();
           }
           return 0;
         }
@@ -154,148 +163,95 @@ function ReadAloudController({ question, onNext }) {
       const recorder = new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
       const chunks = [];
+      
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: "audio/wav" });
-        setRecordedBlob(blob);
-        setStatus("FINISHED");
+        // Send blob to parent
+        onNext({ audio: blob });
       };
       recorder.start();
     } catch (err) {
-      console.error("Mic error:", err);
-      setStatus("FINISHED");
+      console.error("Mic access denied", err);
+      onNext({ audio: null });
     }
   };
 
-  const stopRecording = () => {
+  const stopAndSubmit = () => {
+    if (isTransitioningRef.current) return; // Prevent double trigger
+    isTransitioningRef.current = true;
+
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
-      streamRef.current.getTracks().forEach(t => t.stop());
+      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    } else {
+      // If called before recording starts somehow
+      onNext({ audio: null });
     }
   };
 
   return (
-    <div className="w-full bg-white px-10 pt-10">
-      <div className="max-w-4xl mx-auto">
-        <p className="text-sm text-gray-700 mb-8 border-l-4 border-cyan-600 pl-4 italic">
-          Look at the text below. In 40 seconds, you must read this text aloud as naturally and clearly as possible. You have 40 seconds to read aloud.
+    <div className="w-full bg-white px-10 pt-10 h-full flex flex-col">
+      <div className="max-w-4xl mx-auto w-full">
+        <p className="text-[13px] text-gray-700 mb-8 border-l-4 border-[#008199] pl-4">
+          Look at the text below. In {question.prepTime} seconds, you must read this text aloud as naturally and clearly as possible.
         </p>
 
-        {/* The Text Passage */}
-        <div className="bg-gray-50 border border-gray-200 p-8 rounded-lg text-xl leading-relaxed text-gray-800 text-center shadow-sm mb-12">
-          {question.text || "No text available for this question."}
+        <div className="bg-gray-50 border border-gray-200 p-8 rounded-lg text-xl leading-relaxed text-gray-800 text-center shadow-sm mb-12 min-h-[160px] flex items-center justify-center">
+          {question.text}
         </div>
 
-        {/* Recording Status UI */}
-        <div className="flex flex-col items-center justify-center space-y-4">
+        <div className="flex flex-col items-center justify-center space-y-6">
           <div className="flex items-center gap-6">
-            <div className={`px-4 py-1 rounded text-white text-xs font-bold uppercase tracking-widest ${status === 'PREPARING' ? 'bg-orange-500' : status === 'RECORDING' ? 'bg-red-600' : 'bg-green-600'}`}>
-              {status}
+            <div className={`px-4 py-1 rounded text-white text-[11px] font-bold uppercase tracking-widest ${status === 'PREPARING' ? 'bg-orange-500' : 'bg-red-600'}`}>
+              {status === "PREPARING" ? "Beginning in" : "Recording"}
             </div>
-            <div className="text-2xl font-mono text-gray-600">
+            <div className="text-3xl font-mono text-gray-700">
               00:{String(timeLeft).padStart(2, "0")}
             </div>
           </div>
 
-          {/* Audio Wave Mock */}
-          <div className="flex gap-1 items-end h-8">
-            {[...Array(30)].map((_, i) => (
-              <div 
-                key={i} 
-                className={`w-1 rounded-full transition-all duration-300 ${status === 'RECORDING' ? 'bg-cyan-500 animate-pulse' : 'bg-gray-200'}`}
-                style={{ height: status === 'RECORDING' ? `${Math.random() * 100}%` : '20%' }}
-              />
-            ))}
+          <div className="w-full max-w-md bg-gray-100 h-2 rounded-full overflow-hidden">
+             <div 
+                className={`h-full transition-all duration-1000 ${status === 'RECORDING' ? 'bg-red-500' : 'bg-orange-400'}`}
+                style={{ width: `${(timeLeft / (status === 'PREPARING' ? question.prepTime : question.recTime)) * 100}%` }}
+             />
           </div>
         </div>
+      </div>
 
-        {/* Fixed Footer for Next Button */}
-        {status === "FINISHED" && (
-          <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 py-3 px-10 flex justify-end">
-            <button 
-              onClick={() => onNext({ audio: recordedBlob })}
-              className="bg-cyan-600 text-white px-8 py-1.5 rounded-full text-sm font-bold shadow-lg hover:bg-cyan-700"
-            >
-              FINISH & NEXT
-            </button>
-          </div>
+      {/* FOOTER: Only show Next button during Recording */}
+      <div className="fixed bottom-0 left-0 w-full bg-[#eeeeee] border-t border-gray-300 py-3 px-10 flex justify-end h-16 items-center">
+        {status === "RECORDING" ? (
+          <button 
+            onClick={stopAndSubmit}
+            className="bg-[#fb8c00] text-white px-10 py-2 rounded-sm text-sm font-bold shadow-md hover:bg-[#e67e00] uppercase tracking-wide"
+          >
+            Next
+          </button>
+        ) : (
+          <span className="text-xs text-gray-400 font-bold uppercase italic">
+            Please wait for preparation to finish...
+          </span>
         )}
       </div>
     </div>
   );
 }
 
-/* ===================== SCREENS (Overview, Headset, Mic, Result) ===================== */
+// --- STATIC SCREENS ---
 
-function OverviewScreen() {
-  return (
-    <div className="p-10 max-w-3xl">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Read Aloud</h2>
-      <p className="text-gray-600 mb-6">In this section, you will read texts aloud. Your score is based on your oral fluency and pronunciation.</p>
-      <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
-        <p className="text-sm text-blue-800 font-medium">Test Tip: Speak clearly and do not rush. Maintain a natural rhythm.</p>
-      </div>
-    </div>
-  );
-}
-
-function HeadsetCheckScreen() {
-  return (
-    <div className="p-10 flex flex-col items-center">
-      <h2 className="text-xl font-bold mb-4">Check Your Headset</h2>
-      <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" className="w-32 mb-6 opacity-80" alt="Headset" />
-      <button className="bg-gray-100 border border-gray-300 px-6 py-2 rounded text-sm hover:bg-gray-200">Test Speaker Sound</button>
-    </div>
-  );
-}
-
-function MicCheckScreen() {
-  return (
-    <div className="p-10 flex flex-col items-center">
-      <h2 className="text-xl font-bold mb-4">Check Your Microphone</h2>
-      <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden mb-6">
-        <div className="h-full bg-green-500 w-1/2"></div>
-      </div>
-      <p className="text-sm text-gray-500">Speak into your microphone to test volume levels.</p>
-    </div>
-  );
-}
-
-function IntroScreen() {
-  return (
-    <div className="p-10 max-w-2xl">
-      <h2 className="text-xl font-bold mb-4">Read Aloud Instructions</h2>
-      <ul className="space-y-3 text-gray-600 text-sm list-disc pl-5">
-        <li>You have 40 seconds to prepare.</li>
-        <li>A beep will sound after 40 seconds.</li>
-        <li>Start speaking immediately after the beep.</li>
-        <li>You must finish reading before the progress bar reaches the end.</li>
-      </ul>
-    </div>
-  );
-}
 
 function ResultScreen({ testResult, isLoadingResult }) {
-  if (isLoadingResult) return <div className="p-20 text-center font-bold text-cyan-600">Analyzing Speech...</div>;
-  
+  if (isLoadingResult) return <div className="p-20 text-center font-bold text-[#008199]">Calculating Scores...</div>;
   return (
-    <div className="p-10 animate-fadeIn">
-      <h1 className="text-3xl font-black text-gray-800 mb-8">Practice Result</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="bg-cyan-600 p-6 rounded-xl text-white">
-          <p className="text-xs uppercase font-bold opacity-80">Fluency</p>
-          <p className="text-4xl font-black">{testResult?.sectionScores?.fluency || "85"}</p>
-        </div>
-        <div className="bg-orange-500 p-6 rounded-xl text-white">
-          <p className="text-xs uppercase font-bold opacity-80">Pronunciation</p>
-          <p className="text-4xl font-black">{testResult?.sectionScores?.pronunciation || "78"}</p>
-        </div>
-        <div className="bg-gray-800 p-6 rounded-xl text-white">
-          <p className="text-xs uppercase font-bold opacity-80">Content</p>
-          <p className="text-4xl font-black">{testResult?.sectionScores?.content || "90"}</p>
-        </div>
+    <div className="p-10 text-center">
+      <h1 className="text-2xl font-bold mb-6">Test Result</h1>
+      <div className="flex justify-center gap-4">
+        <div className="p-4 border rounded bg-blue-50">Fluency: {testResult?.sectionScores?.fluency || 0}</div>
+        <div className="p-4 border rounded bg-orange-50">Pronunciation: {testResult?.sectionScores?.pronunciation || 0}</div>
       </div>
-      <button onClick={() => window.location.reload()} className="bg-cyan-600 text-white px-10 py-3 rounded font-bold uppercase tracking-widest text-xs">Try Again</button>
+      <button onClick={() => window.location.reload()} className="mt-8 bg-[#008199] text-white px-8 py-2 rounded uppercase font-bold text-xs">Retake Practice</button>
     </div>
   );
 }

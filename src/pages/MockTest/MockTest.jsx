@@ -4,76 +4,62 @@ import DashboardLayout from "../../components/DashboardLayout/DashboardLayout";
 import api from "../../services/api";
 
 /* ================= CONFIG ================= */
-
 const MAIN_TABS = ["Full Tests", "Section Tests", "Question Tests"];
-
 const SECTION_TABS = ["All", "Speaking", "Writing", "Reading", "Listening"];
-
 const QUESTION_TABS = [
   { id: "Q_ALL", label: "All", api: "all" },
-  { id: "RA", label: "Read Aloud", api: "ra" },
-  { id: "RS", label: "Repeat Sentence", api: "rs" },
-  { id: "DI", label: "Describe Image", api: "di" },
-  { id: "RL", label: "Re-tell Lecture", api: "rl" },
-  { id: "SST", label: "Summarize Spoken Text", api: "sst" },
-  { id: "HIW", label: "Highlight Incorrect Words", api: "hiw" },
+  { id: "RA", label: "Read Aloud", api: "question/ra" },
+  { id: "RS", label: "Repeat Sentence", api: "question/rs" },
+  { id: "DI", label: "Describe Image", api: "question/di" },
+  { id: "RL", label: "Re-tell Lecture", api: "question/rl" },
+  { id: "SGD", label: "Summarize Group Discussion", api: "question/sgd" },
+  { id: "RTS", label: "Re-tell Section", api: "question/rts" },
+  { id: "WE", label: "Write Essay", api: "question/we" },
+  { id: "SWT", label: "Summarize Written Text", api: "question/swt" },
+  { id: "FIB", label: "Fill in the Blanks", api: "question/fib" },
+  { id: "FIBD", label: "FIB Dropdown", api: "question/fibd" },
+  { id: "RO", label: "Reading Order", api: "question/ro" },
+  { id: "WFD", label: "Write from Dictation", api: "question/wfd" },
+  { id: "SST", label: "Summarize Spoken Text", api: "question/sst" },
+  { id: "FIB-L", label: "FIB Listening", api: "question/fib-l" },
+  { id: "HIW", label: "Highlight Incorrect Words", api: "question/hiw" },
 ];
 
 /* ================= COMPONENT ================= */
-
 export default function MockTest() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const [activeMainTab, setActiveMainTab] = useState("Full Tests");
   const [activeSubTab, setActiveSubTab] = useState(null);
-
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
 
   /* ================= FETCH SECTION TESTS ================= */
-
   const fetchSectionQuestions = async (section) => {
     setLoading(true);
     setQuestions([]);
-
     try {
       if (section === "All") {
         const [speaking, writing, listening, reading] = await Promise.all([
-          api.get("/speaking"),
-          api.get("/writing"),
-          api.get("/listening"),
-          api.get("/reading"),
+          api.get("question/speaking"),
+          api.get("question/writing"),
+          api.get("question/listening"),
+          api.get("question/reading"),
         ]);
 
-        const speakingQ = (speaking.data?.data || []).map(q => ({
-          ...q,
-          __section: "speaking",
-        }));
+        const combined = [
+          ...(speaking.data?.data || []).map(q => ({ ...q, __section: "speaking" })),
+          ...(writing.data?.data || []).map(q => ({ ...q, __section: "writing" })),
+          ...(listening.data?.data || []).map(q => ({ ...q, __section: "listening" })),
+          ...(reading.data?.data || []).map(q => ({ ...q, __section: "reading" })),
+        ];
 
-        const writingQ = (writing.data?.data || []).map(q => ({
-          ...q,
-          __section: "writing",
-        }));
-
-        const listeningQ = (listening.data?.data || []).map(q => ({
-          ...q,
-          __section: "listening",
-        }));
-
-        const readingQ = (reading.data?.data || []).map(q => ({
-          ...q,
-          __section: "reading",
-        }));
-
-        setQuestions([...speakingQ, ...writingQ, ...listeningQ, ...readingQ]);
+        setQuestions(combined);
       } else {
-        const res = await api.get(`/${section.toLowerCase()}`);
+        const res = await api.get(`question/${section.toLowerCase()}`);
         setQuestions(
-          (res.data?.data || []).map(q => ({
-            ...q,
-            __section: section.toLowerCase(),
-          }))
+          (res.data?.data || []).map(q => ({ ...q, __section: section.toLowerCase() }))
         );
       }
     } catch (err) {
@@ -84,26 +70,19 @@ export default function MockTest() {
   };
 
   /* ================= FETCH QUESTION TESTS ================= */
-
   const fetchQuestionType = async (tab) => {
     setLoading(true);
     setQuestions([]);
-
     try {
       if (tab.id === "Q_ALL") {
-        const requests = QUESTION_TABS
-          .filter(t => t.id !== "Q_ALL")
-          .map(t => api.get(`/${t.api}`));
-
+        const requests = QUESTION_TABS.filter(t => t.id !== "Q_ALL").map(t => api.get(`/${t.api}`));
         const responses = await Promise.all(requests);
-
         const combined = responses.flatMap((res, idx) =>
           (res.data?.data || []).map(q => ({
             ...q,
-            __questionType: QUESTION_TABS[idx + 1].id, // RA, RS, etc.
+            __questionType: QUESTION_TABS[idx + 1].id,
           }))
         );
-
         setQuestions(combined);
       } else {
         const res = await api.get(`/${tab.api}`);
@@ -122,7 +101,6 @@ export default function MockTest() {
   };
 
   /* ================= URL → STATE ================= */
-
   useEffect(() => {
     const module = searchParams.get("module");
     if (!module) return;
@@ -143,7 +121,6 @@ export default function MockTest() {
   }, [searchParams]);
 
   /* ================= HANDLERS ================= */
-
   const handleMainTabClick = (tab) => {
     setActiveMainTab(tab);
     setActiveSubTab(null);
@@ -161,25 +138,18 @@ export default function MockTest() {
     navigate(`/mock-test?module=${tab.id}`);
   };
 
-  /* ================= CORRECT NAVIGATION ================= */
-
   const handleQuestionNavigate = (q) => {
-    // Question Tests → RA / RS / DI / etc.
     if (q.__questionType) {
       navigate(`/question/${q.__questionType}?id=${q._id}`);
       return;
     }
-
-    // Section Tests → speaking / writing / listening
     navigate(`/question/${q.__section}?id=${q._id}`);
   };
 
   /* ================= UI ================= */
-
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto p-6 space-y-6">
-
         {/* MAIN TABS */}
         <div className="flex border-b">
           {MAIN_TABS.map(tab => (
@@ -187,9 +157,7 @@ export default function MockTest() {
               key={tab}
               onClick={() => handleMainTabClick(tab)}
               className={`flex-1 py-4 font-bold ${
-                activeMainTab === tab
-                  ? "border-b-4 border-emerald-500 text-black"
-                  : "text-slate-400"
+                activeMainTab === tab ? "border-b-4 border-emerald-500 text-black" : "text-slate-400"
               }`}
             >
               {tab}
@@ -213,7 +181,7 @@ export default function MockTest() {
             QUESTION_TABS.map(tab => (
               <SubTab
                 key={tab.id}
-                label={tab.label}
+                label={tab.id}
                 active={activeSubTab === tab.id}
                 onClick={() => handleQuestionClick(tab)}
               />
@@ -225,9 +193,7 @@ export default function MockTest() {
           {loading ? (
             <p className="p-10 text-center text-slate-400">Loading…</p>
           ) : questions.length === 0 ? (
-            <p className="p-10 text-center text-slate-400">
-              Select a category to view questions
-            </p>
+            <p className="p-10 text-center text-slate-400">Select a category to view questions</p>
           ) : (
             questions.map((q, index) => (
               <div
@@ -239,9 +205,7 @@ export default function MockTest() {
                   <p className="text-xs text-slate-400">
                     {q.__questionType || q.__section} • Question {index + 1}
                   </p>
-                  <h4 className="font-semibold">
-                    {q.title || q.name || "Untitled Question"}
-                  </h4>
+                  <h4 className="font-semibold">{q.title || q.name || "Untitled Question"}</h4>
                 </div>
                 <span className="px-3 py-1 rounded-full text-xs bg-emerald-100 text-emerald-700">
                   {q.difficulty || "Medium"}
@@ -256,15 +220,12 @@ export default function MockTest() {
 }
 
 /* ================= SUB TAB ================= */
-
 function SubTab({ label, active, onClick }) {
   return (
     <button
       onClick={onClick}
       className={`px-6 py-2 rounded-full text-xs font-bold transition ${
-        active
-          ? "bg-emerald-500 text-white"
-          : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+        active ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400 hover:bg-slate-200"
       }`}
     >
       {label}

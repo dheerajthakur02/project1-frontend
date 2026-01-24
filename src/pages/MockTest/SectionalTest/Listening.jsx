@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import api from "../../../services/api";
+import ScoreBreakdownTable from "../FullMockTest/ScoreBreakdownTable";
 
 // --- MAIN WRAPPER ---
 export default function APEUniListeningTest({ backendData, onComplete, isFullMock, onExit }) {
@@ -9,7 +10,11 @@ export default function APEUniListeningTest({ backendData, onComplete, isFullMoc
   const [flattenedQuestions, setFlattenedQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resultData, setResultData] = useState(null);
   const [resultId, setResultId] = useState(null);
+
+  // Import logic needs to be top of file, doing it via separate call or assuming it works if I find top line. 
+  // I will just add the state here.
 
   // Global Section Timer: 25 Minutes
   const [globalTime, setGlobalTime] = useState(50 * 60);
@@ -79,7 +84,7 @@ export default function APEUniListeningTest({ backendData, onComplete, isFullMoc
     }
 
     try {
-      const response = await axios.post("/api/listening/attempt", {
+      const response = await api.post("/question/listening/result", {
         listeningId: backendData._id,
         userId: user?._id,
         answers: finalAnswers,
@@ -87,6 +92,7 @@ export default function APEUniListeningTest({ backendData, onComplete, isFullMoc
 
       if (response.data.success) {
         setResultId(response.data.data._id);
+        setResultData(response.data.data);
         setStep(5);
       }
     } catch (err) {
@@ -145,7 +151,7 @@ export default function APEUniListeningTest({ backendData, onComplete, isFullMoc
               </div>
             )
           )}
-          {step === 5 && <ResultScreen resultId={resultId} />}
+          {step === 5 && <ResultScreen resultId={resultId} resultData={resultData} />}
         </div>
 
         {step < 4 && (
@@ -370,13 +376,30 @@ function getInstructionText(type) {
   }
 }
 
-function ResultScreen({ resultId }) {
+// Import at top (assumed done in next edit or implicitly if I do full file replacement, but here I do chunks)
+
+function ResultScreen({ resultId, resultData }) {
+  if (!resultData) return <div className="p-20 text-center">Loading...</div>;
+
+  const breakdownData = {
+    listening: {
+      answers: resultData.scores.map(s => ({ type: s.questionType, score: s.score, maxScore: s.maxScore }))
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center py-20">
-      <div className="bg-white p-10 border rounded shadow-lg text-center">
-        <h2 className="text-2xl font-bold text-[#008199] mb-4">Test Submitted Successfully</h2>
-        <p className="text-gray-500 mb-6">Result Reference: {resultId}</p>
-        <button onClick={() => window.location.reload()} className="bg-[#fb8c00] text-white px-8 py-2 font-bold">Restart Test</button>
+    <div className="p-10 max-w-6xl mx-auto">
+      <div className="text-center mb-10">
+        <h1 className="text-3xl font-black text-[#008199] mb-4">Listening Test Result</h1>
+        <div className="inline-block bg-[#008199] text-white p-6 rounded-2xl shadow-lg">
+          <p className="text-sm uppercase font-bold opacity-80 mb-1">Overall Score</p>
+          <p className="text-5xl font-black">{resultData.overallScore}</p>
+        </div>
+      </div>
+      <ScoreBreakdownTable result={breakdownData} />
+
+      <div className="mt-8 text-center">
+        <button onClick={() => window.location.reload()} className="bg-[#fb8c00] text-white px-8 py-2 font-bold uppercase rounded">Return to Dashboard</button>
       </div>
     </div>
   );

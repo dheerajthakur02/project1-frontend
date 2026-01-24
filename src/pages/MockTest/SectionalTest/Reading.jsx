@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import api from "../../../services/api";
 
 // --- MAIN WRAPPER ---
 export default function APEUniReadingTest({ backendData, onComplete, isFullMock, onExit }) {
@@ -12,6 +12,7 @@ export default function APEUniReadingTest({ backendData, onComplete, isFullMock,
   const [timeLeft, setTimeLeft] = useState(51 * 60);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultId, setResultId] = useState(null);
+  const [resultData, setResultData] = useState(null);
 
   const answersRef = useRef([]); // Critical for auto-submit closure
   const { user } = useSelector((state) => state.auth);
@@ -79,7 +80,7 @@ export default function APEUniReadingTest({ backendData, onComplete, isFullMock,
     }
 
     try {
-      const response = await axios.post("/api/reading/attempt", {
+      const response = await api.post("/question/reading/result/calculate", {
         readingId: backendData._id,
         userId: user?._id,
         answers: finalAnswers,
@@ -87,6 +88,7 @@ export default function APEUniReadingTest({ backendData, onComplete, isFullMock,
 
       if (response.data.success) {
         setResultId(response.data.data._id);
+        setResultData(response.data.data);
         setStep(5);
       }
     } catch (err) {
@@ -151,7 +153,7 @@ export default function APEUniReadingTest({ backendData, onComplete, isFullMock,
             </div>
           )
         )}
-        {step === 5 && <ReadingResultScreen resultId={resultId} />}
+        {step === 5 && <ReadingResultScreen resultId={resultId} resultData={resultData} />}
       </div>
 
       {/* Footer Navigation */}
@@ -361,12 +363,44 @@ function OverviewScreen() {
 
 
 
-function ReadingResultScreen({ resultId }) {
+// Add import at the top
+import ScoreBreakdownTable from "../FullMockTest/ScoreBreakdownTable";
+
+function ReadingResultScreen({ resultId, resultData }) {
+  if (!resultData) return <div className="p-20 text-center">Loading Result...</div>;
+
+  // Adapt data for ScoreBreakdownTable
+  // It expects { reading: { answers: [...] } }
+  // Our resultData.scores has { questionType, score, maxScore }
+  const breakdownData = {
+    reading: {
+      answers: resultData.scores.map(s => ({
+        type: s.questionType,
+        score: s.score,
+        maxScore: s.maxScore
+      }))
+    }
+  };
+
   return (
-    <div className="p-20 text-center">
-      <h1 className="text-4xl font-black mb-4">Reading Test Finished</h1>
-      <p className="text-gray-500 mb-10">Result ID: {resultId}</p>
-      <button onClick={() => window.location.reload()} className="bg-[#008199] text-white px-10 py-3 rounded font-bold">Back to Dashboard</button>
+    <div className="p-10 max-w-6xl mx-auto">
+      <div className="text-center mb-10">
+        <h1 className="text-4xl font-black mb-4 text-[#008199]">Test Result</h1>
+        <p className="text-gray-500 mb-6">Result ID: {resultId}</p>
+
+        <div className="inline-block bg-[#008199] text-white p-6 rounded-2xl shadow-lg">
+          <p className="text-sm uppercase font-bold opacity-80 mb-1">Overall Reading Score</p>
+          <p className="text-5xl font-black">{resultData.overallScore}</p>
+        </div>
+      </div>
+
+      <ScoreBreakdownTable result={breakdownData} />
+
+      <div className="mt-10 text-center">
+        <button onClick={() => window.location.reload()} className="bg-[#fb8c00] text-white px-10 py-3 rounded font-bold uppercase shadow-md hover:bg-[#e67e00]">
+          Return to Dashboard
+        </button>
+      </div>
     </div>
   );
 }

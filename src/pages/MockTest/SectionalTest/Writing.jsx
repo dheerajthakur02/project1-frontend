@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import api from "../../../services/api";
 import WritingResultScreen from "./WritingResult";
 
 /* ============================================================
@@ -13,6 +13,7 @@ export default function APEUniWritingMockTest({ backendData, onComplete, isFullM
   const [answers, setAnswers] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultId, setResultId] = useState(null);
+  const [resultData, setResultData] = useState(null);
 
   // Global Section Timer: 54 Minutes
   const [globalTime, setGlobalTime] = useState(54 * 60);
@@ -72,7 +73,7 @@ export default function APEUniWritingMockTest({ backendData, onComplete, isFullM
     }
 
     try {
-      const response = await axios.post("/api/writing/attempt", {
+      const response = await api.post("/question/writing/attempt", {
         writingId: backendData._id,
         userId: user?._id,
         answers: finalAnswers,
@@ -80,6 +81,7 @@ export default function APEUniWritingMockTest({ backendData, onComplete, isFullM
 
       if (response.data.success) {
         setResultId(response.data.data._id);
+        setResultData(response.data.data);
         setStep(5);
       }
     } catch (err) {
@@ -141,7 +143,7 @@ export default function APEUniWritingMockTest({ backendData, onComplete, isFullM
             </div>
           )
         )}
-        {step === 5 && <WritingResultScreen resultId={resultId} />}
+        {step === 5 && <WritingResultScreen resultId={resultId} resultData={resultData} />}
       </div>
 
       {/* FOOTER */}

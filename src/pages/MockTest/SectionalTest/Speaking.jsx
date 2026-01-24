@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import api from "../../../services/api";
 
 // --- MAIN WRAPPER ---
 export default function APEUniSpeakingMockTest({ backendData, onComplete, isFullMock, onExit }) {
@@ -10,6 +10,7 @@ export default function APEUniSpeakingMockTest({ backendData, onComplete, isFull
   const [answers, setAnswers] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultId, setResultId] = useState(null);
+  const [resultData, setResultData] = useState(null);
 
   // Global Section Timer: 31 Minutes
   const [globalTime, setGlobalTime] = useState(31 * 60);
@@ -78,21 +79,22 @@ export default function APEUniSpeakingMockTest({ backendData, onComplete, isFull
     setStep(5);
     try {
       // Note: Speaking requires FormData to upload Blobs
-      const formData = new FormData();
-      formData.append("speakingTestId", backendData._id);
-      formData.append("userId", user?._id);
+      // NOTE: Temporarily sending JSON to match backend capability until multer is added to this route
+      const payload = {
+        speakingTestId: backendData._id,
+        userId: user?._id,
+        answers: finalAnswers.map(ans => ({
+          questionId: ans.questionId,
+          type: ans.type,
+          transcript: "Audio recorded (Simulated Transcript)", // Placeholder
+          audioUrl: null
+        }))
+      };
 
-      finalAnswers.forEach((ans, index) => {
-        if (ans.audio) {
-          formData.append(`audio_${index}`, ans.audio, `q_${ans.questionId}.wav`);
-        }
-        formData.append(`type_${index}`, ans.type);
-        formData.append(`id_${index}`, ans.questionId);
-      });
-
-      const response = await axios.post("/api/speaking/attempt", formData);
+      const response = await api.post("/question/speaking/calculate-result", payload);
       if (response.data.success) {
         setResultId(response.data.data._id);
+        setResultData(response.data.data);
       }
     } catch (err) {
       console.error("Submission failed", err);
@@ -152,7 +154,7 @@ export default function APEUniSpeakingMockTest({ backendData, onComplete, isFull
             </div>
           )
         )}
-        {step === 5 && <ResultScreen resultId={resultId} />}
+        {step === 5 && <ResultScreen resultId={resultId} resultData={resultData} />}
       </div>
 
       {/* FOOTER NAVIGATION (For Steps 0-3 only) */}
@@ -311,13 +313,39 @@ function getInstructionText(type) {
   return map[type] || "Follow the on-screen instructions.";
 }
 
-function ResultScreen({ resultId }) {
+// Add import at the top
+import ScoreBreakdownTable from "../FullMockTest/ScoreBreakdownTable";
+
+function ResultScreen({ resultId, resultData }) {
+  if (!resultData) return <div className="p-20 text-center">Loading Result...</div>;
+
+  const breakdownData = {
+    speaking: {
+      answers: resultData.scores.map(s => ({
+        type: s.questionType,
+        score: s.score,
+        maxScore: s.maxScore || 90
+      }))
+    }
+  };
+
   return (
-    <div className="p-20 text-center">
-      <div className="bg-white p-12 rounded-2xl shadow-xl border inline-block">
-        <h2 className="text-3xl font-black text-[#008199] mb-4">Speaking Test Finished</h2>
-        <p className="text-gray-400 font-bold uppercase mb-8 tracking-widest">Result Reference: {resultId || "Processing..."}</p>
-        <button onClick={() => window.location.reload()} className="bg-[#fb8c00] text-white px-12 py-3 rounded font-bold uppercase shadow-lg">Return to dashboard</button>
+    <div className="p-10 max-w-6xl mx-auto">
+      <div className="text-center mb-10">
+        <h1 className="text-3xl font-black text-[#008199] mb-4">Speaking Test Result</h1>
+        <div className="inline-block bg-[#008199] text-white p-6 rounded-2xl shadow-lg">
+          <p className="text-sm uppercase font-bold opacity-80 mb-1">Overall Score</p>
+          <p className="text-5xl font-black">{resultData.overallScore}</p>
+        </div>
+      </div>
+
+      {/* Detailed Table */}
+      <ScoreBreakdownTable result={breakdownData} />
+
+      <div className="mt-8 text-center">
+        <button onClick={() => window.location.reload()} className="bg-[#fb8c00] text-white px-10 py-3 rounded font-bold uppercase shadow-md">
+          Return to dashboard
+        </button>
       </div>
     </div>
   );

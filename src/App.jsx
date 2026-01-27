@@ -18,6 +18,21 @@ import FullMockResultPage from './pages/MockTest/FullMockTest/FullMockResultPage
 import SectionResultPage from './pages/MockTest/SectionalTest/SectionResultPage';
 import PracticeHistoryPage from './pages/Dashboard/PracticeHistoryPage';
 
+import Home from './pages/Home';
+import { Contact } from './pages/Contact';
+import { About } from './pages/About';
+
+
+
+import PracticeHistoryPage from './pages/Dashboard/PracticeHistoryPage';
+
+
+import Home from './pages/Home';
+import { Contact } from './pages/Contact';
+import { About } from './pages/About';
+
+
+
 
 function App() {
   const [showLimitModal, setShowLimitModal] = React.useState(false);
@@ -33,7 +48,13 @@ function App() {
     <BrowserRouter>
       <PracticeLimitModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
       <Routes>
-        <Route path="/" element={<SignIn />} />
+
+        <Route path="/" element={<Home />} />
+        <Route path="home" element={<Home />} />
+        <Route path="contact" element={<Contact/>}/>
+        <Route path="aboutus" element={<About/>}/>
+
+
         <Route path="/signin" element={<SignIn />} />
         <Route path="/select-product" element={
           <Layout currentStep={1}>

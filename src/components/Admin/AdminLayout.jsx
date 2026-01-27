@@ -1,28 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     Video,
     Image as ImageIcon,
-    ShoppingCart,
     LogOut,
     Menu,
     X,
-    ChevronRight,
+    ChevronDown,
     User,
     FileText,
     MessageSquare,
     Bell,
-    MapPin,
-    PieChart,
     BookOpen,
-    Volume2
+    Volume2,
+    Mic,
+    PenTool,
+    Headphones,
+    ClipboardList,
+    Layers,
+    PlayCircle
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
 
 const AdminLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    // Track open state for Level 1 and Level 2 menus
+    const [openMenus, setOpenMenus] = useState({});
+    
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -33,108 +39,255 @@ const AdminLayout = ({ children }) => {
         navigate('/signin');
     };
 
+    const toggleMenu = (menuLabel) => {
+        setOpenMenus(prev => ({
+            ...prev,
+            [menuLabel]: !prev[menuLabel]
+        }));
+    };
+
     const menuItems = [
         { path: '/admin/dashboard', icon: <LayoutDashboard size={20} />, label: 'Home' },
-        { path: '/admin/videos', icon: <FileText size={20} />, label: 'Manage Videos' },
+        { path: '/admin/videos', icon: <PlayCircle size={20} />, label: 'Manage Videos' },
         { path: '/admin/banners', icon: <MessageSquare size={20} />, label: 'Manage Banners' },
         { path: '/admin/orders', icon: <Bell size={20} />, label: 'Voucher Orders' },
-        { path: '/admin/questions/read-aloud', icon: <BookOpen size={20} />, label: 'Read Aloud' },
-        { path: '/admin/questions/repeat-sentence', icon: <Volume2 size={20} />, label: 'Repeat Sentence' },
-        { path: '/admin/questions/describe-image', icon: <ImageIcon size={20} />, label: 'Describe Image' },
-        { path: '#', icon: <MapPin size={20} />, label: 'Location' },
-        { path: '#', icon: <PieChart size={20} />, label: 'Graph' },
+        
+        // --- PRACTICE TAB (3 LAYERS) ---
+        {
+            label: 'Practice',
+            icon: <Mic size={20} />,
+            isDropdown: true,
+            subItems: [
+                {
+                    label: 'Speaking',
+                    icon: <Mic size={18} />,
+                    items: [
+                        { label: 'Read Aloud', path: '/admin/practice/speaking/ra' },
+                        { label: 'Repeat Sentence', path: '/admin/practice/speaking/rs' },
+                        { label: 'Describe Image', path: '/admin/practice/speaking/di' },
+                        { label: 'Retell Lecture', path: '/admin/practice/speaking/rl' },
+                        { label: 'Answer Short Question', path: '/admin/practice/speaking/asq' },
+                        { label: 'Summarize Group Discussion', path: '/admin/practice/speaking/sgd' },
+                        { label: 'Respond To Situation', path: '/admin/practice/speaking/rts' },
+                
+                    ]
+                },
+                {
+                    label: 'Writing',
+                    icon: <PenTool size={18} />,
+                    items: [
+                        { label: 'Summarize Text', path: '/admin/practice/writing/swt' },
+                        { label: 'Write Essay', path: '/admin/practice/writing/we' },
+                    ]
+                },
+                {
+                    label: 'Reading',
+                    icon: <BookOpen size={18} />,
+                    items: [
+                        { label: 'Fill in the Blanks(DropDown)', path: '/admin/practice/reading/fibrw' },
+                        { label: 'Multiple Choice, Choose Multiple Answer', path: '/admin/practice/reading/ro' },
+                        { label: 'Multiple Choice, Choose Single Answer', path: '/admin/practice/reading/fibr' },
+                          { label: 'Fill in the Blanks(DragDrop)', path: '/admin/practice/reading/fibrw' },
+                            { label: 'Re-order Paragraph', path: '/admin/practice/reading/fibrw' },
+                    ]
+                },
+                {
+                    label: 'Listening',
+                    icon: <Headphones size={18} />,
+                    items: [
+                        { label: 'Summarize Spoken Text', path: '/admin/practice/listening/sst' },
+                         { label: 'Listening: Multiple Choice, Choose Multiple Answer', path: '/admin/practice/listening/sst' },
+                          { label: 'Listening: Multiple Choice, Choose Single Answer', path: '/admin/practice/listening/sst' },
+                           { label: 'Fill in the blanks (TypeIn)', path: '/admin/practice/listening/wfd' },
+                         { label: 'Highlight Incorrect Summary', path: '/admin/practice/listening/wfd' },
+                          { label: 'Select Missing Words', path: '/admin/practice/listening/wfd' }, 
+                         { label: 'Write From Dictation (WFD)', path: '/admin/practice/listening/wfd' },
+                    ]
+                }
+            ]
+        },
+
+        // --- MOCK TEST TAB (3 LAYERS) ---
+        {
+            label: 'Mock Tests',
+            icon: <ClipboardList size={20} />,
+            isDropdown: true,
+            subItems: [
+                { label: 'Full Mock Test', path: '/admin/mock/full' },
+                {
+                    label: 'Sectional Tests',
+                    icon: <Layers size={18} />,
+                    items: [
+                        { label: 'Speaking Section', path: '/admin/mock/sectional/speaking' },
+                        { label: 'Writing Section', path: '/admin/mock/sectional/writing' },
+                        { label: 'Reading Section', path: '/admin/mock/sectional/reading' },
+                        { label: 'Listening Section', path: '/admin/mock/sectional/listening' },
+                    ]
+                },
+                {
+                    label: 'Question Tests',
+                    icon: <FileText size={18} />,
+                    items: [
+                        { label: 'RA Test', path: '/admin/mock/qtest/ra' },
+                        { label: 'RS Test', path: '/admin/mock/qtest/rs' },
+                        { label: 'DI Test', path: '/admin/mock/qtest/di' },
+                        { label: 'RL Test', path: '/admin/mock/qtest/rl' },
+                        { label: 'SGD Test', path: '/admin/mock/qtest/sgd' },
+                        { label: 'RTS Test', path: '/admin/mock/qtest/rts' },
+                        { label: 'WE Test', path: '/admin/mock/qtest/we' },
+                         { label: 'SWT Test', path: '/admin/mock/qtest/swt' },
+                        { label: 'FIB Test', path: '/admin/mock/qtest/fib' },
+                        { label: 'FIB&D Test', path: '/admin/mock/qtest/fibd' },
+                        { label: 'RO Test', path: '/admin/mock/qtest/ro' },
+                        { label: 'WFD Test', path: '/admin/mock/qtest/wfd' },
+                         { label: 'SST Test', path: '/admin/mock/qtest/sst' },
+                        { label: 'FIBL Test', path: '/admin/mock/qtest/fibl' },
+                         { label: 'HIW Test', path: '/admin/mock/qtest/hiw' },
+                       
+                    ]
+                }
+            ]
+        }
     ];
+
+
+useEffect(() => {
+  const newOpenMenus = {};
+
+  menuItems.forEach((menu) => {
+    if (!menu.subItems) return;
+
+    menu.subItems.forEach((sub) => {
+      if (sub.items) {
+        sub.items.forEach((item) => {
+          if (location.pathname.startsWith(item.path)) {
+            newOpenMenus[menu.label] = true;   // Level 1
+            newOpenMenus[sub.label] = true;    // Level 2
+          }
+        });
+      } else if (location.pathname.startsWith(sub.path)) {
+        newOpenMenus[menu.label] = true;
+      }
+    });
+  });
+
+  setOpenMenus((prev) => ({ ...prev, ...newOpenMenus }));
+}, [location.pathname]);
+
 
     return (
         <div className="min-h-screen bg-slate-100 flex font-sans">
-            {/* Sidebar - Dark Blue #1A1F3D based on reference */}
-            <aside
-                className={`fixed inset-y-0 left-0 z-50 bg-[#1A1F3D] text-white transition-all duration-300 ease-in-out shadow-2xl
-        ${isSidebarOpen ? 'w-64' : 'w-20'} lg:relative flex flex-col`}
-            >
-                {/* User Profile Section (Top of Sidebar) */}
-                <div className={`p-8 flex flex-col items-center border-b border-slate-700/50 ${!isSidebarOpen && 'px-2'}`}>
-                    <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center mb-4 shadow-lg shadow-blue-900/50">
-                        <User size={40} className="text-white" /> {/* Placeholder for user image */}
+            <aside className={`fixed inset-y-0 left-0 z-50 bg-[#1A1F3D] text-white transition-all duration-300 ease-in-out shadow-2xl ${isSidebarOpen ? 'w-72' : 'w-20'} lg:relative flex flex-col`}>
+                
+                {/* User Profile */}
+                <div className={`p-6 flex flex-col items-center border-b border-slate-700/50 ${!isSidebarOpen && 'px-2'}`}>
+                    <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center mb-4 shadow-lg">
+                        <User size={30} className="text-white" />
                     </div>
                     {isSidebarOpen && (
-                        <div className="text-center animate-in fade-in duration-300">
-                            <h3 className="font-bold text-lg tracking-wide uppercase">{user?.name || 'Admin User'}</h3>
-                            <p className="text-xs text-slate-400 mt-1">{user?.email || 'admin@company.com'}</p>
+                        <div className="text-center">
+                            <h3 className="font-bold text-sm tracking-wide uppercase truncate w-56">{user?.name || 'Admin User'}</h3>
+                            <p className="text-[10px] text-slate-400 mt-1">{user?.email || 'admin@company.com'}</p>
                         </div>
                     )}
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
-                    {menuItems.map((item) => {
-                        const isActive = location.pathname === item.path;
+                <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
+                    {menuItems.map((menu) => {
+                        const isL1Open = openMenus[menu.label];
+                        
+                        if (!menu.isDropdown) {
+                            return (
+                                <Link key={menu.label} to={menu.path} className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${location.pathname === menu.path ? 'bg-white/10 text-blue-400 border-l-4 border-blue-400' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}>
+                                    {menu.icon}
+                                    {isSidebarOpen && <span className="text-xs font-bold uppercase tracking-wider">{menu.label}</span>}
+                                </Link>
+                            );
+                        }
+
                         return (
-                            <Link
-                                key={item.label}
-                                to={item.path}
-                                className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group
-                  ${isActive
-                                        ? 'text-white bg-white/10 border-l-4 border-blue-400 shadow-inner'
-                                        : 'text-slate-400 hover:text-white hover:bg-white/5'
-                                    }`}
-                            >
-                                <div className={`${isActive ? 'text-blue-400' : 'text-slate-400 group-hover:text-blue-400 transition-colors'}`}>
-                                    {item.icon}
-                                </div>
-                                {isSidebarOpen && (
-                                    <span className="font-medium tracking-wide text-sm uppercase">{item.label}</span>
-                                )}
-                                {!isSidebarOpen && (
-                                    <div className="absolute left-20 bg-[#1A1F3D] text-white text-xs px-3 py-2 rounded-md shadow-xl z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity border border-slate-700">
-                                        {item.label}
+                            <div key={menu.label} className="space-y-1">
+                                <button onClick={() => toggleMenu(menu.label)} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-slate-400 hover:bg-white/5 hover:text-white`}>
+                                    <div className="flex items-center gap-4">
+                                        {menu.icon}
+                                        {isSidebarOpen && <span className="text-xs font-bold uppercase tracking-wider">{menu.label}</span>}
+                                    </div>
+                                    {isSidebarOpen && <ChevronDown size={14} className={`transition-transform ${isL1Open ? 'rotate-180' : ''}`} />}
+                                </button>
+
+                                {isL1Open && isSidebarOpen && (
+                                    <div className="ml-4 pl-2 border-l border-slate-700 space-y-1">
+                                        {menu.subItems.map((sub) => {
+                                            const isL2Open = openMenus[sub.label];
+                                            if (!sub.items) {
+                                                return (
+                                                    <Link key={sub.label} to={sub.path} className="block px-4 py-2 text-[11px] uppercase text-slate-400 hover:text-white transition-colors">
+                                                        {sub.label}
+                                                    </Link>
+                                                );
+                                            }
+                                            return (
+                                                <div key={sub.label}>
+                                                    <button onClick={() => toggleMenu(sub.label)} className="w-full flex items-center justify-between px-4 py-2 text-[11px] uppercase text-slate-400 hover:text-white">
+                                                        <span>{sub.label}</span>
+                                                        <ChevronDown size={12} className={`transition-transform ${isL2Open ? 'rotate-180' : ''}`} />
+                                                    </button>
+                                                    {isL2Open && (
+                                                        <div className="ml-4 space-y-1 border-l border-slate-800">
+                                                            {sub.items.map(item => (
+                                                                <Link key={item.label} to={item.path} className={`block px-6 py-1.5 text-[10px] uppercase transition-colors ${location.pathname === item.path ? 'text-blue-400 font-bold' : 'text-slate-500 hover:text-slate-300'}`}>
+                                                                    {item.label}
+                                                                </Link>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 )}
-                            </Link>
+                            </div>
                         );
                     })}
                 </nav>
 
                 {/* Logout */}
                 <div className="p-4 border-t border-slate-700/50">
-                    <button
-                        onClick={handleLogout}
-                        className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all
-              ${!isSidebarOpen ? 'justify-center' : ''}`}
-                    >
+                    <button onClick={handleLogout} className="flex items-center gap-4 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all">
                         <LogOut size={20} />
-                        {isSidebarOpen && <span className="font-medium uppercase text-sm tracking-wide">Logout</span>}
+                        {isSidebarOpen && <span className="font-bold uppercase text-xs">Logout</span>}
                     </button>
                 </div>
-
             </aside>
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-h-screen overflow-hidden bg-[#F0F2F5]">
-                {/* Mobile Header */}
-                <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 lg:hidden sticky top-0 z-40">
-                    <button
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
-                    >
+                <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 sticky top-0 z-40">
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
                         {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
-                    <span className="font-bold text-slate-800">Admin Panel</span>
-                    <div className="w-8" />
+                    <span className="font-bold text-slate-800 tracking-tight">ADMIN CONTROL PANEL</span>
+                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+                        <User size={18} className="text-slate-500" />
+                    </div>
                 </header>
 
-                {/* Page Content */}
                 <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 lg:p-10">
                     <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {/* Header Section from Reference Image */}
                         <div className="flex justify-between items-center mb-8">
-                            <h1 className="text-2xl font-medium text-slate-700">Dashboard User</h1>
-                            <button className="lg:hidden p-2"><Menu size={24} className="text-slate-400" /></button>
+                            <h1 className="text-2xl font-medium text-slate-700">Dashboard Panel</h1>
                         </div>
                         {children}
                     </div>
                 </main>
             </div>
+
+            <style jsx>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+            `}</style>
         </div>
     );
 };

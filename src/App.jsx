@@ -35,17 +35,6 @@ import { About } from './pages/About';
 
 
 
-import PracticeHistoryPage from './pages/Dashboard/PracticeHistoryPage';
-
-
-import Home from './pages/Home';
-import { Contact } from './pages/Contact';
-import { About } from './pages/About';
-
-
-
-
-
 function App() {
   const [showLimitModal, setShowLimitModal] = React.useState(false);
 
@@ -63,10 +52,13 @@ function App() {
 
         <Route path="/" element={<Home />} />
         <Route path="home" element={<Home />} />
-        <Route path="contact" element={<Contact/>}/>
-        <Route path="aboutus" element={<About/>}/>
+        <Route path="contact" element={<Contact />} />
+        <Route path="aboutus" element={<About />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/select-product" element={
           <Layout currentStep={1}>
             <SelectProduct />
+          </Layout>
         } />
         <Route path="/personal-details" element={
           <Layout currentStep={2}>
@@ -92,14 +84,16 @@ function App() {
         {/* Section Mock Test Result */}
         <Route path="/mocktest/section/:type/result/:id" element={<SectionResultPage />} />
 
+
+  
         {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedAdminRoute />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="videos" element={<ManageVideos />} />
           <Route path="banners" element={<ManageBanners />} />
-          <Route path="questions/read-aloud" element={<ManageReadAloud />} />
-          <Route path="questions/repeat-sentence" element={<ManageRepeatSentence />} />
-          <Route path="questions/describe-image" element={<ManageDescribeImage />} />
+          <Route path="practice/speaking/ra" element={<ManageReadAloud />} />
+          <Route path="practice/speaking/rs" element={<ManageRepeatSentence />} />
+          <Route path="practice/speaking/di" element={<ManageDescribeImage />} />
           <Route path="orders" element={<VoucherOrders />} />
         </Route>
 

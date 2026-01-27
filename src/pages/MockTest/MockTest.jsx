@@ -24,7 +24,7 @@ const QUESTION_TABS = [
   { id: "RO", label: "Reading Order", api: "question/ro" },
   { id: "WFD", label: "Write from Dictation", api: "question/wfd" },
   { id: "SST", label: "Summarize Spoken Text", api: "question/sst" },
-  { id: "FIB-L", label: "FIB Listening", api: "question/fib-l" },
+  { id: "FIBL", label: "FIB Listening", api: "question/fibl" },
   { id: "HIW", label: "Highlight Incorrect Words", api: "question/hiw" },
 ];
 

@@ -29,9 +29,9 @@ const Home = () => {
                 </Link>
 
             ))}
-            <a href="#" className="bg-indigo-600 text-white px-5 py-2 rounded-md">
+            <Link to="/signin" className="bg-indigo-600 text-white px-5 py-2 rounded-md">
               Enroll Now
-            </a>
+            </Link>
           </div>
         </div>
       </nav>

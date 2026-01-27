@@ -18,6 +18,7 @@ import ManageVideos from './pages/Admin/ManageVideos';
 import ManageBanners from './pages/Admin/ManageBanners';
 import ManageReadAloud from './pages/Admin/ManageReadAloud';
 import ManageRepeatSentence from './pages/Admin/ManageRepeatSentence';
+import ManageDescribeImage from './pages/Admin/ManageDescribeImage';
 import VoucherOrders from './pages/Admin/VoucherOrders';
 
 import PracticeLimitModal from './components/PracticeLimitModal';
@@ -95,6 +96,7 @@ function App() {
           <Route path="banners" element={<ManageBanners />} />
           <Route path="questions/read-aloud" element={<ManageReadAloud />} />
           <Route path="questions/repeat-sentence" element={<ManageRepeatSentence />} />
+          <Route path="questions/describe-image" element={<ManageDescribeImage />} />
           <Route path="orders" element={<VoucherOrders />} />
         </Route>
 

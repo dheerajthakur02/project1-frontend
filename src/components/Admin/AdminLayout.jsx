@@ -40,6 +40,7 @@ const AdminLayout = ({ children }) => {
         { path: '/admin/orders', icon: <Bell size={20} />, label: 'Voucher Orders' },
         { path: '/admin/questions/read-aloud', icon: <BookOpen size={20} />, label: 'Read Aloud' },
         { path: '/admin/questions/repeat-sentence', icon: <Volume2 size={20} />, label: 'Repeat Sentence' },
+        { path: '/admin/questions/describe-image', icon: <ImageIcon size={20} />, label: 'Describe Image' },
         { path: '#', icon: <MapPin size={20} />, label: 'Location' },
         { path: '#', icon: <PieChart size={20} />, label: 'Graph' },
     ];

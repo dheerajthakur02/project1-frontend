@@ -15,9 +15,20 @@ import PracticeLimitModal from './components/PracticeLimitModal';
 import FullExamRunner from './pages/MockTest/FullMockTest/FullExamRunner';
 import FullMockResultPage from './pages/MockTest/FullMockTest/FullMockResultPage';
 import SectionResultPage from './pages/MockTest/SectionalTest/SectionResultPage';
+
 import Home from './pages/Home';
 import { Contact } from './pages/Contact';
 import { About } from './pages/About';
+
+
+
+import PracticeHistoryPage from './pages/Dashboard/PracticeHistoryPage';
+
+
+import Home from './pages/Home';
+import { Contact } from './pages/Contact';
+import { About } from './pages/About';
+
 
 
 

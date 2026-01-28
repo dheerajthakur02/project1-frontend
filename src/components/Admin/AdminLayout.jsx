@@ -96,11 +96,11 @@ const AdminLayout = ({ children }) => {
                     icon: <Headphones size={18} />,
                     items: [
                         { label: 'Summarize Spoken Text', path: '/admin/practice/listening/sst' },
-                        { label: 'Listening: Multiple Choice, Choose Multiple Answer', path: '/admin/practice/listening/sst' },
-                        { label: 'Listening: Multiple Choice, Choose Single Answer', path: '/admin/practice/listening/sst' },
-                        { label: 'Fill in the blanks (TypeIn)', path: '/admin/practice/listening/wfd' },
-                        { label: 'Highlight Incorrect Summary', path: '/admin/practice/listening/wfd' },
-                        { label: 'Select Missing Words', path: '/admin/practice/listening/wfd' }, 
+                        { label: 'Listening: Multiple Choice, Choose Multiple Answer', path: '/admin/practice/listening/mcma' },
+                        { label: 'Listening: Multiple Choice, Choose Single Answer', path: '/admin/practice/listening/mcsa' },
+                        { label: 'Fill in the blanks (TypeIn)', path: '/admin/practice/listening/fibl' },
+                        { label: 'Highlight Incorrect Summary', path: '/admin/practice/listening/hiw' },
+                        { label: 'Select Missing Words', path: '/admin/practice/listening/smw' }, 
                         { label: 'Write From Dictation (WFD)', path: '/admin/practice/listening/wfd' },
                     ]
                 }

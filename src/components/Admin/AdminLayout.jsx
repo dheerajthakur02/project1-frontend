@@ -85,10 +85,10 @@ const AdminLayout = ({ children }) => {
                     icon: <BookOpen size={18} />,
                     items: [
                         { label: 'Fill in the Blanks(DropDown)', path: '/admin/practice/reading/fibrw' },
-                        { label: 'Multiple Choice, Choose Multiple Answer', path: '/admin/practice/reading/ro' },
-                        { label: 'Multiple Choice, Choose Single Answer', path: '/admin/practice/reading/fibr' },
-                        { label: 'Fill in the Blanks(DragDrop)', path: '/admin/practice/reading/fibrw' },
-                        { label: 'Re-order Paragraph', path: '/admin/practice/reading/fibrw' },
+                        { label: 'Multiple Choice, Choose Multiple Answer', path: '/admin/practice/reading/mcma' },
+                        { label: 'Multiple Choice, Choose Single Answer', path: '/admin/practice/reading/mcsa' },
+                        { label: 'Fill in the Blanks(DragDrop)', path: '/admin/practice/reading/fibd' },
+                        { label: 'Re-order Paragraph', path: '/admin/practice/reading/ro' },
                     ]
                 },
                 {

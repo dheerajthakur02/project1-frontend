@@ -1,25 +1,27 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { 
-  Plus, Edit, Trash2, X, Upload, 
-  Search, Users, Clock, MessageSquare, 
-  AlertCircle, Loader2, Play, Eye, AudioLines
+  Plus, Edit, Trash2, X, Search, 
+  FileText, Clock, BarChart3, 
+  AlertCircle, Loader2, Eye, 
+  Type, AlignLeft, Info
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import AdminLayout from "../../../components/Admin/AdminLayout";
+
 import { useSelector } from "react-redux";
+import AdminLayout from "../../../../components/Admin/AdminLayout";
 
 /* ---------------- INITIAL FORM ---------------- */
 const initialForm = {
   title: "",
-  prepareTime: 30,
-  answerTime: 60,
-  difficulty: "medium", // Matches Backend Enum Lowercase
-  answer: "",
-  audio: null,
+  description: "", // The actual Essay Prompt
+  minWords: 200,
+  maxWords: 300,
+  difficulty: "medium",
+  answerTime: 1200, // 20 minutes in seconds (PTE Standard)
 };
 
-const ManageSummarizeGroup = () => {
+const ManageWriteEssay = () => {
   const { user } = useSelector((state) => state.auth);
 
   const [questions, setQuestions] = useState([]);
@@ -38,7 +40,8 @@ const ManageSummarizeGroup = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/summarize-group/get/${user._id}`);
+      // Using the aggregate controller route provided
+      const res = await axios.get(`/api/essay/get/${user._id}`);
       setQuestions(res.data.data || []);
     } catch (err) {
       console.error("Fetch error:", err);
@@ -55,16 +58,18 @@ const ManageSummarizeGroup = () => {
   const filteredQuestions = useMemo(() => {
     return questions.filter(q => 
       q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      q.answer.toLowerCase().includes(searchTerm.toLowerCase())
+      q.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [questions, searchTerm]);
 
   /* ---------------- FORM HANDLERS ---------------- */
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: files ? files[0] : value,
+      [name]: (name === "minWords" || name === "maxWords" || name === "answerTime") 
+        ? Number(value) 
+        : value,
     }));
   };
 
@@ -77,11 +82,11 @@ const ManageSummarizeGroup = () => {
   const openEditModal = (q) => {
     setForm({
       title: q.title,
-      prepareTime: q.prepareTime,
-      answerTime: q.answerTime,
+      description: q.description || "",
+      minWords: q.minWords,
+      maxWords: q.maxWords,
       difficulty: q.difficulty,
-      answer: q.answer,
-      audio: null,
+      answerTime: q.answerTime,
     });
     setEditingId(q._id);
     setOpenModal(true);
@@ -96,16 +101,11 @@ const ManageSummarizeGroup = () => {
     e.preventDefault();
     setSubmitLoading(true);
 
-    const fd = new FormData();
-    Object.entries(form).forEach(([key, val]) => {
-      if (val !== null) fd.append(key, val);
-    });
-
     try {
       if (editingId) {
-        await axios.put(`/api/summarize-group/${editingId}`, fd);
+        await axios.put(`/api/essay/${editingId}`, form);
       } else {
-        await axios.post("/api/summarize-group/add", fd);
+        await axios.post("/api/essay/add", form);
       }
       setOpenModal(false);
       fetchQuestions();
@@ -117,9 +117,9 @@ const ManageSummarizeGroup = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Permanent delete this question?")) return;
+    if (!window.confirm("Permanent delete this essay prompt?")) return;
     try {
-      await axios.delete(`/api/summarize-group/${id}`);
+      await axios.delete(`/api/essay/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete error:", err);
@@ -130,8 +130,8 @@ const ManageSummarizeGroup = () => {
   const getDifficultyColor = (level) => {
     switch (level?.toLowerCase()) {
       case "easy": return "bg-emerald-100 text-emerald-700 border-emerald-200";
-      case "medium": return "bg-amber-100 text-amber-700 border-amber-200";
-      case "hard": return "bg-rose-100 text-rose-700 border-rose-200";
+      case "medium": return "bg-blue-100 text-blue-700 border-blue-200";
+      case "hard": return "bg-purple-100 text-purple-700 border-purple-200";
       default: return "bg-slate-100 text-slate-700";
     }
   };
@@ -143,8 +143,8 @@ const ManageSummarizeGroup = () => {
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Group Discussions</h1>
-            <p className="text-slate-500 mt-1">Manage PTE Summarize Group Discussion audio & content</p>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Write Essay</h1>
+            <p className="text-slate-500 mt-1">Manage PTE writing prompts and word count requirements</p>
           </div>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -152,7 +152,7 @@ const ManageSummarizeGroup = () => {
             onClick={openAddModal}
             className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all"
           >
-            <Plus size={20} /> New Discussion
+            <Plus size={20} /> Add Essay Prompt
           </motion.button>
         </div>
 
@@ -161,7 +161,7 @@ const ManageSummarizeGroup = () => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
           <input 
             type="text"
-            placeholder="Search by title or answer content..."
+            placeholder="Search essay titles or prompt text..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 outline-none transition-all shadow-sm"
@@ -174,8 +174,8 @@ const ManageSummarizeGroup = () => {
             <table className="w-full">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Discussion Title</th>
-                  <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Time Settings</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Essay Details</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Requirements</th>
                   <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Difficulty</th>
                   <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -185,14 +185,14 @@ const ManageSummarizeGroup = () => {
                   <tr>
                     <td colSpan="4" className="py-20 text-center">
                       <Loader2 className="animate-spin mx-auto text-indigo-500 mb-2" size={32} />
-                      <p className="text-slate-400">Loading Discussions...</p>
+                      <p className="text-slate-400">Loading Essay Prompts...</p>
                     </td>
                   </tr>
                 ) : filteredQuestions.length === 0 ? (
                   <tr>
                     <td colSpan="4" className="py-20 text-center text-slate-400">
                       <AlertCircle className="mx-auto mb-2 opacity-20" size={48} />
-                      No discussion questions found.
+                      No essay prompts found.
                     </td>
                   </tr>
                 ) : (
@@ -201,15 +201,22 @@ const ManageSummarizeGroup = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="p-2.5 bg-indigo-100 text-indigo-600 rounded-xl">
-                            <Users size={18} />
+                            <FileText size={18} />
                           </div>
-                          <span className="font-bold text-slate-800">{q.title}</span>
+                          <div className="max-w-xs md:max-w-md">
+                            <div className="font-bold text-slate-800 truncate">{q.title}</div>
+                            <div className="text-xs text-slate-400 truncate mt-0.5">{q.description}</div>
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col items-center gap-1">
-                          <span className="flex items-center gap-1 text-xs text-slate-500"><Clock size={12}/> Prep: {q.prepareTime}s</span>
-                          <span className="flex items-center gap-1 text-xs font-medium text-indigo-600"><Play size={10}/> Answer: {q.answerTime}s</span>
+                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                            <Type size={12}/> {q.minWords}-{q.maxWords} words
+                          </span>
+                          <span className="flex items-center gap-1 text-xs font-medium text-indigo-600">
+                            <Clock size={12}/> {Math.floor(q.answerTime / 60)} mins
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
@@ -246,40 +253,44 @@ const ManageSummarizeGroup = () => {
                 className="bg-white w-full max-w-xl rounded-2xl shadow-2xl relative overflow-hidden"
               >
                 <div className="px-6 py-4 border-b flex justify-between items-center bg-slate-50">
-                  <h2 className="text-xl font-bold text-slate-800">{editingId ? "Edit Discussion" : "Add Discussion"}</h2>
+                  <h2 className="text-xl font-bold text-slate-800">{editingId ? "Edit Essay" : "New Essay Prompt"}</h2>
                   <button onClick={() => setOpenModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20}/></button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Title</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Question Title</label>
                     <input
                       name="title" value={form.title} onChange={handleChange}
-                      placeholder="e.g. Urban Planning Debate"
+                      placeholder="e.g. Modern Technology"
                       className="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-4 focus:ring-indigo-50 outline-none"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Expected Summary / Answer</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Essay Prompt (Description)</label>
                     <textarea
-                      name="answer" value={form.answer} onChange={handleChange}
-                      placeholder="Provide the model summary or transcript..."
+                      name="description" value={form.description} onChange={handleChange}
+                      placeholder="Enter the full essay prompt instructions here..."
                       rows={4}
                       className="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-4 focus:ring-indigo-50 outline-none resize-none"
                       required
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">Prep Time (s)</label>
-                      <input type="number" name="prepareTime" value={form.prepareTime} onChange={handleChange} className="w-full border px-4 py-2.5 rounded-xl outline-none" />
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Min Words</label>
+                      <input type="number" name="minWords" value={form.minWords} onChange={handleChange} className="w-full border border-slate-200 px-4 py-2.5 rounded-xl outline-none" />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">Answer Time (s)</label>
-                      <input type="number" name="answerTime" value={form.answerTime} onChange={handleChange} className="w-full border px-4 py-2.5 rounded-xl outline-none" />
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Max Words</label>
+                      <input type="number" name="maxWords" value={form.maxWords} onChange={handleChange} className="w-full border border-slate-200 px-4 py-2.5 rounded-xl outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Time (seconds)</label>
+                      <input type="number" name="answerTime" value={form.answerTime} onChange={handleChange} className="w-full border border-slate-200 px-4 py-2.5 rounded-xl outline-none" />
                     </div>
                   </div>
 
@@ -292,24 +303,11 @@ const ManageSummarizeGroup = () => {
                     </select>
                   </div>
 
-                  <div className="relative group">
-                    <input type="file" name="audio" accept="audio/*" onChange={handleChange} id="audio-disc" hidden />
-                    <label 
-                      htmlFor="audio-disc"
-                      className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-6 hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition-all"
-                    >
-                      <Upload className="text-indigo-500 mb-2" size={24} />
-                      <span className="text-sm font-medium text-slate-600">
-                        {form.audio ? form.audio.name : "Upload Discussion Audio"}
-                      </span>
-                    </label>
-                  </div>
-
                   <button
                     disabled={submitLoading}
                     className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                   >
-                    {submitLoading ? <Loader2 className="animate-spin"/> : editingId ? "Save Changes" : "Publish Discussion"}
+                    {submitLoading ? <Loader2 className="animate-spin"/> : editingId ? "Save Changes" : "Publish Prompt"}
                   </button>
                 </form>
               </motion.div>
@@ -334,40 +332,39 @@ const ManageSummarizeGroup = () => {
                 
                 <div className="p-8 space-y-6">
                   <div className="space-y-2">
-                    <span className="text-indigo-400 text-xs font-bold tracking-[0.2em] uppercase">Discussion Preview</span>
+                    <span className="text-indigo-400 text-xs font-bold tracking-[0.2em] uppercase">Essay Preview</span>
                     <h2 className="text-3xl font-bold tracking-tight">{viewData.title}</h2>
                   </div>
 
                   <div className="flex flex-wrap gap-4">
                     <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-2xl flex items-center gap-2">
-                      <Clock size={16} className="text-indigo-400" />
-                      <span className="text-sm font-medium text-slate-300">Prep {viewData.prepareTime}s / Ans {viewData.answerTime}s</span>
+                      <Type size={16} className="text-indigo-400" />
+                      <span className="text-sm font-medium text-slate-300">{viewData.minWords}-{viewData.maxWords} Words Target</span>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-2xl flex items-center gap-2">
+                      <Clock size={16} className="text-emerald-400" />
+                      <span className="text-sm font-medium text-slate-300">{viewData.answerTime / 60} Minutes allowed</span>
                     </div>
                     <div className={`px-4 py-2 rounded-2xl flex items-center gap-2 border ${getDifficultyColor(viewData.difficulty)} bg-transparent`}>
+                      <BarChart3 size={16} />
                       <span className="text-sm font-bold uppercase">{viewData.difficulty}</span>
                     </div>
                   </div>
 
-                  <div className="bg-indigo-500/10 p-6 rounded-2xl border border-indigo-500/20 space-y-4">
-                    <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-widest">
-                      <AudioLines size={16}/> Audio Content
-                    </div>
-                    {viewData.audioUrl ? (
-                      <audio controls className="w-full accent-indigo-500">
-                        <source src={viewData.audioUrl} />
-                      </audio>
-                    ) : (
-                      <p className="text-slate-500 text-sm italic">No audio file available</p>
-                    )}
-                  </div>
-
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest">
-                      <MessageSquare size={16}/> Reference Answer
+                      <AlignLeft size={16}/> Prompt Instructions
                     </div>
-                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 max-h-48 overflow-y-auto leading-relaxed text-slate-300 text-sm scrollbar-hide">
-                      {viewData.answer}
+                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 leading-relaxed text-slate-300 text-lg font-medium">
+                      {viewData.description}
                     </div>
+                  </div>
+
+                  <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20 flex items-start gap-3">
+                    <Info className="text-amber-500 shrink-0" size={18} />
+                    <p className="text-xs text-amber-200/80 leading-normal">
+                      PTE Scoring for this essay will focus on Content (3), Form (2), Grammar (2), Vocabulary (2), Spelling (2), Structure (2), and General Writing (2) for a total max of 15 scaled to 90.
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -385,4 +382,4 @@ const ActionButton = ({ onClick, icon, color }) => (
   </button>
 );
 
-export default ManageSummarizeGroup;
+export default ManageWriteEssay;

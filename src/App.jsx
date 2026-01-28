@@ -36,6 +36,10 @@ import ManageRepeatSentence from './pages/Admin/Practise/ManageRepeatSentence';
 import ManageRetellLecture from './pages/Admin/Practise/ManageReTell';
 import ManageShortAnswer from './pages/Admin/Practise/ManageAnsShortQuestion';
 import SummarizeGroupManage from './pages/Admin/Practise/SummarizeGroupDiscussion';
+import ManageRespondSituation from './pages/Admin/Practise/ManageRespondToSituation';
+import ManageWriteEssay from './pages/Admin/Practise/Writing/ManageWriteEssay';
+import ManageSummarizeText from './pages/Admin/Practise/Writing/ManageSummarizeText';
+import ManageReadingFIBDropdown from './pages/Admin/Practise/Reading/FillInBlanks(DropDown)';
 
 
 
@@ -102,6 +106,11 @@ function App() {
           <Route path="practice/speaking/rl" element={<ManageRetellLecture />} />
            <Route path="practice/speaking/asq" element={<ManageShortAnswer />} />
             <Route path="practice/speaking/sgd" element={<SummarizeGroupManage />} />
+            <Route path="practice/speaking/rts" element={<ManageRespondSituation />} />
+            <Route path="practice/writing/we" element={<ManageWriteEssay />} />
+            <Route path="practice/writing/swt" element={<ManageSummarizeText />} />
+            <Route path="practice/reading/fibrw" element={<ManageReadingFIBDropdown />} />
+
         </Route>
 
       </Routes>

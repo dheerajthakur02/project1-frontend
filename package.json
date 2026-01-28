@@ -16,6 +16,7 @@
     "cors": "^2.8.5",
     "feather-icons": "^4.29.2",
     "feather-icons-react": "^1.0.0",
+    "framer-motion": "^12.29.2",
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

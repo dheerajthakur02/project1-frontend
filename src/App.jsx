@@ -16,9 +16,7 @@ import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ManageVideos from './pages/Admin/ManageVideos';
 import ManageBanners from './pages/Admin/ManageBanners';
-import ManageReadAloud from './pages/Admin/ManageReadAloud';
-import ManageRepeatSentence from './pages/Admin/ManageRepeatSentence';
-import ManageDescribeImage from './pages/Admin/ManageDescribeImage';
+
 import VoucherOrders from './pages/Admin/VoucherOrders';
 
 import PracticeLimitModal from './components/PracticeLimitModal';
@@ -32,6 +30,19 @@ import PracticeHistoryPage from './pages/Dashboard/PracticeHistoryPage';
 import Home from './pages/Home';
 import { Contact } from './pages/Contact';
 import { About } from './pages/About';
+import ManageReadAloud from './pages/Admin/Practise/ManageReadAloud';
+import ManageDescribeImage from './pages/Admin/Practise/ManageDescribeImage';
+import ManageRepeatSentence from './pages/Admin/Practise/ManageRepeatSentence';
+import ManageRetellLecture from './pages/Admin/Practise/ManageReTell';
+import ManageShortAnswer from './pages/Admin/Practise/ManageAnsShortQuestion';
+import SummarizeGroupManage from './pages/Admin/Practise/SummarizeGroupDiscussion';
+import ManageRespondSituation from './pages/Admin/Practise/ManageRespondToSituation';
+import ManageWriteEssay from './pages/Admin/Practise/Writing/ManageWriteEssay';
+import ManageSummarizeText from './pages/Admin/Practise/Writing/ManageSummarizeText';
+import ManageReadingFIBDropdown from './pages/Admin/Practise/Reading/FillInBlanks(DropDown)';
+import ManageSST from './pages/Admin/Practise/Listening/ManageSST';
+import ManageListeningMCMA from './pages/Admin/Practise/Listening/MultipleChoiceMultipleAns';
+import ManageListeningMCSA from './pages/Admin/Practise/Listening/MultipleChoiceSingleAns';
 
 
 
@@ -84,15 +95,28 @@ function App() {
         {/* Section Mock Test Result */}
         <Route path="/mocktest/section/:type/result/:id" element={<SectionResultPage />} />
 
+
+  
         {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedAdminRoute />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="videos" element={<ManageVideos />} />
           <Route path="banners" element={<ManageBanners />} />
-          <Route path="questions/read-aloud" element={<ManageReadAloud />} />
-          <Route path="questions/repeat-sentence" element={<ManageRepeatSentence />} />
-          <Route path="questions/describe-image" element={<ManageDescribeImage />} />
+          <Route path="practice/speaking/ra" element={<ManageReadAloud />} />
+          <Route path="practice/speaking/rs" element={<ManageRepeatSentence />} />
+          <Route path="practice/speaking/di" element={<ManageDescribeImage />} />
           <Route path="orders" element={<VoucherOrders />} />
+          <Route path="practice/speaking/rl" element={<ManageRetellLecture />} />
+           <Route path="practice/speaking/asq" element={<ManageShortAnswer />} />
+            <Route path="practice/speaking/sgd" element={<SummarizeGroupManage />} />
+            <Route path="practice/speaking/rts" element={<ManageRespondSituation />} />
+            <Route path="practice/writing/we" element={<ManageWriteEssay />} />
+            <Route path="practice/writing/swt" element={<ManageSummarizeText />} />
+            <Route path="practice/reading/fibrw" element={<ManageReadingFIBDropdown />} />
+             {/* <Route path="practice/listening/sst" element={<ManageSST />} />
+             <Route path="practice/listening/mcma" element={<ManageListeningMCMA />} />
+             <Route path="practice/listening/mcsa" element={<ManageListeningMCSA />} /> */}
+
         </Route>
 
       </Routes>

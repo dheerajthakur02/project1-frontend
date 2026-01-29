@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AdminLayout from '../../components/Admin/AdminLayout';
+import AdminLayout from '../../../components/Admin/AdminLayout';
 import axios from 'axios';
 import { Trash2, Plus, Volume2, Upload } from 'lucide-react';
 

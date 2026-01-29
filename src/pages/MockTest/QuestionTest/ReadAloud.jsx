@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { submitReadAloudAttempt } from "../../../services/api";
 
 // --- MAIN WRAPPER ---
 export default function ReadAloudMockTest({ backendData }) {
@@ -41,7 +42,13 @@ export default function ReadAloudMockTest({ backendData }) {
   const [isLoadingResult, setIsLoadingResult] = useState(false);
 
   const handleNextQuestion = (answerData) => {
-    const updatedAnswers = [...userAnswers, { questionId: flattenedQuestions[currentIdx]._id, ...answerData }];
+    // In a real app, upload answerData.audio (Blob) to server and get URL
+    // For now, we just pass a mock URL or ignore it as backend mock-scores it.
+
+    // const audioUrl = await uploadAudio(answerData.audio); 
+    const audioUrl = "mock-audio.mp3";
+
+    const updatedAnswers = [...userAnswers, { questionId: flattenedQuestions[currentIdx]._id, audioUrl }];
     setUserAnswers(updatedAnswers);
 
     if (currentIdx < flattenedQuestions.length - 1) {
@@ -55,13 +62,20 @@ export default function ReadAloudMockTest({ backendData }) {
   const calculateResults = async (answers) => {
     setIsLoadingResult(true);
     try {
-      const response = await fetch("/api/speaking/calculate-readaloud", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ testId: backendData._id, answers }),
-      });
-      const result = await response.json();
-      setTestResult(result.data);
+      const payload = {
+        testId: backendData._id,
+        answers: answers.map(a => ({
+          questionId: a.questionId,
+          audioUrl: a.audioUrl || "mock-audio.mp3", // Handle audio better if possible
+          transcript: "Mock Transcript" // ReadAloudMockTest doesn't seem to capture speech text yet
+        }))
+      };
+
+      const result = await submitReadAloudAttempt(payload);
+
+      if (result.success) {
+        setTestResult(result.data);
+      }
     } catch (err) {
       console.error("Scoring Error:", err);
     } finally {

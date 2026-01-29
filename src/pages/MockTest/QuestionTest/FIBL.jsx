@@ -1,13 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
+import api from "../../../services/api";
 
 const FIBL = ({ backendData }) => {
   const [step, setStep] = useState(0); // 0: Intro, 1: Test, 2: Result
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [userAnswers, setUserAnswers] = useState({}); 
+  const [userAnswers, setUserAnswers] = useState({});
 
   // Timers
   const [introTime, setIntroTime] = useState(120); // 2:00 for Intro
   const [globalTime, setGlobalTime] = useState(35 * 60); // 35:00 for Exam
+
+  // Results
+  const [testResult, setTestResult] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const questions = backendData?.fiblQuestions || [];
   const currentQuestion = questions[currentIdx];
@@ -29,7 +34,7 @@ const FIBL = ({ backendData }) => {
     if (step === 1 && globalTime > 0) {
       timer = setInterval(() => setGlobalTime((prev) => prev - 1), 1000);
     } else if (step === 1 && globalTime === 0) {
-      setStep(2);
+      submitTest();
     }
     return () => clearInterval(timer);
   }, [step, globalTime]);
@@ -54,7 +59,26 @@ const FIBL = ({ backendData }) => {
     if (currentIdx < questions.length - 1) {
       setCurrentIdx((prev) => prev + 1);
     } else {
-      setStep(2);
+      submitTest();
+    }
+  };
+
+  const submitTest = async () => {
+    setIsSubmitting(true);
+    try {
+      const res = await api.post("/question/fibl/submit", {
+        testId: backendData._id,
+        answers: userAnswers
+      });
+      if (res.data.success) {
+        setTestResult(res.data.data);
+        setStep(2);
+      }
+    } catch (err) {
+      console.error("Submission Failed", err);
+      alert("Failed to submit test. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -97,21 +121,69 @@ const FIBL = ({ backendData }) => {
               You will hear a recording. Type the missing words in each blank.
             </div>
             <div className="flex-grow flex flex-col items-center pt-8 px-10">
-              <FIBLController
-                key={currentQuestion._id}
-                question={currentQuestion}
-                userAnswers={userAnswers[currentQuestion._id] || {}}
-                onInputChange={(idx, val) => handleInputChange(currentQuestion._id, idx, val)}
-              />
+              {isSubmitting ? (
+                <div className="flex h-64 items-center justify-center text-[#008199] font-bold">Submitting Test...</div>
+              ) : (
+                <FIBLController
+                  key={currentQuestion._id}
+                  question={currentQuestion}
+                  userAnswers={userAnswers[currentQuestion._id] || {}}
+                  onInputChange={(idx, val) => handleInputChange(currentQuestion._id, idx, val)}
+                />
+              )}
             </div>
-            <Footer onNext={handleNext} phase="TEST" isLast={currentIdx === questions.length - 1} />
+            {!isSubmitting && (
+              <Footer onNext={handleNext} phase="TEST" isLast={currentIdx === questions.length - 1} />
+            )}
           </div>
         )}
 
         {step === 2 && (
-          <div className="flex-grow flex flex-col items-center justify-center space-y-4">
-             <div className="text-2xl font-bold text-gray-400">Practice Finished</div>
-             <button onClick={() => window.location.reload()} className="bg-[#008199] text-white px-8 py-2 rounded font-bold">Retake</button>
+          <div className="flex-grow flex flex-col items-center justify-center p-10 overflow-y-auto">
+            <div className="w-full max-w-3xl bg-white rounded shadow-sm border p-8">
+              <h1 className="text-2xl font-bold mb-6 text-center text-slate-800">Test Result</h1>
+
+              <div className="flex justify-center gap-6 mb-8">
+                <div className="text-center p-4 bg-emerald-50 rounded border border-emerald-100">
+                  <div className="text-3xl font-bold text-emerald-600">{testResult?.overallScore || 0}</div>
+                  <div className="text-xs text-emerald-800 uppercase mt-1 font-bold">Your Score</div>
+                </div>
+                <div className="text-center p-4 bg-slate-50 rounded border border-slate-100">
+                  <div className="text-3xl font-bold text-slate-600">{testResult?.maxScore || 0}</div>
+                  <div className="text-xs text-slate-500 uppercase mt-1 font-bold">Max Score</div>
+                </div>
+              </div>
+
+              {/* Detailed Breakdown */}
+              <div className="space-y-6">
+                {testResult?.details?.map((q, idx) => (
+                  <div key={idx} className="border-b pb-4">
+                    <h3 className="font-semibold text-lg text-slate-700 mb-2">{q.questionTitle}</h3>
+                    <div className="bg-slate-50 p-4 rounded text-sm space-y-2">
+                      {q.answers.map((ans, aIdx) => (
+                        <div key={aIdx} className="flex items-center gap-3">
+                          <span className="font-mono text-slate-400 w-6">#{ans.index}</span>
+                          <div className={`flex-1 px-3 py-1 rounded border ${ans.isCorrect ? 'bg-green-100 border-green-200 text-green-800' : 'bg-red-50 border-red-100 text-red-800'}`}>
+                            Your Answer: <strong>{ans.userAnswer || "(empty)"}</strong>
+                          </div>
+                          {!ans.isCorrect && (
+                            <div className="flex-1 px-3 py-1 rounded border bg-blue-50 border-blue-100 text-blue-800">
+                              Correct: <strong>{ans.correctAnswer}</strong>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 text-center">
+                <button onClick={() => window.location.reload()} className="bg-[#008199] text-white px-8 py-2 rounded uppercase font-bold text-xs hover:bg-[#006b81]">
+                  Retake Practice
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -124,7 +196,7 @@ function FIBLController({ question, userAnswers, onInputChange }) {
   const [audioProgress, setAudioProgress] = useState(0);
   const [prepTime, setPrepTime] = useState(6); // 6 seconds preparation
   const [status, setStatus] = useState("PREPARING"); // PREPARING or PLAYING
-  
+
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -197,11 +269,11 @@ function FIBLController({ question, userAnswers, onInputChange }) {
 
         {/* Status Text (Prep Timer) */}
         <div className="text-center text-white text-[12px] font-medium mb-3 h-4">
-           {status === "PREPARING" ? `Beginning in ${prepTime} seconds` : "Playing"}
+          {status === "PREPARING" ? `Beginning in ${prepTime} seconds` : "Playing"}
         </div>
 
         <div className="flex justify-center items-center text-white">
-           <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <span className="text-sm">🔊</span>
             <div className="w-24 h-[3px] bg-white/40 rounded overflow-hidden">
               <div className="w-3/4 h-full bg-white" />

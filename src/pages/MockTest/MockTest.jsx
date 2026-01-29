@@ -220,28 +220,7 @@ export default function MockTest() {
 
           {activeMainTab === "Results" && (
             <div className="flex bg-slate-100 p-1 rounded-full gap-1 mb-4">
-              <button
-                onClick={() => setActiveMainTab("Full Tests") || navigate("/mock-test")} // Reset to default or just change filter? 
-              // Actually user requested Results -> Full Tests AND Section Tests inside.
-              // Let's make "Results" have its own SubTabs: "Full Tests", "Section Tests" is redundant if we follow existing pattern.
-              // Proposal:
-              // Under "Results" Main Tab:
-              // SubTabs: "Full Tests", "Section Tests". 
-              // If Section Tests selected -> Show Sections (All, Reading, etc.)
-              // My MockTestResults component logic was:
-              // if (activeMainTab === "Full Tests") -> show full test results.
-              // Wait, "Results" is now a sibling of "Full Tests".
-              // So if I click "Results", activeMainTab is "Results".
-              // MockTestResults component expects `activeMainTab` to be "Full Tests" to show full mock results? 
-              // No, I need to pass a property or handle sub-tabs within Results.
-              // Let's Refactor:
-              // Inside "Results", we need subtabs: "Full Tests" | "Section Tests"
-              />
-              {/* Reuse Section Tabs for UI, but handle logic differently? */}
-              {/* Simpler: Just reuse the SubTab UI to switch between generic filters if needed. 
-                      Let's hardcode a local sub-tab switcher for Results or use the `activeSubTab` state.
-                   */}
-              {["Full Tests", "Section Tests"].map(t => (
+              {["Full Tests", "Section Tests", "Question Tests"].map(t => (
                 <SubTab
                   key={t}
                   label={t}

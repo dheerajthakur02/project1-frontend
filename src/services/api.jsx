@@ -123,6 +123,18 @@ export const submitRespondSituationAttempt = async (formData) => {
   return res.data;
 };
 
+export const submitReadAloudAttempt = async (attemptData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/read-aloud/submit`,
+      attemptData
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};
+
 export const submitSummarizeWrittenAttempt = async (data) => {
   try {
     const response = await axios.post(

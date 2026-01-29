@@ -18,6 +18,7 @@ import {
   Sparkles as InventoryIcon,
 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
+import { submitReadAloudAttempt } from '../../services/api';
 
 /** =========================
  *  Attempt History Component
@@ -289,6 +290,11 @@ const ReadAloudSession = () => {
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Multi-question state
+  const [allQuestions, setAllQuestions] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [sectionId, setSectionId] = useState(null);
+
   // Session State
   const [status, setStatus] = useState('prep'); // prep, recording, submitting, result
   const [timeLeft, setTimeLeft] = useState(35);
@@ -311,20 +317,34 @@ const ReadAloudSession = () => {
       try {
         const response = await axios.get(`/api/read-aloud/${id}`);
         if (response.data.success) {
-          setQuestion(response.data.data);
+          const sectionData = response.data.data;
+          // Check if it's a section with questions
+          if (sectionData.readAloudQuestions && Array.isArray(sectionData.readAloudQuestions)) {
+            setAllQuestions(sectionData.readAloudQuestions);
+            setSectionId(sectionData._id);
+            setQuestion(sectionData.readAloudQuestions[0]);
+            setCurrentIndex(0);
+          } else {
+            // Fallback if it returns a single question (unlikely given backend)
+            setQuestion(sectionData);
+            setAllQuestions([sectionData]);
+          }
           resetSession();
         } else {
           setQuestion(null);
         }
       } catch (err) {
         console.error(err);
-        setQuestion({
+        // Demo fallback
+        const demoQ = {
           id: 'RA_A_DEMO',
           name: 'Demo Question',
           text: 'Yellow is considered the most optimistic color. Yet surprisingly, people lose their tempers more often in yellow rooms, and babies cry more in them. The reason may be that yellow is the most complex color for the eyes. So, it can be overpowering if overused.',
           difficulty: 'Medium',
           isPrediction: true,
-        });
+        };
+        setQuestion(demoQ);
+        setAllQuestions([demoQ]);
       } finally {
         setLoading(false);
       }
@@ -350,7 +370,15 @@ const ReadAloudSession = () => {
   };
 
   const handleNext = () => {
-    if (question && question.nextId) navigate(`/practice/${question.nextId}`);
+    if (currentIndex < allQuestions.length - 1) {
+      const nextIdx = currentIndex + 1;
+      setCurrentIndex(nextIdx);
+      setQuestion(allQuestions[nextIdx]);
+      resetSession();
+    } else if (question && question.nextId) {
+      // Fallback or navigate to another section?
+      navigate(`/practice/${question.nextId}`);
+    }
   };
 
   const toggleTTS = () => {
@@ -395,32 +423,43 @@ const ReadAloudSession = () => {
     await SpeechRecognition.stopListening();
     setStatus('submitting');
 
-    const finalTranscript = transcript;
-
-    if (!finalTranscript) {
-      const noSpeech = {
-        score: 0,
-        pronunciation: 0,
-        fluency: 0,
-        content: 0,
-        transcript: '(No speech detected)',
-      };
-      setResult(noSpeech);
-      setSelectedAttempt(noSpeech);
-      setIsResultOpen(true);
-      setStatus('result');
-      return;
-    }
+    const finalTranscript = transcript; // Ensure transcript is captured
 
     try {
-      const res = await axios.post('/api/attempts', {
-        paragraphId: question._id || question.id,
-        transcript: finalTranscript,
-      });
+      // Construct payload for submitRL
+      // It expects { testId, answers: [{ questionId, audioUrl }] }
+      // We don't have audio upload here yet? 'transcript' is sent.
+      // My backend submitRL calculates score but doesn't strictly require audioUrl for mock scoring.
+      // But it expects 'questionId'.
 
-      if (res.data.success) {
-        setResult(res.data.data);
-        setSelectedAttempt(res.data.data);
+      const payload = {
+        testId: sectionId || question._id, // Use sectionId if available
+        answers: [{
+          questionId: question._id || question.id,
+          transcript: finalTranscript,
+          audioUrl: "mock-audio.mp3" // Placeholder or implement upload
+        }],
+        userId: "user_from_auth_if_needed"
+      };
+
+      const res = await submitReadAloudAttempt(payload);
+
+      if (res.success) {
+        // Map backend SpeakingResult to frontend 'result' object
+        // Backend: { overallScore, sectionScores: { fluency, ... } }
+        const data = res.data;
+        const mappedResult = {
+          score: data.overallScore, // Overall score (0-90)
+          // Flatten section scores to top level as Expected by View
+          fluency: data.sectionScores?.fluency || 0,
+          pronunciation: data.sectionScores?.pronunciation || 0,
+          content: data.sectionScores?.content || 0,
+          transcript: finalTranscript,
+          _id: data._id // Result ID
+        };
+
+        setResult(mappedResult);
+        setSelectedAttempt(mappedResult);
         setIsResultOpen(true);
         setStatus('result');
       }

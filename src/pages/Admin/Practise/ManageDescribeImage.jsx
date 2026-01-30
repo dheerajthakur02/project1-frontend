@@ -7,6 +7,8 @@ const ManageDescribeImage = () => {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [title, setTitle] = useState('');
+    const [keywords, setKeywords] = useState('');
+    const [modelAnswer, setModelAnswer] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -41,8 +43,10 @@ const ManageDescribeImage = () => {
         setSubmitting(true);
         const formData = new FormData();
         formData.append('title', title);
-        formData.append('image', selectedFile); // Matches upload.single('image')
+        formData.append('image', selectedFile);
         formData.append('difficulty', 'Medium');
+        formData.append('keywords', keywords);
+        formData.append('modelAnswer', modelAnswer);
 
         try {
             await axios.post('http://localhost:5000/api/image/questions', formData, {
@@ -50,6 +54,8 @@ const ManageDescribeImage = () => {
                 withCredentials: true
             });
             setTitle('');
+            setKeywords('');
+            setModelAnswer('');
             setSelectedFile(null);
             document.getElementById('image-upload').value = null;
 
@@ -66,15 +72,12 @@ const ManageDescribeImage = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure?")) return;
         try {
-            // Note: Update endpoint likely needed for delete if not present, checking controller...
-            // Assuming standard CRUD, but if delete route is missing in backend, this will fail.
-            // Wait, looking at routes/imageRoutes.js, DELETE route is MISSING!
-            // I will implement the UI but assume DELETE relies on a route implementation I might have missed or need to add.
-            // Actually, checking previous file view of imageRoutes.js, there is NO delete route. 
-            // I will add the delete logic in frontend but I must add the backend route too.
-            alert("Delete functionality requires backend update");
+            await axios.delete(`http://localhost:5000/api/image/questions/${id}`, { withCredentials: true });
+            setQuestions(questions.filter(q => q._id !== id));
+            alert("Deleted successfully");
         } catch (error) {
             console.error("Delete failed", error);
+            alert("Failed to delete question");
         }
     };
 
@@ -104,6 +107,28 @@ const ManageDescribeImage = () => {
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Keywords (comma separated)</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. map, population, growth, 2020"
+                                    value={keywords}
+                                    onChange={(e) => setKeywords(e.target.value)}
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Model Answer</label>
+                                <textarea
+                                    rows={4}
+                                    placeholder="The image describes..."
+                                    value={modelAnswer}
+                                    onChange={(e) => setModelAnswer(e.target.value)}
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition resize-none"
                                 />
                             </div>
 
@@ -164,11 +189,16 @@ const ManageDescribeImage = () => {
                                     <div>
                                         <h3 className="font-bold text-slate-800 text-lg">{q.title}</h3>
                                         <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase mt-1 inline-block">{q.difficulty}</span>
+                                        {q.keywords && q.keywords.length > 0 && (
+                                            <p className="text-xs text-slate-500 mt-2 line-clamp-1">
+                                                <span className="font-bold">Keywords:</span> {q.keywords.join(', ')}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="flex justify-end mt-2">
-                                        {/* <button onClick={() => handleDelete(q._id)} className="text-red-400 hover:text-red-500 flex items-center gap-1 text-sm font-medium hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">
+                                        <button onClick={() => handleDelete(q._id)} className="text-red-400 hover:text-red-500 flex items-center gap-1 text-sm font-medium hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">
                                             <Trash2 size={16} /> Delete
-                                        </button> */}
+                                        </button>
                                     </div>
                                 </div>
                             </div>

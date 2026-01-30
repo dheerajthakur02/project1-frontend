@@ -37,9 +37,10 @@ const ManageReadingReorder = () => {
 
     /* ------------------- API CALLS ------------------- */
     const fetchQuestions = async () => {
+        if (!user || (!user._id && !user.id)) return;
         setLoading(true);
         try {
-            const res = await axios.get(`/api/reading-reorder/get/${user._id}`);
+            const res = await axios.get(`/api/reading-reorder/get/${user._id || user.id}`);
             setQuestions(res.data.data || []);
         } catch (err) {
             console.error(err);
@@ -48,7 +49,9 @@ const ManageReadingReorder = () => {
         }
     };
 
-    useEffect(() => { fetchQuestions(); }, []);
+    useEffect(() => {
+        if (user) fetchQuestions();
+    }, [user]);
 
     const filteredQuestions = useMemo(() => {
         return questions.filter(q =>

@@ -218,7 +218,7 @@ const ManageSWTs = () => {
                   onClick={() => handleAddQuestionToForm(questionType, q)}
                   className="w-full text-left p-2 border rounded-lg hover:bg-orange-50 transition-colors text-sm text-slate-700" // Orange hover color
                 >
-                  {q.text || `Question ID: ${q._id}`}
+                  {q.title || `Question ID: ${q._id}`}
                 </button>
               ))
             )}

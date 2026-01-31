@@ -59,14 +59,25 @@ const MockTestResults = ({ activeMainTab, activeSubTab, categoryFilter }) => {
                     };
 
                     const combined = [
-                        ...rData.map(i => ({ ...i, type: 'Reading', rawType: normalizeType(i.testModel) || 'Reading', originalModel: i.testModel })),
-                        ...sData.map(i => ({ ...i, type: 'Speaking', rawType: normalizeType(i.testModel) || 'Speaking', originalModel: i.testModel })),
-                        ...wData.map(i => ({ ...i, type: 'Writing', rawType: normalizeType(i.testModel) || 'Writing', originalModel: i.testModel })),
-                        ...lData.map(i => ({ ...i, type: 'Listening', rawType: normalizeType(i.testModel) || 'Listening', originalModel: i.testModel }))
+                        ...rData.map(i => {
+                            const inferredModel = i.testModel || i.scores?.[0]?.questionType || 'Reading';
+                            return { ...i, type: 'Reading', rawType: normalizeType(inferredModel) || 'Reading', originalModel: inferredModel };
+                        }),
+                        ...sData.map(i => {
+                            const inferredModel = i.testModel || i.scores?.[0]?.questionType || 'Speaking';
+                            return { ...i, type: 'Speaking', rawType: normalizeType(inferredModel) || 'Speaking', originalModel: inferredModel };
+                        }),
+                        ...wData.map(i => {
+                            const inferredModel = i.testModel || i.scores?.[0]?.questionType || 'Writing';
+                            return { ...i, type: 'Writing', rawType: normalizeType(inferredModel) || 'Writing', originalModel: inferredModel };
+                        }),
+                        ...lData.map(i => {
+                            const inferredModel = i.testModel || i.scores?.[0]?.questionType || 'Listening';
+                            return { ...i, type: 'Listening', rawType: normalizeType(inferredModel) || 'Listening', originalModel: inferredModel };
+                        })
                     ];
 
-                    console.log("Combined Data:", combined); // DEBUG
-                    console.log("Mapped Types:", combined.map(c => `Model: ${c.originalModel} -> Raw: ${c.rawType}`)); // DEBUG
+
 
                     // 1. Whitelist: Only include known Question Types
                     const VALID_QUESTION_TYPES = [

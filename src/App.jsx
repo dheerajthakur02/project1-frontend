@@ -66,6 +66,13 @@ import ManageRLs from './pages/Admin/MockTest/Question Tests/RA';
 import ManageRLTFs from './pages/Admin/MockTest/Question Tests/RL';
 import ManageSWTs from './pages/Admin/MockTest/Question Tests/SWT';
 import ManageFIBRWs from './pages/Admin/MockTest/Question Tests/FIBRW';
+import ManageFIBDragDrops from './pages/Admin/MockTest/Question Tests/FIBDragDrop';
+import ManageSSTs from './pages/Admin/MockTest/Question Tests/SST';
+import ManageFIBLs from './pages/Admin/MockTest/Question Tests/FIBL';
+import ManageHIWs from './pages/Admin/MockTest/Question Tests/HIW';
+import ManageROs from './pages/Admin/MockTest/Question Tests/RO';
+
+import ManageWFDs from './pages/Admin/MockTest/Question Tests/WFD';
 
 
 
@@ -181,6 +188,12 @@ function App() {
 
           {/* Question Tests */}
           <Route path='mock/qtest/fib' element={<ManageFIBRWs />} />
+          <Route path='mock/qtest/fibd' element={<ManageFIBDragDrops />} />
+          <Route path='mock/qtest/ro' element={<ManageROs />} />
+          <Route path='mock/qtest/wfd' element={<ManageWFDs />} />
+          <Route path='mock/qtest/sst' element={<ManageSSTs />} />
+          <Route path='mock/qtest/fibl' element={<ManageFIBLs />} />
+          <Route path='mock/qtest/hiw' element={<ManageHIWs />} />
 
 
         </Route>

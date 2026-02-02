@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Clock } from "lucide-react";
+import {
+  ArrowLeft, Clock, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Eye, Languages
+} from "lucide-react";
 import { useSelector } from "react-redux";
 import { submitSummarizeWrittenAttempt } from "../../services/api";
 import WrittenAttemptHistory from "./History"; // import history component
@@ -8,7 +10,7 @@ const MAX_TIME = 600; // 10 minutes
 const MIN_WORDS = 5;
 const MAX_WORDS = 75;
 
-const SummarizeWrittenText = ({ question, setActiveSpeechQuestion }) => {
+const SummarizeWrittenText = ({ question, setActiveSpeechQuestion, nextButton, previousButton, shuffleButton }) => {
   const { user } = useSelector((state) => state.auth);
 
 
@@ -19,6 +21,11 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion }) => {
   const [result, setResult] = useState(null);
 
   /* ---------------- TIMER ---------------- */
+  // Reset session when question changes
+  useEffect(() => {
+    resetSession();
+  }, [question]);
+
   useEffect(() => {
     if (!started || timeLeft <= 0) return;
 
@@ -67,6 +74,14 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion }) => {
     setStatus("result");
   };
 
+  const resetSession = () => {
+    setStatus("prep");
+    setStarted(true);
+    setTimeLeft(3);
+    setAnswer("");
+    setResult(null);
+  };
+
   /* ---------------- UI ---------------- */
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -83,13 +98,7 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion }) => {
           <ArrowLeft size={20} />
         </button>
 
-        <button
-          onClick={() => { setStatus("prep"); setStarted(true); setTimeLeft(3); setAnswer(""); setResult(null); }}
-          className="p-2 hover:bg-slate-100 rounded-full text-slate-500"
-          title="Redo / Restart"
-        >
-          <Clock size={20} />
-        </button>
+
 
         <h1 className="text-xl font-bold text-slate-800">
           Summarize Written Text{" "}
@@ -246,8 +255,56 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion }) => {
         )}
       </div>
 
+      {/* Bottom Controls */}
+      <div className="flex items-center justify-between pb-10">
+        {/* LEFT SIDE: Translate, Answer, Redo */}
+        <div className="flex items-center gap-4">
+          {/* Translate (Static) */}
+          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <Languages size={18} />
+            </div>
+            <span className="text-xs font-medium">Translate</span>
+          </button>
+
+          {/* Answer (Static) */}
+          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <Eye size={18} />
+            </div>
+            <span className="text-xs font-medium">Answer</span>
+          </button>
+
+          {/* Redo */}
+          <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <RefreshCw size={18} />
+            </div>
+            <span className="text-xs font-medium">Redo</span>
+          </button>
+        </div>
+
+
+        {/* RIGHT SIDE: Prev, Next */}
+        <div className="flex items-center gap-4">
+          <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <ChevronLeft size={20} />
+            </div>
+            <span className="text-xs font-medium">Previous</span>
+          </button>
+
+          <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <ChevronRight size={20} />
+            </div>
+            <span className="text-xs font-medium">Next</span>
+          </button>
+        </div>
+      </div>
+
       {/* ---------------- LAST ATTEMPTS HISTORY ---------------- */}
-      {question.lastAttempts  && (
+      {question.lastAttempts && (
         <div className="mt-12">
           <h3 className="font-bold text-lg mb-4">Previous Attempts</h3>
           <WrittenAttemptHistory

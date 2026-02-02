@@ -16,13 +16,15 @@ import {
   CheckCircle,
   Volume2,
   Sparkles as InventoryIcon,
+  Languages,
+  Eye,
 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import { submitReadAloudAttempt, getReadAloudHistory } from '../../services/api';
 
 
 
-const getCommunityAttempts = async(questionId) => {
+const getCommunityAttempts = async (questionId) => {
   const response = await axios.get(`/api/attempts/community/${questionId}`)
   return response?.data;
 };
@@ -43,7 +45,7 @@ const AttemptHistory = ({ questionId, currentAttemptId, onSelectAttempt }) => {
             ? await getReadAloudHistory(questionId)
             : await getCommunityAttempts(questionId);
 
-           
+
 
         if (Array.isArray(response?.data)) {
           const mapped = response.data.map(item => ({
@@ -290,6 +292,17 @@ const ReadAloudSession = () => {
     setIsSpeaking(false);
   };
 
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      const prevIdx = currentIndex - 1;
+      setCurrentIndex(prevIdx);
+      setQuestion(allQuestions[prevIdx]);
+      resetSession();
+    } else if (question && question.prevId) {
+      navigate(`/practice/${question.prevId}`);
+    }
+  };
+
   const handleNext = () => {
     if (currentIndex < allQuestions.length - 1) {
       const nextIdx = currentIndex + 1;
@@ -429,12 +442,12 @@ const ReadAloudSession = () => {
     <DashboardLayout>
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Top Navigation / Header */}
-       <div>
-        <h1>Read Aloud</h1>
-        <p>
-           Look at the text below. In 40 seconds, you must read this text aloud as naturally and clearly as possible. You have 40 seconds to read aloud.
-        </p>
-       </div>
+        <div>
+          <h1>Read Aloud</h1>
+          <p>
+            Look at the text below. In 40 seconds, you must read this text aloud as naturally and clearly as possible. You have 40 seconds to read aloud.
+          </p>
+        </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button onClick={() => navigate('/practice')} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
@@ -545,39 +558,54 @@ const ReadAloudSession = () => {
 
         </div>
         <div>
-          {/* Footer Controls */}
-          <div className="flex items-center justify-center gap-6 pb-12">
-            <button onClick={() => navigate(-1)} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                <ChevronLeft size={20} />
-              </div>
-              <span className="text-xs font-medium">Previous</span>
-            </button>
+          {/* Footer Controls - UPDATED LAYOUT */}
+          <div className="flex items-center justify-between pb-12">
 
-            <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                <RefreshCw size={18} />
-              </div>
-              <span className="text-xs font-medium">Redo</span>
-            </button>
+            {/* LEFT SIDE: Translate, Answer, Redo */}
+            <div className="flex items-center gap-4">
+              {/* Translate (Static) */}
+              <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                  <Languages size={18} />
+                </div>
+                <span className="text-xs font-medium">Translate</span>
+              </button>
 
-            <button className="w-12 h-12 rounded-xl bg-slate-300 flex items-center justify-center text-white shadow-inner">
-              <CheckCircle size={24} fill="currentColor" className="text-white" />
-            </button>
+              {/* Answer (Static) */}
+              <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                  <Eye size={18} />
+                </div>
+                <span className="text-xs font-medium">Answer</span>
+              </button>
 
-            <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                <Shuffle size={18} />
-              </div>
-              <span className="text-xs font-medium">Shuffle</span>
-            </button>
+              {/* Redo (Preserved Action) */}
+              <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                  <RefreshCw size={18} />
+                </div>
+                <span className="text-xs font-medium">Redo</span>
+              </button>
+            </div>
 
-            <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                <ChevronRight size={20} />
-              </div>
-              <span className="text-xs font-medium">Next</span>
-            </button>
+
+            {/* RIGHT SIDE: Prev, Next */}
+            <div className="flex items-center gap-4">
+              <button onClick={handlePrevious} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                  <ChevronLeft size={20} />
+                </div>
+                <span className="text-xs font-medium">Previous</span>
+              </button>
+
+              <button onClick={handleNext} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                  <ChevronRight size={20} />
+                </div>
+                <span className="text-xs font-medium">Next</span>
+              </button>
+            </div>
+
           </div>
         </div>
 

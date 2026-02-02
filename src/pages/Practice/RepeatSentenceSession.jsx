@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import {
-    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye
+    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye, Languages
 } from 'lucide-react';
 import { submitRepeatAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
@@ -19,7 +19,10 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
     const [result, setResult] = useState(null);
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
-      const [showTranscript, setShowTranscript] = useState(false);
+    const [showTranscript, setShowTranscript] = useState(false);
+
+    // Flash Answer State
+    const [showFlashAnswer, setShowFlashAnswer] = useState(false);
 
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
@@ -30,6 +33,11 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
     useEffect(() => {
         transcriptRef.current = transcript;
     }, [transcript]);
+
+    // Reset session when question changes
+    useEffect(() => {
+        resetSession();
+    }, [question]);
 
     useEffect(() => {
         let interval;
@@ -169,8 +177,15 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
         resetTranscript();
         transcriptRef.current = "";
     };
-      const handleToggleTranscript = () => {
+    const handleToggleTranscript = () => {
         setShowTranscript((prev) => !prev);
+    };
+
+    const handleShowAnswer = () => {
+        setShowFlashAnswer(true);
+        setTimeout(() => {
+            setShowFlashAnswer(false);
+        }, 4000); // Show for 4 seconds
     };
 
     const progressPercent = ((maxTime - timeLeft) / maxTime) * 100;
@@ -187,12 +202,12 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
             />
 
             <div className="flex items-center justify-between">
-                 <div>
-                        <h1>Repeat Sentence</h1>
-                        <p>
+                <div>
+                    <h1>Repeat Sentence</h1>
+                    <p>
                         You will hear a sentence. Please repeat the sentence exactly as you hear it. You will hear the sentence only once
-                        </p>
-                    </div>
+                    </p>
+                </div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 hover:bg-slate-100 rounded-full">
                         <ArrowLeft size={20} />
@@ -201,7 +216,7 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
                         Repeat Sentence <span className="text-xs font-bold text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">Ai+</span>
                     </h1>
                 </div>
-                
+
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[450px] flex flex-col">
@@ -213,20 +228,20 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
                     <div className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">
                         {question.difficulty || 'Medium'}
                     </div>
-                      <button
-                                        onClick={handleToggleTranscript}
-                                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full font-bold transition-colors"
-                                    >
-                                        <Eye size={18} /> {showTranscript ? "Hide Transcript" : "Show Transcript"}
-                                    </button>
-                                </div>
-                
-                                {showTranscript && (
-                                    <div className="p-4 bg-slate-100 border-b border-slate-200 text-slate-700 italic">
-                                        {question.transcript}
-                                    </div>
-                                )}
-             
+                    <button
+                        onClick={handleToggleTranscript}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full font-bold transition-colors"
+                    >
+                        <Eye size={18} /> {showTranscript ? "Hide Transcript" : "Show Transcript"}
+                    </button>
+                </div>
+
+                {showTranscript && (
+                    <div className="p-4 bg-slate-100 border-b border-slate-200 text-slate-700 italic">
+                        {question.transcript}
+                    </div>
+                )}
+
 
                 <div className="flex-1 p-8 flex flex-col items-center justify-center">
 
@@ -369,14 +384,51 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
             </div>
 
             {/* Bottom Controls */}
-            <div className="flex items-center justify-center gap-6 pb-10">
-                <ControlBtn icon={<ChevronLeft />} label="Previous" onClick={previousButton} />
-                <ControlBtn icon={<RefreshCw size={18} />} label="Redo" onClick={resetSession} />
-                <button className="w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 shadow-inner">
-                    <CheckCircle size={24} />
-                </button>
-                <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" onClick={shuffleButton} />
-                <ControlBtn icon={<ChevronRight />} label="Next" onClick={nextButton} />
+            <div className="flex items-center justify-between pb-10">
+                {/* LEFT SIDE: Translate, Answer, Redo */}
+                <div className="flex items-center gap-4">
+                    {/* Translate (Static) */}
+                    <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <Languages size={18} />
+                        </div>
+                        <span className="text-xs font-medium">Translate</span>
+                    </button>
+
+                    {/* Answer (Flash) */}
+                    <button onClick={handleShowAnswer} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <Eye size={18} />
+                        </div>
+                        <span className="text-xs font-medium">Answer</span>
+                    </button>
+
+                    {/* Redo */}
+                    <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <RefreshCw size={18} />
+                        </div>
+                        <span className="text-xs font-medium">Redo</span>
+                    </button>
+                </div>
+
+
+                {/* RIGHT SIDE: Prev, Next */}
+                <div className="flex items-center gap-4">
+                    <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <ChevronLeft size={20} />
+                        </div>
+                        <span className="text-xs font-medium">Previous</span>
+                    </button>
+
+                    <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <ChevronRight size={20} />
+                        </div>
+                        <span className="text-xs font-medium">Next</span>
+                    </button>
+                </div>
             </div>
             {question.lastAttempts && (
                 <ImageAttemptHistory
@@ -384,6 +436,15 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
                     module={"repeat-sentence"}
                     onSelectAttempt={handleSelectAttempt}
                 />
+            )}
+
+            {/* Flash Message Overlay */}
+            {showFlashAnswer && (
+                <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-lg text-center">
+                    <p className="font-medium text-sm leading-relaxed">
+                        {question.transcript || "No transcript available."}
+                    </p>
+                </div>
             )}
         </div>
     );

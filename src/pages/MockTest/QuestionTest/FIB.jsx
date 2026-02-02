@@ -32,7 +32,7 @@ export default function FIBRWMockTest({ backendData }) {
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
       <div className="bg-[#4d4d4d] text-white px-4 py-2 flex justify-between">
-        <span className="text-lg">APEUni Mock Test - FIB RW</span>
+        <span className="text-lg">Pawan PTE - FIB RW</span>
         <span className="bg-[#666] px-2 rounded">Question {currentIdx + 1} of {questions.length}</span>
       </div>
 

@@ -115,7 +115,7 @@ export default function APEUniListeningTest({ backendData, onComplete, isFullMoc
     <div className="min-h-screen bg-[#f4f4f4] flex flex-col font-sans select-none overflow-hidden">
       <div className="bg-[#eeeeee] border-b border-gray-300">
         <div className="px-6 py-2 flex justify-between items-center text-sm font-bold text-gray-600">
-          <span>APEUni PTE Mock Test - {backendData.title || "Listening"}</span>
+          <span>Pawan PTE Mock Test - {backendData.title || "Listening"}</span>
           <button onClick={onExit} className="bg-white border border-gray-400 px-3 py-1 rounded text-xs hover:bg-gray-100">Exit Test</button>
         </div>
         <div className="h-9 bg-slate-900 flex items-center justify-end px-6 space-x-6 text-white text-xs font-medium">

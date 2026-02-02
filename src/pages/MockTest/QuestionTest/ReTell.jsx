@@ -90,7 +90,7 @@ export default function ReTellLectureMockTest({ backendData }) {
     <div className="min-h-screen bg-white flex flex-col font-sans select-none overflow-hidden text-[#333]">
       {/* HEADER BAR - The Timer here changes based on the step */}
       <div className="bg-[#4d4d4d] text-[#e0e0e0] px-4 py-2 flex justify-between items-center text-sm">
-        <div className="text-lg font-medium">APEUni Mock Test</div>
+        <div className="text-lg font-medium">Pawan PTE Mock Test</div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-1">
             <span className="text-xs opacity-70">🕒 Time Remaining</span>
@@ -155,7 +155,7 @@ function IntroScreen({ onStart }) {
     <div className="flex-grow flex flex-col items-center justify-start pt-12 px-20">
       <div className="w-full text-left space-y-4 text-sm text-gray-800 leading-relaxed">
         <p>This is a single-question type test.</p>
-        <p>After the exam, please go to the Study Center to check the correctness of your answers. APEUni's AI will help you analyze how to continue preparing for the exam.</p>
+        <p>After the exam, please go to the Study Center to check the correctness of your answers. Pawan PTE's AI will help you analyze how to continue preparing for the exam.</p>
         <p>Please click 'Next' to start the test.</p>
       </div>
 

@@ -89,7 +89,7 @@ const FIBL = ({ backendData }) => {
       {/* HEADER */}
       <div className="bg-[#eeeeee] border-b border-gray-300">
         <div className="px-4 py-2 flex justify-between items-center">
-          <span className="text-xl text-gray-700 font-medium">APEUni Mock Test</span>
+          <span className="text-xl text-gray-700 font-medium">Pawan PTE</span>
           <div className="flex flex-col items-end text-[13px] text-gray-600">
             <div className="flex items-center gap-1 font-semibold">
               <span className="material-icons-outlined text-base">schedule</span>

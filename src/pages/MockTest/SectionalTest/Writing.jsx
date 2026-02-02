@@ -106,7 +106,7 @@ export default function APEUniWritingMockTest({ backendData, onComplete, isFullM
       {/* HEADER */}
       <div className="bg-[#eeeeee] border-b border-gray-300">
         <div className="px-6 py-2 flex justify-between items-center text-sm font-bold text-gray-600">
-          <span>APEUni PTE Mock Test — Writing Section</span>
+          <span>Pawan PTE Mock Test — Writing Section</span>
           <button onClick={onExit} className="bg-white border px-3 py-1 rounded text-xs hover:bg-gray-100">Exit Test</button>
         </div>
 

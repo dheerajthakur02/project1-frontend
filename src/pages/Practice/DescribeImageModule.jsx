@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import {
     ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info,
-    BarChart2, CheckCircle, Volume2, PlayCircle, SkipForward, History, Eye, BookOpen
+    BarChart2, CheckCircle, Volume2, PlayCircle, SkipForward, History, Eye, BookOpen, Languages
 } from 'lucide-react';
 import { submitDescribeImageAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
@@ -111,6 +111,13 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion, nextButton, pr
                 icon: <Info className="w-5 h-5 text-red-600" />
             };
         }
+    };
+
+    const resetSession = () => {
+        setStatus('prep_start');
+        setTimeLeft(3);
+        setMaxTime(3);
+        setResult(null);
     };
 
     return (
@@ -252,50 +259,55 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion, nextButton, pr
             </div>
 
             {/* Bottom Controls */}
-            <div className="flex items-center justify-between bg-white px-8 py-5 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="flex items-center gap-8">
-                    <ControlBtn
-                        icon={<ChevronLeft size={22} />}
-                        label="Previous"
-                        onClick={previousButton}
-                        className="font-semibold"
-                    />
-
-                    <ControlBtn
-                        icon={<RefreshCw size={20} />}
-                        label="Redo"
-                        onClick={() => { setStatus('prep_start'); setTimeLeft(3); setMaxTime(3); setResult(null); }}
-                        className="font-semibold"
-                    />
-
-                    <button className="w-14 h-14 bg-slate-200 rounded-2xl flex items-center justify-center text-slate-700 font-bold shadow-md hover:bg-green-600 hover:text-white hover:shadow-lg active:scale-95 transition-all">
-                        <CheckCircle size={26} />
+            <div className="flex items-center justify-between pb-10 px-4">
+                {/* LEFT SIDE: Translate, Answer, Redo */}
+                <div className="flex items-center gap-4">
+                    {/* Translate (Static) */}
+                    <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <Languages size={18} />
+                        </div>
+                        <span className="text-xs font-medium">Translate</span>
                     </button>
 
-                    <ControlBtn
-                        icon={<Shuffle size={20} />}
-                        label="Shuffle"
-                        onClick={shuffleButton}
-                        className="font-semibold"
-                    />
+                    {/* Answer (Static) */}
+                    <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <Eye size={18} />
+                        </div>
+                        <span className="text-xs font-medium">Answer</span>
+                    </button>
 
-                    <ControlBtn
-                        icon={<ChevronRight size={22} />}
-                        label="Next"
-                        onClick={nextButton}
-                        className="font-semibold"
-                    />
+                    {/* Redo */}
+                    <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <RefreshCw size={18} />
+                        </div>
+                        <span className="text-xs font-medium">Redo</span>
+                    </button>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400 font-bold uppercase">Go to</span>
-                    <input type="text" className="w-10 h-8 bg-slate-800 text-white text-center rounded text-sm font-bold" defaultValue="1" />
-                    <span className="text-xs text-slate-400 font-bold">/ 700</span>
+
+                {/* RIGHT SIDE: Prev, Next */}
+                <div className="flex items-center gap-4">
+                    <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <ChevronLeft size={20} />
+                        </div>
+                        <span className="text-xs font-medium">Previous</span>
+                    </button>
+
+                    <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <ChevronRight size={20} />
+                        </div>
+                        <span className="text-xs font-medium">Next</span>
+                    </button>
                 </div>
             </div>
 
             {/* History Table */}
-            { question.lastAttempts&& (
+            {question.lastAttempts && (
                 <div className="mt-8 space-y-4">
                     {/* Header */}
                     <h3 className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-widest px-4">

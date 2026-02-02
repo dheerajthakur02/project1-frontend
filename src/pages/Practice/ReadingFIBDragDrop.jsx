@@ -134,6 +134,23 @@ const ReadingFIBDragDrop = ({ question, setActiveSpeechQuestion, nextButton, pre
         }
     }, [question]);
 
+    const [status, setStatus] = useState("prep");
+    const [timeLeft, setTimeLeft] = useState(3);
+
+    useEffect(() => {
+        if (status !== "prep") return;
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    setStatus("answering");
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [status]);
+
     const resetForm = () => {
         if (!question) return;
         const initialAnswers = {};
@@ -149,6 +166,8 @@ const ReadingFIBDragDrop = ({ question, setActiveSpeechQuestion, nextButton, pre
         setResult(null);
         setIsResultOpen(false);
         setViewAttempt(null);
+        setStatus("prep");
+        setTimeLeft(3);
     }
 
     // Drag and Drop Handlers
@@ -280,102 +299,111 @@ const ReadingFIBDragDrop = ({ question, setActiveSpeechQuestion, nextButton, pre
             </div>
 
             {/* Main Interface */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                    <div className="flex gap-4 items-center">
-                        <span className="font-bold text-slate-700 flex items-center gap-1">
-                            <Hash size={14} />
-                            {question?._id?.slice(-5)?.toUpperCase()}
-                        </span>
-                        <span className="text-slate-500 text-sm font-medium border-l border-slate-200 pl-4">
-                            {question?.title || "Reading Task"}
-                        </span>
+            {status === "prep" ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-20 text-center space-y-6">
+                    <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
+                    <div className="text-6xl font-black text-primary-600 animate-pulse">
+                        {timeLeft}
                     </div>
                 </div>
-
-                <div className="p-8">
-                    {/* Text Area with Blanks */}
-                    <div className="leading-loose text-lg text-slate-700 mb-10">
-                        {textSegments.map((segment, i) => {
-                            // Assuming segments are split by brackets, so we have text, then blank, then text...
-                            // If segments length is N, there are N-1 blanks typically if split correctly.
-                            // However, simplified logic: 
-                            // Text: "A [1] B [2] C" -> split by /\[\d+\]/ -> ["A ", " B ", " C"]
-                            // We need access to the blank index. 
-                            // Correct generic loop:
-
-                            const blankIndex = i + 1; // 1-based index
-                            const hasBlankAfter = i < textSegments.length - 1;
-
-                            return (
-                                <React.Fragment key={i}>
-                                    <span>{segment}</span>
-                                    {hasBlankAfter && (
-                                        <span
-                                            onDragOver={handleDragOver}
-                                            onDrop={(e) => handleDropOnBlank(e, blankIndex)}
-                                            className={`inline-block min-w-[120px] mx-1 px-3 py-1.5 align-middle border-2 border-dashed rounded-lg transition-all
-                                                ${userAnswers[blankIndex]
-                                                    ? 'bg-blue-50 border-blue-200 text-blue-800 font-bold'
-                                                    : 'bg-slate-50 border-slate-300 text-slate-400'
-                                                }
-                                            `}
-                                        >
-                                            {userAnswers[blankIndex] ? (
-                                                <span
-                                                    draggable
-                                                    onDragStart={(e) => handleDragStart(e, userAnswers[blankIndex], blankIndex)}
-                                                    className="cursor-grab active:cursor-grabbing"
-                                                >
-                                                    {userAnswers[blankIndex]}
-                                                </span>
-                                            ) : (
-                                                <span className="pointer-events-none opacity-50 text-sm">Drop here</span>
-                                            )}
-                                        </span>
-                                    )}
-                                </React.Fragment>
-                            );
-                        })}
-                    </div>
-
-                    {/* Options Pool */}
-                    <div
-                        className="bg-slate-50 rounded-xl p-6 border border-slate-100"
-                        onDragOver={handleDragOver}
-                        onDrop={handleDropOnPool}
-                    >
-                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Available Options</h4>
-                        <div className="flex flex-wrap gap-3">
-                            {availableOptions.map((opt, idx) => (
-                                <div
-                                    key={`${opt}-${idx}`}
-                                    draggable
-                                    onDragStart={(e) => handleDragStart(e, opt, 'pool')}
-                                    className="bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm font-medium text-slate-700 cursor-grab active:cursor-grabbing hover:border-blue-300 hover:shadow-md transition-all flex items-center gap-2"
-                                >
-                                    <GripVertical size={14} className="text-slate-300" />
-                                    {opt}
-                                </div>
-                            ))}
+            ) : (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                        <div className="flex gap-4 items-center">
+                            <span className="font-bold text-slate-700 flex items-center gap-1">
+                                <Hash size={14} />
+                                {question?._id?.slice(-5)?.toUpperCase()}
+                            </span>
+                            <span className="text-slate-500 text-sm font-medium border-l border-slate-200 pl-4">
+                                {question?.title || "Reading Task"}
+                            </span>
                         </div>
                     </div>
-                </div>
 
-                {/* Footer Controls */}
-                <div className="bg-slate-50 p-6 border-t border-slate-100 flex justify-end">
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isSubmitDisabled}
-                        className={`px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 flex items-center gap-2
+                    <div className="p-8">
+                        {/* Text Area with Blanks */}
+                        <div className="leading-loose text-lg text-slate-700 mb-10">
+                            {textSegments.map((segment, i) => {
+                                // Assuming segments are split by brackets, so we have text, then blank, then text...
+                                // If segments length is N, there are N-1 blanks typically if split correctly.
+                                // However, simplified logic: 
+                                // Text: "A [1] B [2] C" -> split by /\[\d+\]/ -> ["A ", " B ", " C"]
+                                // We need access to the blank index. 
+                                // Correct generic loop:
+
+                                const blankIndex = i + 1; // 1-based index
+                                const hasBlankAfter = i < textSegments.length - 1;
+
+                                return (
+                                    <React.Fragment key={i}>
+                                        <span>{segment}</span>
+                                        {hasBlankAfter && (
+                                            <span
+                                                onDragOver={handleDragOver}
+                                                onDrop={(e) => handleDropOnBlank(e, blankIndex)}
+                                                className={`inline-block min-w-[120px] mx-1 px-3 py-1.5 align-middle border-2 border-dashed rounded-lg transition-all
+                                                ${userAnswers[blankIndex]
+                                                        ? 'bg-blue-50 border-blue-200 text-blue-800 font-bold'
+                                                        : 'bg-slate-50 border-slate-300 text-slate-400'
+                                                    }
+                                            `}
+                                            >
+                                                {userAnswers[blankIndex] ? (
+                                                    <span
+                                                        draggable
+                                                        onDragStart={(e) => handleDragStart(e, userAnswers[blankIndex], blankIndex)}
+                                                        className="cursor-grab active:cursor-grabbing"
+                                                    >
+                                                        {userAnswers[blankIndex]}
+                                                    </span>
+                                                ) : (
+                                                    <span className="pointer-events-none opacity-50 text-sm">Drop here</span>
+                                                )}
+                                            </span>
+                                        )}
+                                    </React.Fragment>
+                                );
+                            })}
+                        </div>
+
+                        {/* Options Pool */}
+                        <div
+                            className="bg-slate-50 rounded-xl p-6 border border-slate-100"
+                            onDragOver={handleDragOver}
+                            onDrop={handleDropOnPool}
+                        >
+                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Available Options</h4>
+                            <div className="flex flex-wrap gap-3">
+                                {availableOptions.map((opt, idx) => (
+                                    <div
+                                        key={`${opt}-${idx}`}
+                                        draggable
+                                        onDragStart={(e) => handleDragStart(e, opt, 'pool')}
+                                        className="bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm font-medium text-slate-700 cursor-grab active:cursor-grabbing hover:border-blue-300 hover:shadow-md transition-all flex items-center gap-2"
+                                    >
+                                        <GripVertical size={14} className="text-slate-300" />
+                                        {opt}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer Controls */}
+                    <div className="bg-slate-50 p-6 border-t border-slate-100 flex justify-end">
+                        <button
+                            onClick={handleSubmit}
+                            disabled={isSubmitDisabled}
+                            className={`px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 flex items-center gap-2
                             ${isSubmitDisabled ? 'bg-slate-300 cursor-not-allowed text-slate-500' : 'bg-primary-600 hover:bg-primary-700 hover:shadow-primary-200'}
                         `}
-                    >
-                        <CheckCircle size={20} />
-                        Submit Answer
-                    </button>
+                        >
+                            <CheckCircle size={20} />
+                            Submit Answer
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* History Section */}
             {question && (

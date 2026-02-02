@@ -124,11 +124,30 @@ const ReadingMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, next
         }
     }, [question]);
 
+    const [status, setStatus] = useState("prep");
+    const [timeLeft, setTimeLeft] = useState(3);
+
+    useEffect(() => {
+        if (status !== "prep") return;
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    setStatus("answering");
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [status]);
+
     const resetForm = () => {
         setSelectedOptions([]);
         setResult(null);
         setIsResultOpen(false);
         setViewAttempt(null);
+        setStatus("prep");
+        setTimeLeft(3);
     }
 
     const handleOptionToggle = (option) => {
@@ -190,82 +209,91 @@ const ReadingMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, next
             </div>
 
             {/* Question Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                    <div className="flex gap-4 items-center">
-                        <span className="font-bold text-slate-700 flex items-center gap-1">
-                            <Hash size={14} />
-                            {question?._id?.slice(-5)?.toUpperCase()}
-                        </span>
-                        <span className="text-slate-500 text-sm font-medium border-l border-slate-200 pl-4">
-                            {question?.title || "Reading Task"}
-                        </span>
-                        <span className={`text-xs px-2 py-1 rounded-md font-bold shadow-sm ${question?.difficulty === 'Hard' ? 'bg-red-100 text-red-700' :
-                            question?.difficulty === 'Easy' ? 'bg-green-100 text-green-700' :
-                                'bg-yellow-100 text-yellow-700'
-                            }`}>
-                            {question?.difficulty}
-                        </span>
+            {status === "prep" ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-20 text-center space-y-6">
+                    <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
+                    <div className="text-6xl font-black text-primary-600 animate-pulse">
+                        {timeLeft}
                     </div>
                 </div>
-
-                <div className="p-0 flex flex-col md:flex-row">
-                    {/* Left Panel: Passage */}
-                    <div className="md:w-1/2 p-8 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50/30">
-                        <div className="prose prose-slate max-w-none text-slate-700 leading-relaxed text-base">
-                            {question?.text}
+            ) : (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                        <div className="flex gap-4 items-center">
+                            <span className="font-bold text-slate-700 flex items-center gap-1">
+                                <Hash size={14} />
+                                {question?._id?.slice(-5)?.toUpperCase()}
+                            </span>
+                            <span className="text-slate-500 text-sm font-medium border-l border-slate-200 pl-4">
+                                {question?.title || "Reading Task"}
+                            </span>
+                            <span className={`text-xs px-2 py-1 rounded-md font-bold shadow-sm ${question?.difficulty === 'Hard' ? 'bg-red-100 text-red-700' :
+                                question?.difficulty === 'Easy' ? 'bg-green-100 text-green-700' :
+                                    'bg-yellow-100 text-yellow-700'
+                                }`}>
+                                {question?.difficulty}
+                            </span>
                         </div>
                     </div>
 
-                    {/* Right Panel: Question & Options */}
-                    <div className="md:w-1/2 p-8">
-                        <h3 className="font-bold text-slate-800 text-lg mb-6 leading-snug">
-                            {question?.question}
-                        </h3>
+                    <div className="p-0 flex flex-col md:flex-row">
+                        {/* Left Panel: Passage */}
+                        <div className="md:w-1/2 p-8 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50/30">
+                            <div className="prose prose-slate max-w-none text-slate-700 leading-relaxed text-base">
+                                {question?.text}
+                            </div>
+                        </div>
 
-                        <div className="space-y-3">
-                            {question?.options?.map((option, index) => (
-                                <label
-                                    key={index}
-                                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer group
+                        {/* Right Panel: Question & Options */}
+                        <div className="md:w-1/2 p-8">
+                            <h3 className="font-bold text-slate-800 text-lg mb-6 leading-snug">
+                                {question?.question}
+                            </h3>
+
+                            <div className="space-y-3">
+                                {question?.options?.map((option, index) => (
+                                    <label
+                                        key={index}
+                                        className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer group
                                         ${selectedOptions.includes(option)
-                                            ? 'border-blue-500 bg-blue-50/50'
-                                            : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'
-                                        }
+                                                ? 'border-blue-500 bg-blue-50/50'
+                                                : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'
+                                            }
                                     `}
-                                    onClick={() => handleOptionToggle(option)}
-                                >
-                                    <div className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center transition-colors flex-shrink-0
+                                        onClick={() => handleOptionToggle(option)}
+                                    >
+                                        <div className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center transition-colors flex-shrink-0
                                         ${selectedOptions.includes(option)
-                                            ? 'bg-blue-500 border-blue-500 text-white'
-                                            : 'border-slate-300 bg-white group-hover:border-slate-400'
-                                        }
+                                                ? 'bg-blue-500 border-blue-500 text-white'
+                                                : 'border-slate-300 bg-white group-hover:border-slate-400'
+                                            }
                                     `}>
-                                        {selectedOptions.includes(option) && <CheckCircle size={14} />}
-                                    </div>
-                                    <span className={`text-sm font-medium transition-colors ${selectedOptions.includes(option) ? 'text-slate-800' : 'text-slate-600'}`}>
-                                        {option}
-                                    </span>
-                                </label>
-                            ))}
+                                            {selectedOptions.includes(option) && <CheckCircle size={14} />}
+                                        </div>
+                                        <span className={`text-sm font-medium transition-colors ${selectedOptions.includes(option) ? 'text-slate-800' : 'text-slate-600'}`}>
+                                            {option}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Footer Controls */}
-                <div className="bg-slate-50 p-6 border-t border-slate-100 flex justify-end">
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isSubmitDisabled}
-                        className={`px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 flex items-center gap-2
+                    {/* Footer Controls */}
+                    <div className="bg-slate-50 p-6 border-t border-slate-100 flex justify-end">
+                        <button
+                            onClick={handleSubmit}
+                            disabled={isSubmitDisabled}
+                            className={`px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 flex items-center gap-2
                             ${isSubmitDisabled ? 'bg-slate-300 cursor-not-allowed text-slate-500' : 'bg-primary-600 hover:bg-primary-700 hover:shadow-primary-200'}
                         `}
-                    >
-                        <CheckCircle size={20} />
-                        Submit Answer
-                    </button>
+                        >
+                            <CheckCircle size={20} />
+                            Submit Answer
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* History Section */}
             {question && (

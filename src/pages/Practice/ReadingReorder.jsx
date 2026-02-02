@@ -116,6 +116,23 @@ const ReadingReorder = ({ question, setActiveSpeechQuestion, nextButton, previou
         }
     }, [question]);
 
+    const [status, setStatus] = useState("prep");
+    const [timeLeft, setTimeLeft] = useState(3);
+
+    useEffect(() => {
+        if (status !== "prep") return;
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    setStatus("answering");
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [status]);
+
     const resetForm = () => {
         if (!question) return;
         // Shuffle source items for display
@@ -128,6 +145,8 @@ const ReadingReorder = ({ question, setActiveSpeechQuestion, nextButton, previou
         setResult(null);
         setIsResultOpen(false);
         setViewAttempt(null);
+        setStatus("prep");
+        setTimeLeft(3);
     };
 
     const handleDragStart = (e, item, source) => {
@@ -217,84 +236,93 @@ const ReadingReorder = ({ question, setActiveSpeechQuestion, nextButton, previou
             </div>
 
             {/* Main Interface: Split Pane */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[600px]">
-
-                {/* SOURCE COLUMN */}
-                <div className="bg-slate-50 rounded-2xl border border-slate-200 flex flex-col overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-200 bg-white">
-                        <h3 className="font-bold text-slate-700">Source</h3>
-                    </div>
-                    <div className="flex-1 p-6 overflow-y-auto space-y-3">
-                        {sourceItems.map((item) => (
-                            <div
-                                key={item.id}
-                                draggable
-                                onDragStart={(e) => handleDragStart(e, item, 'source')}
-                                onClick={() => moveToTarget(item)}
-                                className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 cursor-grab active:cursor-grabbing transition-all flex gap-4 group"
-                            >
-                                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                                    {/* Usually source doesn't have letters A/B/C fixed, but purely content */}
-                                    {/* Or use item.id if it is A,B,C... */}
-                                    <GripVertical size={16} />
-                                </div>
-                                <p className="text-slate-700 text-sm leading-relaxed select-none">{item.text}</p>
-                            </div>
-                        ))}
-                        {sourceItems.length === 0 && (
-                            <div className="h-full flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
-                                <span className="text-sm">All items moved</span>
-                            </div>
-                        )}
+            {status === "prep" ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-20 text-center space-y-6">
+                    <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
+                    <div className="text-6xl font-black text-primary-600 animate-pulse">
+                        {timeLeft}
                     </div>
                 </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[600px]">
 
-                {/* TARGET COLUMN */}
-                <div
-                    className="bg-blue-50/50 rounded-2xl border-2 border-dashed border-blue-200 flex flex-col overflow-hidden"
-                    onDragOver={handleDragOver}
-                    onDrop={handleDropOnTarget}
-                >
-                    <div className="px-6 py-4 border-b border-blue-100 bg-blue-50">
-                        <h3 className="font-bold text-blue-800">Your Answer</h3>
-                    </div>
-                    <div className="flex-1 p-6 overflow-y-auto space-y-3">
-                        {targetItems.length === 0 && (
-                            <div className="h-full flex flex-col items-center justify-center text-slate-400">
-                                <span className="text-sm">+ Drag here</span>
-                            </div>
-                        )}
-                        {targetItems.map((item, index) => (
-                            <div
-                                key={item.id}
-                                draggable
-                                onDragStart={(e) => handleDragStart(e, item, 'target')}
-                                onClick={() => moveToSource(item)}
-                                className="bg-white p-4 rounded-xl border border-blue-200 shadow-sm cursor-grab active:cursor-grabbing flex gap-4"
-                            >
-                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 border border-blue-200 shadow-sm">
-                                    {/* Dynamic Alphabet Index logic if needed, or just specific visual */}
-                                    {String.fromCharCode(65 + index)}
+                    {/* SOURCE COLUMN */}
+                    <div className="bg-slate-50 rounded-2xl border border-slate-200 flex flex-col overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200 bg-white">
+                            <h3 className="font-bold text-slate-700">Source</h3>
+                        </div>
+                        <div className="flex-1 p-6 overflow-y-auto space-y-3">
+                            {sourceItems.map((item) => (
+                                <div
+                                    key={item.id}
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, item, 'source')}
+                                    onClick={() => moveToTarget(item)}
+                                    className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 cursor-grab active:cursor-grabbing transition-all flex gap-4 group"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                        {/* Usually source doesn't have letters A/B/C fixed, but purely content */}
+                                        {/* Or use item.id if it is A,B,C... */}
+                                        <GripVertical size={16} />
+                                    </div>
+                                    <p className="text-slate-700 text-sm leading-relaxed select-none">{item.text}</p>
                                 </div>
-                                <p className="text-slate-700 text-sm leading-relaxed select-none">{item.text}</p>
-                            </div>
-                        ))}
+                            ))}
+                            {sourceItems.length === 0 && (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+                                    <span className="text-sm">All items moved</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    <div className="p-4 bg-white/50 border-t border-blue-100 flex justify-end">
-                        <button
-                            onClick={handleSubmit}
-                            disabled={isSubmitDisabled}
-                            className={`px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 flex items-center gap-2
+
+                    {/* TARGET COLUMN */}
+                    <div
+                        className="bg-blue-50/50 rounded-2xl border-2 border-dashed border-blue-200 flex flex-col overflow-hidden"
+                        onDragOver={handleDragOver}
+                        onDrop={handleDropOnTarget}
+                    >
+                        <div className="px-6 py-4 border-b border-blue-100 bg-blue-50">
+                            <h3 className="font-bold text-blue-800">Your Answer</h3>
+                        </div>
+                        <div className="flex-1 p-6 overflow-y-auto space-y-3">
+                            {targetItems.length === 0 && (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                                    <span className="text-sm">+ Drag here</span>
+                                </div>
+                            )}
+                            {targetItems.map((item, index) => (
+                                <div
+                                    key={item.id}
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, item, 'target')}
+                                    onClick={() => moveToSource(item)}
+                                    className="bg-white p-4 rounded-xl border border-blue-200 shadow-sm cursor-grab active:cursor-grabbing flex gap-4"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 border border-blue-200 shadow-sm">
+                                        {/* Dynamic Alphabet Index logic if needed, or just specific visual */}
+                                        {String.fromCharCode(65 + index)}
+                                    </div>
+                                    <p className="text-slate-700 text-sm leading-relaxed select-none">{item.text}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="p-4 bg-white/50 border-t border-blue-100 flex justify-end">
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isSubmitDisabled}
+                                className={`px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 flex items-center gap-2
                                 ${isSubmitDisabled ? 'bg-slate-300 cursor-not-allowed text-slate-500' : 'bg-primary-600 hover:bg-primary-700 hover:shadow-primary-200'}
                             `}
-                        >
-                            <CheckCircle size={20} />
-                            Submit Answer
-                        </button>
+                            >
+                                <CheckCircle size={20} />
+                                Submit Answer
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-            </div>
+                </div>
+            )}
 
             {/* History Section */}
             {question && (

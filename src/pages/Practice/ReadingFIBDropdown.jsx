@@ -128,6 +128,23 @@ const ReadingFIBDropdown = ({ question, setActiveSpeechQuestion, nextButton, pre
         }
     }, [question]);
 
+    const [status, setStatus] = useState("prep");
+    const [timeLeft, setTimeLeft] = useState(3);
+
+    useEffect(() => {
+        if (status !== "prep") return;
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    setStatus("answering");
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [status]);
+
     const resetForm = () => {
         if (!question) return;
         const initialAnswers = {};
@@ -138,6 +155,8 @@ const ReadingFIBDropdown = ({ question, setActiveSpeechQuestion, nextButton, pre
         setResult(null);
         setIsResultOpen(false);
         setViewAttempt(null);
+        setStatus("prep");
+        setTimeLeft(3);
     }
 
     const handleAnswerChange = (index, value) => {
@@ -209,67 +228,76 @@ const ReadingFIBDropdown = ({ question, setActiveSpeechQuestion, nextButton, pre
             </div>
 
             {/* Question Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                    <div className="flex gap-4 items-center">
-                        <span className="font-bold text-slate-700 flex items-center gap-1">
-                            <Hash size={14} />
-                            {question?._id?.slice(-5)?.toUpperCase()}
-                        </span>
-                        <span className="text-slate-500 text-sm font-medium border-l border-slate-200 pl-4">
-                            {question?.title || "Reading Task"}
-                        </span>
+            {status === "prep" ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-20 text-center space-y-6">
+                    <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
+                    <div className="text-6xl font-black text-primary-600 animate-pulse">
+                        {timeLeft}
                     </div>
-                    {question?.isPrediction && (
-                        <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-md font-bold shadow-sm">
-                            Predictive
-                        </span>
-                    )}
                 </div>
+            ) : (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                        <div className="flex gap-4 items-center">
+                            <span className="font-bold text-slate-700 flex items-center gap-1">
+                                <Hash size={14} />
+                                {question?._id?.slice(-5)?.toUpperCase()}
+                            </span>
+                            <span className="text-slate-500 text-sm font-medium border-l border-slate-200 pl-4">
+                                {question?.title || "Reading Task"}
+                            </span>
+                        </div>
+                        {question?.isPrediction && (
+                            <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-md font-bold shadow-sm">
+                                Predictive
+                            </span>
+                        )}
+                    </div>
 
-                <div className="p-8 leading-relaxed text-lg text-slate-700">
-                    {textSegments.map((segment, i) => {
-                        const isOneIndexed = question?.blanks?.length > 0 && !question.blanks.some(b => b.index === 0);
-                        const targetIndex = isOneIndexed ? i + 1 : i;
-                        const blank = question?.blanks?.find(b => b.index === targetIndex);
+                    <div className="p-8 leading-relaxed text-lg text-slate-700">
+                        {textSegments.map((segment, i) => {
+                            const isOneIndexed = question?.blanks?.length > 0 && !question.blanks.some(b => b.index === 0);
+                            const targetIndex = isOneIndexed ? i + 1 : i;
+                            const blank = question?.blanks?.find(b => b.index === targetIndex);
 
-                        return (
-                            <React.Fragment key={i}>
-                                <span>{segment}</span>
-                                {i < textSegments.length - 1 && blank && (
-                                    <span className="inline-block mx-1 align-middle">
-                                        <select
-                                            value={userAnswers[targetIndex] || ""}
-                                            onChange={(e) => handleAnswerChange(targetIndex, e.target.value)}
-                                            className="appearance-none px-4 py-1.5 rounded-lg border-2 text-base font-medium transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-100 bg-white border-slate-200 hover:border-blue-400 text-slate-700"
-                                            style={{ minWidth: '120px' }}
-                                        >
-                                            <option value="" disabled className="text-slate-300">Select...</option>
-                                            {blank.options.map((opt, optIdx) => (
-                                                <option key={optIdx} value={opt} className="text-slate-700">{opt}</option>
-                                            ))}
-                                        </select>
-                                    </span>
-                                )}
-                            </React.Fragment>
-                        );
-                    })}
-                </div>
+                            return (
+                                <React.Fragment key={i}>
+                                    <span>{segment}</span>
+                                    {i < textSegments.length - 1 && blank && (
+                                        <span className="inline-block mx-1 align-middle">
+                                            <select
+                                                value={userAnswers[targetIndex] || ""}
+                                                onChange={(e) => handleAnswerChange(targetIndex, e.target.value)}
+                                                className="appearance-none px-4 py-1.5 rounded-lg border-2 text-base font-medium transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-100 bg-white border-slate-200 hover:border-blue-400 text-slate-700"
+                                                style={{ minWidth: '120px' }}
+                                            >
+                                                <option value="" disabled className="text-slate-300">Select...</option>
+                                                {blank.options.map((opt, optIdx) => (
+                                                    <option key={optIdx} value={opt} className="text-slate-700">{opt}</option>
+                                                ))}
+                                            </select>
+                                        </span>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
+                    </div>
 
-                {/* Footer Controls */}
-                <div className="bg-slate-50 p-6 border-t border-slate-100 flex justify-end">
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isSubmitDisabled}
-                        className={`px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 flex items-center gap-2
+                    {/* Footer Controls */}
+                    <div className="bg-slate-50 p-6 border-t border-slate-100 flex justify-end">
+                        <button
+                            onClick={handleSubmit}
+                            disabled={isSubmitDisabled}
+                            className={`px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 flex items-center gap-2
                             ${isSubmitDisabled ? 'bg-slate-300 cursor-not-allowed text-slate-500' : 'bg-primary-600 hover:bg-primary-700 hover:shadow-primary-200'}
                         `}
-                    >
-                        <CheckCircle size={20} />
-                        Submit Answer
-                    </button>
+                        >
+                            <CheckCircle size={20} />
+                            Submit Answer
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* History Section */}
             {question && (

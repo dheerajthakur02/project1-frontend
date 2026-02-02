@@ -841,7 +841,7 @@ const ReadAloudSession = () => {
                     <p className="text-lg leading-relaxed text-slate-700">
                       {(view.wordAnalysis || question.text.split(' ').map((w) => ({ word: w, status: 'good' }))).map((item, index) => {
                         let colorClass = 'decoration-green-400';
-                        let textColor = 'text-slate-700';
+                        let textColor = 'text-green-700';
 
                         if (item.status === 'bad') {
                           colorClass = 'decoration-red-400 decoration-wavy';
@@ -864,8 +864,8 @@ const ReadAloudSession = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 mt-6">
-                    <div className="flex items-center gap-3 bg-slate-800 text-white px-4 py-2 rounded-xl">
-                      <div className="w-6 h-6 rounded-full bg-slate-600 flex items-center justify-center font-bold text-xs">
+                    <div className="flex items-center gap-3 bg-green-50 text-green-700 px-4 py-2 rounded-xl border border-green-100">
+                      <div className="w-6 h-6 rounded-full bg-green-200 flex items-center justify-center font-bold text-xs">
                         {Math.floor(question.text.split(' ').length * 0.7)}
                       </div>
                       <span className="font-semibold text-sm">Good Pronun.</span>

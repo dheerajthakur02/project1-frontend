@@ -3,17 +3,17 @@ import { ArrowLeft, Volume2, RotateCcw, ChevronRight, X, Play, CheckCircle2, Inf
 import { submitChooseSingleAnswerAttempt, submitHighlightAttempt, submitSelectMissingWordAttempt } from "../../services/api";
 import { useSelector } from "react-redux";
 
-const PREP_TIME = 5;
+const PREP_TIME = 3;
 
-export default function SelectMissingWord({ question, setActiveSpeechQuestion,nextButton, previousButton, shuffleButton }) {
+export default function SelectMissingWord({ question, setActiveSpeechQuestion, nextButton, previousButton, shuffleButton }) {
 
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState("countdown");
   const [prepTimer, setPrepTimer] = useState(PREP_TIME);
   const [selectedOption, setSelectedOption] = useState(null);
   const [result, setResult] = useState(null);
   const [audioDuration, setAudioDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  
+
   const audioRef = useRef(null);
   const progressRef = useRef(null);
   const { user } = useSelector((state) => state.auth);
@@ -75,7 +75,7 @@ export default function SelectMissingWord({ question, setActiveSpeechQuestion,ne
 
 
       // Backend usually returns { success: true, data: { ... } }
-      setResult(res.data); 
+      setResult(res.data);
       setStatus("result");
     } catch (err) {
       console.error("Submission error:", err);
@@ -85,7 +85,7 @@ export default function SelectMissingWord({ question, setActiveSpeechQuestion,ne
   return (
     <div className="min-h-screen bg-[#f8fafc] p-4 lg:p-8">
       <div className="max-w-7xl mx-auto  gap-8">
-        
+
         {/* LEFT COLUMN: MAIN TASK */}
         <div className=" space-y-6">
           {/* HEADER */}
@@ -104,182 +104,180 @@ export default function SelectMissingWord({ question, setActiveSpeechQuestion,ne
           </div>
 
           {/* TASK CARD */}
-          <div className="bg-white rounded-[2.5rem] border shadow-sm relative overflow-hidden flex flex-col min-h-[600px]">
-            {/* AUDIO CONTROL BAR */}
-            <div className="px-10 py-8 bg-slate-50/80 border-b flex items-center gap-8">
-              <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                {status === "countdown" ? prepTimer : <Headphones size={24} />}
-              </div>
-              
-              <div className="flex-1 flex flex-col gap-2">
-                <div
-                  ref={progressRef}
-                  onClick={(e) => {
-                    if (status !== 'playing' && status !== 'finished') return;
-                    const rect = progressRef.current.getBoundingClientRect();
-                    const percent = (e.clientX - rect.left) / rect.width;
-                    audioRef.current.currentTime = percent * audioDuration;
-                  }}
-                  className="h-2 bg-slate-200 rounded-full overflow-hidden relative cursor-pointer"
-                >
+          {status === "countdown" ? (
+            <div className="bg-white rounded-[2.5rem] border shadow-sm p-20 text-center space-y-6 flex flex-col items-center justify-center min-h-[600px]">
+              <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
+              <div className="text-6xl font-black text-blue-600 animate-pulse">{prepTimer}</div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-[2.5rem] border shadow-sm relative overflow-hidden flex flex-col min-h-[600px]">
+              {/* AUDIO CONTROL BAR */}
+              <div className="px-10 py-8 bg-slate-50/80 border-b flex items-center gap-8">
+                <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                  {status === "countdown" ? prepTimer : <Headphones size={24} />}
+                </div>
+
+                <div className="flex-1 flex flex-col gap-2">
                   <div
-                    className="h-full bg-blue-500 transition-all"
-                    style={{ width: `${(currentTime / audioDuration) * 100 || 0}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs font-bold text-slate-400">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(audioDuration)}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <Volume2 size={20} className="text-slate-400" />
-                <select className="bg-white border rounded-lg px-2 py-1 text-xs font-bold outline-none">
-                  <option>1.0x</option>
-                  <option>0.75x</option>
-                  <option>1.2x</option>
-                </select>
-              </div>
-            </div>
-
-            {/* OVERLAY FOR START */}
-            {status === "idle" && (
-              <div className="absolute inset-0 z-20 bg-slate-900/40 backdrop-blur-[2px] flex items-center justify-center">
-                <button onClick={handleStartPrep} className="group flex flex-col items-center gap-4 transition-transform hover:scale-105">
-                  <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-white/20">
-                    <Play fill="white" className="text-white ml-1" size={32} />
-                  </div>
-                  <span className="text-white font-black tracking-widest uppercase">Click To Start</span>
-                </button>
-              </div>
-            )}
-
-            {/* OPTIONS BOX */}
-            <div className="p-10 flex-1">
-              <div className="border-2 border-dashed border-slate-100 rounded-[2rem] p-6 space-y-4">
-                <h2>{question.title}</h2>
-                {question.options.map((option, index) => {
-                  const isSelected = selectedOption === index;
-                  return (
+                    ref={progressRef}
+                    onClick={(e) => {
+                      if (status !== 'playing' && status !== 'finished') return;
+                      const rect = progressRef.current.getBoundingClientRect();
+                      const percent = (e.clientX - rect.left) / rect.width;
+                      audioRef.current.currentTime = percent * audioDuration;
+                    }}
+                    className="h-2 bg-slate-200 rounded-full overflow-hidden relative cursor-pointer"
+                  >
                     <div
-                      key={option._id}
-                      onClick={() => setSelectedOption(index)}
-                      className={`flex gap-6 p-5 rounded-2xl border-2 transition-all cursor-pointer ${
-                        isSelected ? "border-blue-500 bg-blue-50/30" : "border-transparent hover:bg-slate-50"
-                      }`}
-                    >
-                      <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center mt-1 ${isSelected ? "border-blue-500 bg-blue-500" : "border-slate-300"}`}>
-                        {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
-                      </div>
-                      <div className="flex-1">
-                        <span className={`font-black text-sm mb-1 block ${isSelected ? "text-blue-600" : "text-slate-400"}`}>
-                          OPTION {String.fromCharCode(65 + index)}
-                        </span>
-                        <p className={`text-[15px] leading-relaxed font-medium ${isSelected ? "text-slate-900" : "text-slate-600"}`}>
-                          {option.text}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                      className="h-full bg-blue-500 transition-all"
+                      style={{ width: `${(currentTime / audioDuration) * 100 || 0}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs font-bold text-slate-400">
+                    <span>{formatTime(currentTime)}</span>
+                    <span>{formatTime(audioDuration)}</span>
+                  </div>
+                </div>
 
-            {/* FOOTER NAV */}
-        
-          </div>
+                <div className="flex items-center gap-4">
+                  <Volume2 size={20} className="text-slate-400" />
+                  <select className="bg-white border rounded-lg px-2 py-1 text-xs font-bold outline-none">
+                    <option>1.0x</option>
+                    <option>0.75x</option>
+                    <option>1.2x</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* OVERLAY FOR START */}
+              {/* OVERLAY FOR START - REMOVED FOR AUTO START */}
+              {/* {status === "idle" && ( ... )} */}
+
+              {/* OPTIONS BOX */}
+              <div className="p-10 flex-1">
+                <div className="border-2 border-dashed border-slate-100 rounded-[2rem] p-6 space-y-4">
+                  <h2>{question.title}</h2>
+                  {question.options.map((option, index) => {
+                    const isSelected = selectedOption === index;
+                    return (
+                      <div
+                        key={option._id}
+                        onClick={() => setSelectedOption(index)}
+                        className={`flex gap-6 p-5 rounded-2xl border-2 transition-all cursor-pointer ${isSelected ? "border-blue-500 bg-blue-50/30" : "border-transparent hover:bg-slate-50"
+                          }`}
+                      >
+                        <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center mt-1 ${isSelected ? "border-blue-500 bg-blue-500" : "border-slate-300"}`}>
+                          {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
+                        </div>
+                        <div className="flex-1">
+                          <span className={`font-black text-sm mb-1 block ${isSelected ? "text-blue-600" : "text-slate-400"}`}>
+                            OPTION {String.fromCharCode(65 + index)}
+                          </span>
+                          <p className={`text-[15px] leading-relaxed font-medium ${isSelected ? "text-slate-900" : "text-slate-600"}`}>
+                            {option.text}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* FOOTER NAV */}
+
+            </div>
+          )}
         </div>
 
         {/* RIGHT COLUMN: HISTORY */}
-    
+
       </div>
-          <div className="p-8 border-t bg-white flex justify-between items-center">
-              <div className="flex gap-4">
-                <button onClick={previousButton} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
-                  <ArrowLeft size={20} /> Previous
-                </button>
-                <button onClick={() => { setSelectedOption(null); setStatus("idle"); setPrepTimer(PREP_TIME); }} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
-                  <RotateCcw size={20} /> Redo
-                </button>
-              </div>
-
-              <button 
-                disabled={selectedOption === null || status === "idle"}
-                onClick={handleSubmit}
-                className="bg-blue-600 disabled:bg-slate-200 text-white px-10 py-3 rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
-              >
-                <CheckCircle2 size={20} /> Submit Answer
-              </button>
-
-              <div className="flex items-center gap-4">
-                <button onClick={nextButton} className="flex items-center gap-2 font-bold text-blue-600">Next <ChevronRight size={20} /></button>
-              </div>
-            </div>
-         
-<div>
-  <div className="bg-white rounded-[2rem] border shadow-sm p-6 min-h-[400px]">
-    <h3 className="font-black text-slate-800 flex items-center gap-2 mb-6">
-      <History size={20} className="text-blue-500" />
-      Attempt History
-    </h3>
-
-    <div className="space-y-4">
-      {question.lastAttempts && question.lastAttempts.length > 0 ? (
-        question.lastAttempts.map((attempt, index) => (
-          <div
-            key={attempt._id || index}
-            className="bg-slate-50 rounded-2xl px-6 py-4 flex items-center justify-between"
-          >
-            {/* LEFT */}
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-black text-slate-600">
-                K
-              </div>
-
-              <div>
-                <p className="font-bold text-slate-800">Krishna kant</p>
-                <p className="text-xs text-slate-400">
-                  {new Date(attempt.createdAt).toLocaleDateString()}{" "}
-                  {new Date(attempt.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            </div>
-
-            {/* CENTER SCORE BUTTON */}
-            <button
-              onClick={() => handleViewPrevious(attempt)}
-              className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold px-6 py-2 rounded-xl flex items-center gap-2 shadow-sm transition"
-            >
-              Score {attempt.isCorrect ? "1/1" : "0/1"} 
-              <RotateCcw size={16} />
-            </button>
-
-            {/* RIGHT ICONS */}
-            <div className="flex items-center gap-3 text-slate-400">
-              <button className="hover:text-indigo-500 transition">
-                <Share2 size={18} />
-              </button>
-              <button className="hover:text-red-500 transition">
-                <Trash2 size={18} />
-              </button>
-            </div>
-          </div>
-        ))
-      ) : (
-        <div className="text-center py-10">
-          <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-            <History size={20} className="text-slate-300" />
-          </div>
-          <p className="text-xs font-bold text-slate-400">No previous attempts</p>
+      <div className="p-8 border-t bg-white flex justify-between items-center">
+        <div className="flex gap-4">
+          <button onClick={previousButton} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
+            <ArrowLeft size={20} /> Previous
+          </button>
+          <button onClick={() => { setSelectedOption(null); setStatus("countdown"); setPrepTimer(PREP_TIME); }} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
+            <RotateCcw size={20} /> Redo
+          </button>
         </div>
-      )}
-    </div>
-  </div>
-</div>
+
+        <button
+          disabled={selectedOption === null || status === "idle"}
+          onClick={handleSubmit}
+          className="bg-blue-600 disabled:bg-slate-200 text-white px-10 py-3 rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
+        >
+          <CheckCircle2 size={20} /> Submit Answer
+        </button>
+
+        <div className="flex items-center gap-4">
+          <button onClick={nextButton} className="flex items-center gap-2 font-bold text-blue-600">Next <ChevronRight size={20} /></button>
+        </div>
+      </div>
+
+      <div>
+        <div className="bg-white rounded-[2rem] border shadow-sm p-6 min-h-[400px]">
+          <h3 className="font-black text-slate-800 flex items-center gap-2 mb-6">
+            <History size={20} className="text-blue-500" />
+            Attempt History
+          </h3>
+
+          <div className="space-y-4">
+            {question.lastAttempts && question.lastAttempts.length > 0 ? (
+              question.lastAttempts.map((attempt, index) => (
+                <div
+                  key={attempt._id || index}
+                  className="bg-slate-50 rounded-2xl px-6 py-4 flex items-center justify-between"
+                >
+                  {/* LEFT */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-black text-slate-600">
+                      K
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-slate-800">Krishna kant</p>
+                      <p className="text-xs text-slate-400">
+                        {new Date(attempt.createdAt).toLocaleDateString()}{" "}
+                        {new Date(attempt.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* CENTER SCORE BUTTON */}
+                  <button
+                    onClick={() => handleViewPrevious(attempt)}
+                    className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold px-6 py-2 rounded-xl flex items-center gap-2 shadow-sm transition"
+                  >
+                    Score {attempt.isCorrect ? "1/1" : "0/1"}
+                    <RotateCcw size={16} />
+                  </button>
+
+                  {/* RIGHT ICONS */}
+                  <div className="flex items-center gap-3 text-slate-400">
+                    <button className="hover:text-indigo-500 transition">
+                      <Share2 size={18} />
+                    </button>
+                    <button className="hover:text-red-500 transition">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-10">
+                <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <History size={20} className="text-slate-300" />
+                </div>
+                <p className="text-xs font-bold text-slate-400">No previous attempts</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* AUDIO ELEMENT */}
       <audio
@@ -293,10 +291,10 @@ export default function SelectMissingWord({ question, setActiveSpeechQuestion,ne
 
       {/* RESULT MODAL */}
       {status === "result" && result && (
-        <HCSResultModal 
-          result={result} 
-          onClose={() => setStatus("idle")} 
-          onRedo={() => { setStatus("idle"); setSelectedOption(null); setPrepTimer(PREP_TIME); }} 
+        <HCSResultModal
+          result={result}
+          onClose={() => setStatus("idle")}
+          onRedo={() => { setStatus("countdown"); setSelectedOption(null); setPrepTimer(PREP_TIME); }}
         />
       )}
     </div>
@@ -307,20 +305,20 @@ export default function SelectMissingWord({ question, setActiveSpeechQuestion,ne
 const HCSResultModal = ({ result, onClose, onRedo }) => {
 
 
-    const radius = 45;
-const circumference = 2 * Math.PI * radius;
-const progress = result.score; // 0 or 1
-const offset = circumference - circumference * progress;
+  const radius = 45;
+  const circumference = 2 * Math.PI * radius;
+  const progress = result.score; // 0 or 1
+  const offset = circumference - circumference * progress;
 
   return (
     <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
       <div className="bg-white w-full max-w-6xl rounded-[3rem] shadow-2xl overflow-hidden relative border">
-        
+
         {/* MODAL HEADER */}
         <div className="p-8 flex justify-between items-center border-b bg-slate-50/50">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-100">
-               <Share2 size={24} />
+              <Share2 size={24} />
             </div>
             <div>
               <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none mb-1">
@@ -352,42 +350,42 @@ const offset = circumference - circumference * progress;
             <h3 className="text-sm font-black text-slate-400 mb-8 uppercase tracking-widest">Performance Score</h3>
             <div className="relative w-full aspect-square max-w-[240px] flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
-  <circle
-    cx="60"
-    cy="60"
-    r={radius}
-    fill="none"
-    stroke="#f1f5f9"
-    strokeWidth="18"
-    strokeLinecap="round"
-  />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r={radius}
+                  fill="none"
+                  stroke="#f1f5f9"
+                  strokeWidth="18"
+                  strokeLinecap="round"
+                />
 
-  <circle
-    cx="60"
-    cy="60"
-    r={radius}
-    fill="none"
-    stroke="url(#modalGradient)"
-    strokeWidth="18"
-    strokeLinecap="round"
-    strokeDasharray={circumference}
-    strokeDashoffset={offset}
-    className="transition-all duration-[1000ms]"
-  />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r={radius}
+                  fill="none"
+                  stroke="url(#modalGradient)"
+                  strokeWidth="18"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={offset}
+                  className="transition-all duration-[1000ms]"
+                />
 
-  <defs>
-    <linearGradient id="modalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stopColor="#3b82f6" />
-      <stop offset="100%" stopColor="#8b5cf6" />
-    </linearGradient>
-  </defs>
-</svg>
+                <defs>
+                  <linearGradient id="modalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#3b82f6" />
+                    <stop offset="100%" stopColor="#8b5cf6" />
+                  </linearGradient>
+                </defs>
+              </svg>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                 <span className="text-6xl font-black text-slate-800">{result.score}</span>
-                 <div className="flex justify-between w-32 mt-2 text-[10px] font-black text-slate-300 uppercase">
-                   <span>0</span><span>1</span>
-                 </div>
+                <span className="text-6xl font-black text-slate-800">{result.score}</span>
+                <div className="flex justify-between w-32 mt-2 text-[10px] font-black text-slate-300 uppercase">
+                  <span>0</span><span>1</span>
+                </div>
               </div>
             </div>
 

@@ -12,9 +12,12 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
   const { user } = useSelector((state) => state.auth);
   const audioRef = useRef(null);
 
-  
+
 
   const [started, setStarted] = useState(false);
+  const [prepStatus, setPrepStatus] = useState("countdown"); // "countdown", "finished"
+  const [prepTimer, setPrepTimer] = useState(3);
+
   const [audioFinished, setAudioFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(MAX_TIME);
   const [answer, setAnswer] = useState("");
@@ -22,6 +25,17 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
   const [result, setResult] = useState(null);
 
   /* ---------------- TIMER ---------------- */
+  // 3-sec Prep Timer
+  useEffect(() => {
+    if (prepStatus === "countdown" && prepTimer > 0) {
+      const timer = setInterval(() => setPrepTimer((prev) => prev - 1), 1000);
+      return () => clearInterval(timer);
+    } else if (prepStatus === "countdown" && prepTimer === 0) {
+      setPrepStatus("finished");
+      handleStart();
+    }
+  }, [prepStatus, prepTimer]);
+
   useEffect(() => {
     if (!audioFinished || timeLeft <= 0 || status === "result") return;
     const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
@@ -37,22 +51,27 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
-   const handleViewPrevious = (attempt) => {
+  const handleViewPrevious = (attempt) => {
     setResult(attempt);
     setStatus("result");
   };
 
 
 
-    const resetSession = () => {
-        setResult(null);
-        setStatus('idle');
-        resetTranscript();
-        transcriptRef.current = "";
-    };
+  const resetSession = () => {
+    setResult(null);
+    setStatus('idle');
+    setStarted(false);
+    setPrepStatus("countdown");
+    setPrepTimer(3);
+    setAnswer("");
+    setAudioFinished(false);
+    setTimeLeft(MAX_TIME);
+    // resetTranscript(); // Not defined in original file?
+  };
 
-      /* ---------------- VIEW PREVIOUS RESULT ---------------- */
- 
+  /* ---------------- VIEW PREVIOUS RESULT ---------------- */
+
 
   const handleStart = () => {
     setStarted(true);
@@ -89,154 +108,151 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
       </div>
 
       {/* MAIN CARD */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border space-y-6">
-        {!started ? (
-          <div className="text-center py-20">
-            <button
-              onClick={handleStart}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-full font-bold transition-all"
-            >
-              Start Question
-            </button>
+      {/* MAIN CARD */}
+      {!started ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-20 text-center space-y-6">
+          <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
+          <div className="text-6xl font-black text-blue-600 animate-pulse">
+            {prepTimer}
           </div>
-        ) : (
-          <>
-            <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl">
-              <div className="bg-blue-600 p-3 rounded-full text-white">
-                <Volume2 size={20} />
-              </div>
-              <audio
-                ref={audioRef}
-                src={question.audioUrl}
-                onEnded={() => setAudioFinished(true)}
-                controls
-                className="w-full"
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl p-6 shadow-sm border space-y-6">
+          <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl">
+            <div className="bg-blue-600 p-3 rounded-full text-white">
+              <Volume2 size={20} />
+            </div>
+            <audio
+              ref={audioRef}
+              src={question.audioUrl}
+              onEnded={() => setAudioFinished(true)}
+              controls
+              className="w-full"
+            />
+          </div>
+
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 lg:col-span-9">
+              <textarea
+                disabled={!audioFinished || status === "submitting"}
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                placeholder={audioFinished ? "Type your summary here..." : "Listening to audio..."}
+                className="w-full h-64 border-2 border-dashed border-blue-200 focus:border-blue-500 rounded-xl p-4 outline-none resize-none transition-colors"
               />
             </div>
 
-            <div className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 lg:col-span-9">
-                <textarea
-                  disabled={!audioFinished || status === "submitting"}
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  placeholder={audioFinished ? "Type your summary here..." : "Listening to audio..."}
-                  className="w-full h-64 border-2 border-dashed border-blue-200 focus:border-blue-500 rounded-xl p-4 outline-none resize-none transition-colors"
-                />
-              </div>
-
-              <div className="col-span-12 lg:col-span-3 bg-slate-50 rounded-xl p-6 flex flex-col items-center justify-between border">
-                <div className="space-y-4 w-full text-center">
-                  <div className="flex justify-center items-center gap-2 text-blue-600 font-bold text-xl bg-blue-50 py-2 rounded-lg">
-                    <Clock size={20} /> {formatTime(timeLeft)}
-                  </div>
-
-                  <div>
-                    <div className="text-4xl font-black text-slate-800">{wordCount}</div>
-                    <p className="text-sm text-slate-500 font-medium">Word Count</p>
-                  </div>
-
-                  <button
-                    disabled={!audioFinished || wordCount < MIN_WORDS || wordCount > MAX_WORDS || status === "submitting"}
-                    onClick={handleSubmit}
-                    className="w-full bg-blue-600 disabled:bg-slate-300 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 disabled:shadow-none"
-                  >
-                    {status === "submitting" ? "Evaluating..." : "Submit Answer"}
-                  </button>
-
-                  <p className="text-xs text-slate-400 font-medium">
-                    Target: {MIN_WORDS}–{MAX_WORDS} words
-                  </p>
+            <div className="col-span-12 lg:col-span-3 bg-slate-50 rounded-xl p-6 flex flex-col items-center justify-between border">
+              <div className="space-y-4 w-full text-center">
+                <div className="flex justify-center items-center gap-2 text-blue-600 font-bold text-xl bg-blue-50 py-2 rounded-lg">
+                  <Clock size={20} /> {formatTime(timeLeft)}
                 </div>
-              </div>
-            </div>
-              {/* Bottom Controls */}
-                        <div className="flex items-center justify-center gap-6 pb-10">
-                            <ControlBtn icon={<ChevronLeft />} label="Previous" onClick={previousButton} className="text-slate-400 hover:text-primary-600 transition-colors"/>
-                            <ControlBtn icon={<RefreshCw size={18} />} label="Redo" onClick={resetSession} />
-                            <button className="w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 shadow-inner">
-                                <CheckCircle size={24} />
-                            </button>
-                            <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" onClick={shuffleButton}/>
-                            <ControlBtn icon={<ChevronRight />} label="Next" onClick={nextButton} />
-                        </div>
-          </>
-        )}
-      </div>
 
-      {status === "result" && result && (
-        <ResultModal 
-          result={result} 
-          question={question}
-          onClose={() => setStatus("idle")} 
-          onRedo={() => { setStatus("idle"); setStarted(false); setAnswer(""); setTimeLeft(MAX_TIME); }}
-        />
-      )}
+                <div>
+                  <div className="text-4xl font-black text-slate-800">{wordCount}</div>
+                  <p className="text-sm text-slate-500 font-medium">Word Count</p>
+                </div>
 
-   
-<div>
-  <div className="bg-white rounded-[2rem] border shadow-sm p-6 min-h-[400px]">
-    <h3 className="font-black text-slate-800 flex items-center gap-2 mb-6">
-      <History size={20} className="text-blue-500" />
-      Attempt History
-    </h3>
+                <button
+                  disabled={!audioFinished || wordCount < MIN_WORDS || wordCount > MAX_WORDS || status === "submitting"}
+                  onClick={handleSubmit}
+                  className="w-full bg-blue-600 disabled:bg-slate-300 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 disabled:shadow-none"
+                >
+                  {status === "submitting" ? "Evaluating..." : "Submit Answer"}
+                </button>
 
-    <div className="space-y-4">
-      {question.lastAttempts && question.lastAttempts.length > 0 ? (
-        question.lastAttempts.map((attempt, index) => (
-          <div
-            key={attempt._id || index}
-            className="bg-slate-50 rounded-2xl px-6 py-4 flex items-center justify-between"
-          >
-            {/* LEFT */}
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-black text-slate-600">
-                K
-              </div>
-
-              <div>
-                <p className="font-bold text-slate-800">Krishna kant</p>
-                <p className="text-xs text-slate-400">
-                  {new Date(attempt.createdAt).toLocaleDateString()}{" "}
-                  {new Date(attempt.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                <p className="text-xs text-slate-400 font-medium">
+                  Target: {MIN_WORDS}–{MAX_WORDS} words
                 </p>
               </div>
             </div>
-
-            {/* CENTER SCORE BUTTON */}
-            <button
-              onClick={() => handleViewPrevious(attempt)}
-              className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold px-6 py-2 rounded-xl flex items-center gap-2 shadow-sm transition"
-            >
-              Score {attempt.totalScore}/12
-              <RotateCcw size={16} />
+          </div>
+          {/* Bottom Controls */}
+          <div className="flex items-center justify-center gap-6 pb-10">
+            <ControlBtn icon={<ChevronLeft />} label="Previous" onClick={previousButton} className="text-slate-400 hover:text-primary-600 transition-colors" />
+            <ControlBtn icon={<RefreshCw size={18} />} label="Redo" onClick={resetSession} />
+            <button className="w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 shadow-inner">
+              <CheckCircle size={24} />
             </button>
-
-            {/* RIGHT ICONS */}
-            <div className="flex items-center gap-3 text-slate-400">
-              <button className="hover:text-indigo-500 transition">
-                <Share2 size={18} />
-              </button>
-              <button className="hover:text-red-500 transition">
-                <Trash2 size={18} />
-              </button>
-            </div>
+            <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" onClick={shuffleButton} />
+            <ControlBtn icon={<ChevronRight />} label="Next" onClick={nextButton} />
           </div>
-        ))
-      ) : (
-        <div className="text-center py-10">
-          <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-            <History size={20} className="text-slate-300" />
-          </div>
-          <p className="text-xs font-bold text-slate-400">No previous attempts</p>
         </div>
       )}
-    </div>
-  </div>
-</div>
+
+      {status === "result" && result && (
+        <ResultModal
+          result={result}
+          question={question}
+          onClose={() => setStatus("idle")}
+          onRedo={() => { setStatus("idle"); setStarted(false); setAnswer(""); setTimeLeft(MAX_TIME); setPrepStatus("countdown"); setPrepTimer(3); }}
+        />
+      )}
+
+
+      <div>
+        <div className="bg-white rounded-[2rem] border shadow-sm p-6 min-h-[400px]">
+          <h3 className="font-black text-slate-800 flex items-center gap-2 mb-6">
+            <History size={20} className="text-blue-500" />
+            Attempt History
+          </h3>
+
+          <div className="space-y-4">
+            {question.lastAttempts && question.lastAttempts.length > 0 ? (
+              question.lastAttempts.map((attempt, index) => (
+                <div
+                  key={attempt._id || index}
+                  className="bg-slate-50 rounded-2xl px-6 py-4 flex items-center justify-between"
+                >
+                  {/* LEFT */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-black text-slate-600">
+                      K
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-slate-800">Krishna kant</p>
+                      <p className="text-xs text-slate-400">
+                        {new Date(attempt.createdAt).toLocaleDateString()}{" "}
+                        {new Date(attempt.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* CENTER SCORE BUTTON */}
+                  <button
+                    onClick={() => handleViewPrevious(attempt)}
+                    className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold px-6 py-2 rounded-xl flex items-center gap-2 shadow-sm transition"
+                  >
+                    Score {attempt.totalScore}/12
+                    <RotateCcw size={16} />
+                  </button>
+
+                  {/* RIGHT ICONS */}
+                  <div className="flex items-center gap-3 text-slate-400">
+                    <button className="hover:text-indigo-500 transition">
+                      <Share2 size={18} />
+                    </button>
+                    <button className="hover:text-red-500 transition">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-10">
+                <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <History size={20} className="text-slate-300" />
+                </div>
+                <p className="text-xs font-bold text-slate-400">No previous attempts</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
 
     </div>

@@ -10,6 +10,9 @@ export default function WriteFromDictation({ question, setActiveSpeechQuestion, 
     const audioRef = useRef(null);
 
     const [started, setStarted] = useState(false);
+    const [prepStatus, setPrepStatus] = useState("countdown"); // "countdown", "finished"
+    const [prepTimer, setPrepTimer] = useState(3);
+
     const [audioFinished, setAudioFinished] = useState(false);
     const [timeLeft, setTimeLeft] = useState(MAX_TIME);
     const [answer, setAnswer] = useState("");
@@ -17,6 +20,17 @@ export default function WriteFromDictation({ question, setActiveSpeechQuestion, 
     const [result, setResult] = useState(null);
 
     /* ---------------- TIMER ---------------- */
+    // 3-sec Prep Timer
+    useEffect(() => {
+        if (prepStatus === "countdown" && prepTimer > 0) {
+            const timer = setInterval(() => setPrepTimer((prev) => prev - 1), 1000);
+            return () => clearInterval(timer);
+        } else if (prepStatus === "countdown" && prepTimer === 0) {
+            setPrepStatus("finished");
+            handleStart();
+        }
+    }, [prepStatus, prepTimer]);
+
     useEffect(() => {
         if (!audioFinished || timeLeft <= 0 || status === "result") return;
         const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
@@ -59,6 +73,8 @@ export default function WriteFromDictation({ question, setActiveSpeechQuestion, 
         setStatus('idle');
         setAnswer("");
         setStarted(false);
+        setPrepStatus("countdown");
+        setPrepTimer(3);
         setAudioFinished(false);
         setTimeLeft(MAX_TIME);
     };
@@ -76,120 +92,116 @@ export default function WriteFromDictation({ question, setActiveSpeechQuestion, 
             </div>
 
             {/* MAIN CARD */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border space-y-6">
-                {!started ? (
-                    <div className="text-center py-20">
-                        <button
-                            onClick={handleStart}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-full font-bold transition-all"
-                        >
-                            Start Question
-                        </button>
-                    </div>
-                ) : (
-                    <>
-                        {/* QUESTION HEADER */}
-                        <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center mb-6 rounded-t-xl -mx-6 -mt-6">
-                            <div className="flex gap-4 items-center">
-                                <span className="font-bold text-slate-700 flex items-center gap-1">
-                                    <Hash size={14} />
-                                    {question?._id?.slice(-5)?.toUpperCase()}
-                                </span>
-                                <span className="text-slate-500 text-sm font-medium border-l border-slate-200 pl-4">
-                                    {question?.title || "Write From Dictation Task"}
-                                </span>
-                            </div>
-                            {question?.difficulty && (
+            {!started ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-20 text-center space-y-6">
+                    <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
+                    <div className="text-6xl font-black text-blue-600 animate-pulse">{prepTimer}</div>
+                </div>
+            ) : (
+                <div className="bg-white rounded-2xl p-6 shadow-sm border space-y-6">
+                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center mb-6 rounded-t-xl -mx-6 -mt-6">
+                        <div className="flex gap-4 items-center">
+                            <span className="font-bold text-slate-700 flex items-center gap-1">
+                                <Hash size={14} />
+                                {question?._id?.slice(-5)?.toUpperCase()}
+                            </span>
+                            <span className="text-slate-500 text-sm font-medium border-l border-slate-200 pl-4">
+                                {question?.title || "Write From Dictation Task"}
+                            </span>
+                        </div>
+                        {
+                            question?.difficulty && (
                                 <span className={`px-2 py-1 rounded-md text-xs font-bold shadow-sm ${question.difficulty === 'Hard' ? 'bg-red-100 text-red-600' :
                                     question.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
                                     }`}>
                                     {question.difficulty}
                                 </span>
-                            )}
-                        </div>
+                            )
+                        }
+                    </div >
 
-                        <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl">
-                            <div className="bg-blue-600 p-3 rounded-full text-white">
-                                <Volume2 size={20} />
-                            </div>
-                            <audio
-                                ref={audioRef}
-                                src={question.audioUrl}
-                                onEnded={() => setAudioFinished(true)}
-                                controls
-                                className="w-full"
+                    <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl">
+                        <div className="bg-blue-600 p-3 rounded-full text-white">
+                            <Volume2 size={20} />
+                        </div>
+                        <audio
+                            ref={audioRef}
+                            src={question.audioUrl}
+                            onEnded={() => setAudioFinished(true)}
+                            controls
+                            className="w-full"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-12 gap-6">
+                        <div className="col-span-12 lg:col-span-9">
+                            <textarea
+                                // disabled={!audioFinished || status === "submitting"}
+                                value={answer}
+                                onChange={(e) => setAnswer(e.target.value)}
+                                placeholder={audioFinished ? "Type the sentence you heard..." : "Listening..."}
+                                className="w-full h-40 border-2 border-dashed border-blue-200 focus:border-blue-500 rounded-xl p-4 outline-none resize-none transition-colors text-lg"
                             />
                         </div>
 
-                        <div className="grid grid-cols-12 gap-6">
-                            <div className="col-span-12 lg:col-span-9">
-                                <textarea
-                                    // disabled={!audioFinished || status === "submitting"}
-                                    value={answer}
-                                    onChange={(e) => setAnswer(e.target.value)}
-                                    placeholder={audioFinished ? "Type the sentence you heard..." : "Listening..."}
-                                    className="w-full h-40 border-2 border-dashed border-blue-200 focus:border-blue-500 rounded-xl p-4 outline-none resize-none transition-colors text-lg"
-                                />
-                            </div>
-
-                            <div className="col-span-12 lg:col-span-3 bg-slate-50 rounded-xl p-6 flex flex-col items-center justify-between border">
-                                <div className="space-y-4 w-full text-center">
-                                    <div className="flex justify-center items-center gap-2 text-blue-600 font-bold text-xl bg-blue-50 py-2 rounded-lg">
-                                        <Clock size={20} /> {formatTime(timeLeft)}
-                                    </div>
-
-                                    <div>
-                                        <div className="text-4xl font-black text-slate-800">{wordCount}</div>
-                                        <p className="text-sm text-slate-500 font-medium">Word Count</p>
-                                    </div>
-
-                                    <button
-                                        disabled={status === "submitting"} // Allow submitting even if word count is low, as sentences can be short
-                                        onClick={handleSubmit}
-                                        className="w-full bg-blue-600 disabled:bg-slate-300 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 disabled:shadow-none"
-                                    >
-                                        {status === "submitting" ? "Evaluating..." : "Submit Answer"}
-                                    </button>
+                        <div className="col-span-12 lg:col-span-3 bg-slate-50 rounded-xl p-6 flex flex-col items-center justify-between border">
+                            <div className="space-y-4 w-full text-center">
+                                <div className="flex justify-center items-center gap-2 text-blue-600 font-bold text-xl bg-blue-50 py-2 rounded-lg">
+                                    <Clock size={20} /> {formatTime(timeLeft)}
                                 </div>
+
+                                <div>
+                                    <div className="text-4xl font-black text-slate-800">{wordCount}</div>
+                                    <p className="text-sm text-slate-500 font-medium">Word Count</p>
+                                </div>
+
+                                <button
+                                    disabled={status === "submitting"} // Allow submitting even if word count is low, as sentences can be short
+                                    onClick={handleSubmit}
+                                    className="w-full bg-blue-600 disabled:bg-slate-300 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 disabled:shadow-none"
+                                >
+                                    {status === "submitting" ? "Evaluating..." : "Submit Answer"}
+                                </button>
                             </div>
                         </div>
-                        {/* Bottom Controls */}
-                        <div className="flex items-center justify-center gap-6 pb-10">
-                            <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                                    <ChevronLeft size={20} />
-                                </div>
-                                <span className="text-xs font-medium">Previous</span>
-                            </button>
+                    </div>
+                    {/* Bottom Controls */}
+                    <div className="flex items-center justify-center gap-6 pb-10">
+                        <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                                <ChevronLeft size={20} />
+                            </div>
+                            <span className="text-xs font-medium">Previous</span>
+                        </button>
 
-                            <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                                    <RefreshCw size={18} />
-                                </div>
-                                <span className="text-xs font-medium">Redo</span>
-                            </button>
+                        <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                                <RefreshCw size={18} />
+                            </div>
+                            <span className="text-xs font-medium">Redo</span>
+                        </button>
 
-                            <button className="w-12 h-12 rounded-xl bg-slate-300 flex items-center justify-center text-white shadow-inner">
-                                <CheckCircle size={24} fill="currentColor" className="text-white" />
-                            </button>
+                        <button className="w-12 h-12 rounded-xl bg-slate-300 flex items-center justify-center text-white shadow-inner">
+                            <CheckCircle size={24} fill="currentColor" className="text-white" />
+                        </button>
 
-                            <button onClick={shuffleButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                                    <Shuffle size={18} />
-                                </div>
-                                <span className="text-xs font-medium">Shuffle</span>
-                            </button>
+                        <button onClick={shuffleButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                                <Shuffle size={18} />
+                            </div>
+                            <span className="text-xs font-medium">Shuffle</span>
+                        </button>
 
-                            <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                                    <ChevronRight size={20} />
-                                </div>
-                                <span className="text-xs font-medium">Next</span>
-                            </button>
-                        </div>
-                    </>
-                )}
-            </div>
+                        <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                                <ChevronRight size={20} />
+                            </div>
+                            <span className="text-xs font-medium">Next</span>
+                        </button>
+                    </div>
+                </div>
+            )}
+}
 
 
             {/* ATTEMPT HISTORY SECTION */}
@@ -261,16 +273,18 @@ export default function WriteFromDictation({ question, setActiveSpeechQuestion, 
                 </div>
             </div>
 
-            {status === "result" && result && (
-                <WFDResultModal
-                    result={result}
-                    question={question}
-                    onClose={() => setStatus("idle")}
-                    onRedo={resetSession}
-                    onNext={nextButton}
-                />
-            )}
-        </div>
+            {
+                status === "result" && result && (
+                    <WFDResultModal
+                        result={result}
+                        question={question}
+                        onClose={() => setStatus("idle")}
+                        onRedo={resetSession}
+                        onNext={nextButton}
+                    />
+                )
+            }
+        </div >
     );
 }
 

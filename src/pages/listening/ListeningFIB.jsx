@@ -90,6 +90,11 @@ export default function ListeningFIB({ question, setActiveSpeechQuestion, nextBu
     const [isPlaying, setIsPlaying] = useState(false);
     const [userAnswers, setUserAnswers] = useState({});
     const [status, setStatus] = useState('idle'); // idle, playing, submitting, result
+
+    // Prep Timer State
+    const [prepStatus, setPrepStatus] = useState("countdown");
+    const [prepTimer, setPrepTimer] = useState(3);
+
     const [result, setResult] = useState(null); // The current attempt result
     const [transcriptWords, setTranscriptWords] = useState([]);
     const [blanks, setBlanks] = useState({}); // Map of index -> correct word
@@ -98,6 +103,23 @@ export default function ListeningFIB({ question, setActiveSpeechQuestion, nextBu
     // UI State
     const [isResultOpen, setIsResultOpen] = useState(false);
     const [viewAttempt, setViewAttempt] = useState(null);
+
+    // Timer Logic
+    useEffect(() => {
+        if (prepStatus === "countdown" && prepTimer > 0) {
+            const timer = setInterval(() => setPrepTimer(p => p - 1), 1000);
+            return () => clearInterval(timer);
+        } else if (prepStatus === "countdown" && prepTimer === 0) {
+            setPrepStatus("finished");
+            // Auto-start audio if desired? Or just remove overlay.
+            // ListeningFIB usually has manual play button? Line 350 has button.
+            // If we want auto-play:
+            if (audioRef.current) {
+                audioRef.current.play().catch(e => console.log("Autoplay blocked", e));
+                setIsPlaying(true);
+            }
+        }
+    }, [prepStatus, prepTimer]);
 
     useEffect(() => {
         if (question && question.transcript) {
@@ -137,6 +159,11 @@ export default function ListeningFIB({ question, setActiveSpeechQuestion, nextBu
             setBlankLocations(locations);
             setUserAnswers({});
             setStatus('idle');
+
+            // Reset Prep Timer
+            setPrepStatus("countdown");
+            setPrepTimer(3);
+
             setResult(null);
             setIsResultOpen(false);
             setViewAttempt(null);
@@ -206,6 +233,8 @@ export default function ListeningFIB({ question, setActiveSpeechQuestion, nextBu
             audioRef.current.currentTime = 0;
             setIsPlaying(false);
         }
+        setPrepStatus("countdown");
+        setPrepTimer(3);
     };
 
     const openAttempt = (attempt) => {
@@ -323,72 +352,81 @@ export default function ListeningFIB({ question, setActiveSpeechQuestion, nextBu
             </div>
 
             {/* Question Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                    <div className="flex gap-4 items-center">
-                        <span className="font-bold text-slate-700 flex items-center gap-1">
-                            <Hash size={14} />
-                            {question?._id?.slice(-5)?.toUpperCase()}
-                        </span>
-                        <span className="text-slate-500 text-sm font-medium border-l border-slate-200 pl-4">
-                            {question?.title || "Listening Task"}
-                        </span>
+            {prepStatus === "countdown" ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-20 text-center space-y-6">
+                    <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
+                    <div className="text-6xl font-black text-blue-600 animate-pulse">
+                        {prepTimer}
                     </div>
-                    {question?.difficulty && (
-                        <span className={`px-2 py-1 rounded-md text-xs font-bold shadow-sm ${question.difficulty === 'Hard' ? 'bg-red-100 text-red-600' :
-                            question.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
-                            }`}>
-                            {question.difficulty}
-                        </span>
-                    )}
                 </div>
+            ) : (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative">
+                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                        <div className="flex gap-4 items-center">
+                            <span className="font-bold text-slate-700 flex items-center gap-1">
+                                <Hash size={14} />
+                                {question?._id?.slice(-5)?.toUpperCase()}
+                            </span>
+                            <span className="text-slate-500 text-sm font-medium border-l border-slate-200 pl-4">
+                                {question?.title || "Listening Task"}
+                            </span>
+                        </div>
+                        {question?.difficulty && (
+                            <span className={`px-2 py-1 rounded-md text-xs font-bold shadow-sm ${question.difficulty === 'Hard' ? 'bg-red-100 text-red-600' :
+                                question.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
+                                }`}>
+                                {question.difficulty}
+                            </span>
+                        )}
+                    </div>
 
-                <div className="p-8 space-y-8">
-                    {/* PLAYER */}
-                    <div className="flex items-center gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <button
-                            onClick={toggleAudio}
-                            className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-200 transition-transform active:scale-95"
-                        >
-                            {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
-                        </button>
-                        <div className="flex-1">
-                            <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                                <div className={`h-full bg-blue-500 transition-all duration-300 ${isPlaying ? 'w-full animate-[width_10s_linear]' : 'w-0'}`}></div>
+                    <div className="p-8 space-y-8">
+                        {/* PLAYER */}
+                        <div className="flex items-center gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <button
+                                onClick={toggleAudio}
+                                className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-200 transition-transform active:scale-95"
+                            >
+                                {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
+                            </button>
+                            <div className="flex-1">
+                                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                                    <div className={`h-full bg-blue-500 transition-all duration-300 ${isPlaying ? 'w-full animate-[width_10s_linear]' : 'w-0'}`}></div>
+                                </div>
+                            </div>
+                            <audio
+                                ref={audioRef}
+                                src={question.audioUrl}
+                                onEnded={handleAudioEnded}
+                                className="hidden"
+                            />
+                            <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-wider">
+                                <Volume2 size={16} />
+                                Audio
                             </div>
                         </div>
-                        <audio
-                            ref={audioRef}
-                            src={question.audioUrl}
-                            onEnded={handleAudioEnded}
-                            className="hidden"
-                        />
-                        <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-wider">
-                            <Volume2 size={16} />
-                            Audio
+
+                        {/* TEXT CONTENT */}
+                        <div className="leading-loose text-lg text-slate-700 font-normal">
+                            {renderTranscript()}
                         </div>
                     </div>
 
-                    {/* TEXT CONTENT */}
-                    <div className="leading-loose text-lg text-slate-700 font-normal">
-                        {renderTranscript()}
-                    </div>
-                </div>
-
-                {/* Footer Controls */}
-                <div className="bg-slate-50 p-6 border-t border-slate-100 flex justify-end">
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isSubmitDisabled || status === 'submitting'}
-                        className={`px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 flex items-center gap-2
+                    {/* Footer Controls */}
+                    <div className="bg-slate-50 p-6 border-t border-slate-100 flex justify-end">
+                        <button
+                            onClick={handleSubmit}
+                            disabled={isSubmitDisabled || status === 'submitting'}
+                            className={`px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 flex items-center gap-2
                             ${isSubmitDisabled ? 'bg-slate-300 cursor-not-allowed text-slate-500' : 'bg-primary-600 hover:bg-primary-700 hover:shadow-primary-200'}
                         `}
-                    >
-                        <CheckCircle size={20} />
-                        {status === 'submitting' ? 'Submitting...' : 'Submit Answer'}
-                    </button>
+                        >
+                            <CheckCircle size={20} />
+                            {status === 'submitting' ? 'Submitting...' : 'Submit Answer'}
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* History Section */}
             {question && (

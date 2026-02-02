@@ -4,8 +4,8 @@ import { submitHIWAttempt } from "../../services/api";
 import { useSelector } from "react-redux";
 
 export default function HighlightIncorrectWords({ question, setActiveSpeechQuestion }) {
-  const [status, setStatus] = useState("idle"); 
-  const [prepTimer, setPrepTimer] = useState(1);
+  const [status, setStatus] = useState("countdown");
+  const [prepTimer, setPrepTimer] = useState(3);
   const [selectedIndices, setSelectedIndices] = useState([]);
   const [result, setResult] = useState(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -46,7 +46,7 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
       correctCount: attempt.correctCount || 0,
       wrongCount: attempt.wrongCount || 0,
       missedCount: attempt.missedCount || 0,
-      mistakes: question.mistakes 
+      mistakes: question.mistakes
     });
     setStatus("submitted");
     setShowModal(true);
@@ -78,15 +78,15 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
         <div className="bg-white rounded-[2.5rem] w-full max-w-5xl overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-300">
-          
+
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b">
             <div className="flex items-center gap-3">
-                <div className="bg-blue-50 p-2 rounded-xl text-blue-500"><ChevronRight className="rotate-90" size={20}/></div>
-                <h2 className="text-xl font-bold text-slate-700">
-                    {question.name || "HIW_A_0418"} <span className="text-slate-400 font-medium">({question.title || "Whale Mimics Speech"})</span>
-                </h2>
-                <Share2 size={20} className="text-blue-500 cursor-pointer ml-2 hover:scale-110 transition" />
+              <div className="bg-blue-50 p-2 rounded-xl text-blue-500"><ChevronRight className="rotate-90" size={20} /></div>
+              <h2 className="text-xl font-bold text-slate-700">
+                {question.name || "HIW_A_0418"} <span className="text-slate-400 font-medium">({question.title || "Whale Mimics Speech"})</span>
+              </h2>
+              <Share2 size={20} className="text-blue-500 cursor-pointer ml-2 hover:scale-110 transition" />
             </div>
             <div className="flex items-center gap-3">
               <button onClick={() => window.location.reload()} className="flex items-center gap-2 px-5 py-2.5 bg-blue-50 text-blue-600 rounded-full font-bold hover:bg-blue-100 transition">
@@ -106,14 +106,14 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
             <div className="md:w-[35%] bg-white border-2 border-slate-50 rounded-[3rem] p-10 flex flex-col items-center justify-center relative shadow-sm ring-1 ring-purple-100/50">
               <div className="absolute top-6 right-8 text-purple-300 bg-purple-50 p-2 rounded-full rotate-12"><Play size={16} fill="currentColor" /></div>
               <h3 className="text-lg font-bold text-slate-600 mb-10 tracking-tight">Your Score</h3>
-              
+
               <div className="relative w-56 h-56 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-180" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="40" stroke="#f1f5f9" strokeWidth="8" fill="transparent" strokeDasharray="125.6" strokeDashoffset="0" />
                   <circle cx="50" cy="50" r="40" stroke="#3b82f6" strokeWidth="8" fill="transparent" strokeDasharray="125.6" strokeDashoffset={125.6 - (125.6 * (result.score / totalMistakes))} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
                 </svg>
                 <div className="absolute flex flex-col items-center mt-2">
-                    <span className="text-7xl font-black text-slate-800 tracking-tighter">{result.score}</span>
+                  <span className="text-7xl font-black text-slate-800 tracking-tighter">{result.score}</span>
                 </div>
                 <div className="absolute bottom-6 flex justify-between w-full px-10 text-xs font-black text-slate-400">
                   <span>0</span>
@@ -176,7 +176,7 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6 font-sans text-slate-800">
       <ResultModal />
-      
+
       {/* HEADER */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -187,84 +187,85 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
         </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] border shadow-sm overflow-hidden relative">
-        <div className="p-8 bg-slate-50 border-b flex items-center gap-8">
-          <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-            {status === "countdown" ? prepTimer : <Headphones size={24} />}
-          </div>
-          <div className="flex-1 space-y-2">
-            <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-              <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: `${(currentTime/duration)*100}%` }} />
-            </div>
-            <div className="flex justify-between text-xs font-bold text-slate-400">
-              <span>{Math.floor(currentTime)}s</span>
-              <span>{Math.floor(duration || 0)}s</span>
-            </div>
-          </div>
-          <Volume2 className="text-slate-400" />
+      {status === "countdown" ? (
+        <div className="bg-white rounded-[2.5rem] border shadow-sm p-20 text-center space-y-6 flex flex-col items-center justify-center min-h-[600px]">
+          <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
+          <div className="text-6xl font-black text-blue-600 animate-pulse">{prepTimer}</div>
         </div>
-
-        {status === "idle" && (
-          <div className="absolute inset-0 top-[120px] z-20 bg-white/80 backdrop-blur-sm flex items-center justify-center">
-            <button onClick={() => setStatus("countdown")} className="bg-blue-600 text-white px-12 py-4 rounded-full font-black flex items-center gap-3 shadow-2xl hover:scale-105 transition active:scale-95">
-              <Play fill="white" /> CLICK TO START
-            </button>
+      ) : (
+        <div className="bg-white rounded-[2.5rem] border shadow-sm overflow-hidden relative min-h-[600px] flex flex-col">
+          <div className="p-8 bg-slate-50 border-b flex items-center gap-8">
+            <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center text-white font-bold text-xl shadow-lg">
+              {status === "countdown" ? prepTimer : <Headphones size={24} />}
+            </div>
+            <div className="flex-1 space-y-2">
+              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: `${(currentTime / duration) * 100}%` }} />
+              </div>
+              <div className="flex justify-between text-xs font-bold text-slate-400">
+                <span>{Math.floor(currentTime)}s</span>
+                <span>{Math.floor(duration || 0)}s</span>
+              </div>
+            </div>
+            <Volume2 className="text-slate-400" />
           </div>
-        )}
 
-        <div className="p-12 min-h-[400px]">
-          <div className="text-lg lg:text-xl leading-[3.5rem] text-slate-700 font-medium select-none">
-            {words.map((word, index) => {
-              const isSelected = selectedIndices.includes(index);
-              const mistakeDetail = (result?.mistakes || question?.mistakes)?.find(m => m.index === index + 1);
-              const isActuallyMistake = !!mistakeDetail;
+          {/* {status === "idle" && ( ... )} */}
 
-              let bgColor = "";
-              if (status === "submitted") {
-                if (isActuallyMistake && isSelected) bgColor = "bg-green-100 text-green-700 ring-2 ring-green-400"; 
-                else if (!isActuallyMistake && isSelected) bgColor = "bg-red-100 text-red-700 ring-2 ring-red-400"; 
-                else if (isActuallyMistake && !isSelected) bgColor = "bg-blue-100 text-blue-700 ring-2 ring-blue-200"; 
-              } else if (isSelected) {
-                bgColor = "bg-blue-600 text-white shadow-md"; 
-              }
+          <div className="p-12 min-h-[400px]">
+            <div className="text-lg lg:text-xl leading-[3.5rem] text-slate-700 font-medium select-none">
+              {words.map((word, index) => {
+                const isSelected = selectedIndices.includes(index);
+                const mistakeDetail = (result?.mistakes || question?.mistakes)?.find(m => m.index === index + 1);
+                const isActuallyMistake = !!mistakeDetail;
 
-              return (
-                <span key={index} className="relative inline-block mr-1">
-                  <span onClick={() => handleWordClick(index)} className={`cursor-pointer px-1 py-1 rounded-md transition-all ${bgColor}`}>
-                    {word}
-                  </span>
-                  {status === "submitted" && isActuallyMistake && (
-                    <span className="absolute left-1/2 -translate-x-1/2 -bottom-10 bg-yellow-100 text-yellow-800 text-[10px] font-black px-2 py-1 rounded border border-yellow-200 whitespace-nowrap z-30 shadow-sm">
-                      (Answer : {mistakeDetail.answer})
+                let bgColor = "";
+                if (status === "submitted") {
+                  if (isActuallyMistake && isSelected) bgColor = "bg-green-100 text-green-700 ring-2 ring-green-400";
+                  else if (!isActuallyMistake && isSelected) bgColor = "bg-red-100 text-red-700 ring-2 ring-red-400";
+                  else if (isActuallyMistake && !isSelected) bgColor = "bg-blue-100 text-blue-700 ring-2 ring-blue-200";
+                } else if (isSelected) {
+                  bgColor = "bg-blue-600 text-white shadow-md";
+                }
+
+                return (
+                  <span key={index} className="relative inline-block mr-1">
+                    <span onClick={() => handleWordClick(index)} className={`cursor-pointer px-1 py-1 rounded-md transition-all ${bgColor}`}>
+                      {word}
                     </span>
-                  )}
-                </span>
-              );
-            })}
+                    {status === "submitted" && isActuallyMistake && (
+                      <span className="absolute left-1/2 -translate-x-1/2 -bottom-10 bg-yellow-100 text-yellow-800 text-[10px] font-black px-2 py-1 rounded border border-yellow-200 whitespace-nowrap z-30 shadow-sm">
+                        (Answer : {mistakeDetail.answer})
+                      </span>
+                    )}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="p-8 border-t flex justify-between items-center bg-white">
+            <button onClick={() => window.location.reload()} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600 transition">
+              <RotateCcw size={20} /> Redo
+            </button>
+            {status !== "submitted" ? (
+              <button onClick={handleSubmit} disabled={status !== "playing"} className="bg-blue-600 disabled:bg-slate-200 text-white px-16 py-3 rounded-2xl font-black shadow-xl hover:bg-blue-700 transition active:scale-95">
+                Submit Answer
+              </button>
+            ) : (
+              <div className="flex gap-4">
+                <button onClick={() => setShowModal(true)} className="bg-indigo-500 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-indigo-600 transition">
+                  View Result Details
+                </button>
+                <button className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-700 transition">
+                  Next Question <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
+            <div className="text-sm font-bold text-slate-300">ID: {question?._id?.slice(-6)}</div>
           </div>
         </div>
-
-        <div className="p-8 border-t flex justify-between items-center bg-white">
-          <button onClick={() => window.location.reload()} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600 transition">
-            <RotateCcw size={20} /> Redo
-          </button>
-          {status !== "submitted" ? (
-            <button onClick={handleSubmit} disabled={status !== "playing"} className="bg-blue-600 disabled:bg-slate-200 text-white px-16 py-3 rounded-2xl font-black shadow-xl hover:bg-blue-700 transition active:scale-95">
-              Submit Answer
-            </button>
-          ) : (
-            <div className="flex gap-4">
-               <button onClick={() => setShowModal(true)} className="bg-indigo-500 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-indigo-600 transition">
-                 View Result Details
-               </button>
-               <button className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-700 transition">
-                 Next Question <ChevronRight size={18} />
-               </button>
-            </div>
-          )}
-          <div className="text-sm font-bold text-slate-300">ID: {question?._id?.slice(-6)}</div>
-        </div>
-      </div>
+      )}
 
       {/* HISTORY TAB */}
       <div className="bg-white rounded-[2rem] border shadow-sm p-6">

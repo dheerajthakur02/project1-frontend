@@ -158,6 +158,13 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion, nextButton, pr
 
     return (
         <div className="max-w-6xl mx-auto space-y-4 px-4 pb-10">
+            <div>
+                <h1>Describe Image</h1>
+                <p>
+                    Look at the graph below. In 25 seconds, please speak into the microphone and describe in detail what the graph is showing. You will have 40 seconds to give your response.
+
+                </p>
+            </div>
             {/* Header */}
             <div className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-2">

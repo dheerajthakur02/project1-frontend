@@ -187,6 +187,12 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
             />
 
             <div className="flex items-center justify-between">
+                 <div>
+                        <h1>Repeat Sentence</h1>
+                        <p>
+                        You will hear a sentence. Please repeat the sentence exactly as you hear it. You will hear the sentence only once
+                        </p>
+                    </div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 hover:bg-slate-100 rounded-full">
                         <ArrowLeft size={20} />
@@ -372,9 +378,10 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
                 <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" onClick={shuffleButton} />
                 <ControlBtn icon={<ChevronRight />} label="Next" onClick={nextButton} />
             </div>
-            {question.lastAttempts && question.lastAttempts.length > 0 && (
+            {question.lastAttempts && (
                 <ImageAttemptHistory
                     question={question}
+                    module={"repeat-sentence"}
                     onSelectAttempt={handleSelectAttempt}
                 />
             )}

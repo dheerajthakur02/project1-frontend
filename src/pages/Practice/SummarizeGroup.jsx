@@ -215,6 +215,14 @@ const SummarizeGroup = ({ question, setActiveSpeechQuestion, nextButton, previou
             />
 
             <div className="flex items-center justify-between">
+                <div>
+                    <h1>
+                        Summarize Group Discussion
+                    </h1>
+                    <p>
+                        You will hear three people having a discussion. When you hear the beep, summarize the whole discussion. You will have 10 seconds to prepare and 2 minutes to give your response.
+                    </p>
+                </div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 hover:bg-slate-100 rounded-full">
                         <ArrowLeft size={20} />

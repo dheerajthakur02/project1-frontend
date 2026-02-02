@@ -70,6 +70,10 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion }) => {
   /* ---------------- UI ---------------- */
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      <div>
+        <h1>Summarize Written Text</h1>
+        <p>Read the passage below and summarize it using one sentence. Type your response in the box at the bottom of the screen. You have 10 minutes to finish this task. Your response will be judged on the quality of your writing and on how well your response presents the key points in the passage.</p>
+      </div>
       {/* Header */}
       <div className="flex items-center gap-2">
         <button

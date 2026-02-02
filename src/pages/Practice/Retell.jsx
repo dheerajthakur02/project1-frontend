@@ -224,6 +224,15 @@ console.log(question)
             />
 
             <div className="flex items-center justify-between">
+                <div>
+                    <h1>
+                        Re-Tell Lecture
+                    </h1>
+                    <p>
+                        You will hear a lecture. After listening to the lecture, in 10 seconds, please speak into the microphone and retell what you have just heard from the lecture in your own words. You will have 40 seconds to give your response.
+
+                    </p>
+                </div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 hover:bg-slate-100 rounded-full">
                         <ArrowLeft size={20} />

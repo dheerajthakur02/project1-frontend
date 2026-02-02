@@ -95,6 +95,11 @@ const WriteEssay = ({ question, setActiveSpeechQuestion }) => {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
 
+      <div>
+        <h1>Write Essay</h1>
+        <p>You will have 20 minutes to plan, write and revise an essay about the topic below. Your response will be judged on how well you develop a position, organize your ideas, present supporting details, and control the elements of standard written English. You should write 200-300 words.</p>
+      </div>
+
       {/* Header */}
       <div className="flex items-center gap-2">
         <button
@@ -247,7 +252,7 @@ const WriteEssay = ({ question, setActiveSpeechQuestion }) => {
           <h3 className="font-bold text-lg mb-4">Previous Attempts</h3>
           <WrittenAttemptHistory
             question={question}
-            module="summarize"
+            module="essay"
             onSelectAttempt={handleSelectAttempt}
           />
         </div>

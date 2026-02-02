@@ -186,7 +186,10 @@ const ReadingMultiChoiceSingleAnswer = ({ question, setActiveSpeechQuestion, nex
 
     return (
         <div className="max-w-5xl mx-auto space-y-6 font-sans">
-
+            <div>
+                <h1>Multiple Choice (Single)</h1>
+                <p>Read the text and answer the multiple-choice question by selecting the correct response. Only one response is correct.</p>
+            </div>
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

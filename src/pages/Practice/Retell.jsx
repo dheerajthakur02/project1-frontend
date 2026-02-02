@@ -2,25 +2,28 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import {
-    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye, SkipForward,
+    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Pause, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye, SkipForward,
     Target
-} from 'lucide-react';
+} from 'lucide-react'; // Added Pause icon
 import { submitReTellAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
 import { useSelector } from 'react-redux';
 
 const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton, shuffleButton }) => {
+console.log(question)
     const navigate = useNavigate();
     const transcriptRef = useRef("");
     const { user } = useSelector((state) => state.auth);
 
     // Statuses: idle -> prep_start -> playing -> prep_record -> recording -> submitting -> result
-    const [status, setStatus] = useState('prep_start');
+    const [status, setStatus] = useState('prep_start'); // Changed initial state
     const [timeLeft, setTimeLeft] = useState(3);
     const [maxTime, setMaxTime] = useState(3);
     const [result, setResult] = useState(null);
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(false); // New state for play/pause
+    const [showTranscript, setShowTranscript] = useState(false); // New state for transcript visibility
 
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
@@ -61,6 +64,17 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
         return () => clearInterval(interval);
     }, [status, timeLeft, maxTime]);
 
+    // New: Effect to manage audio play/pause when `isPlaying` changes
+    useEffect(() => {
+        if (questionAudioRef.current) {
+            if (isPlaying) {
+                questionAudioRef.current.play().catch(err => console.error("Playback blocked", err));
+            } else {
+                questionAudioRef.current.pause();
+            }
+        }
+    }, [isPlaying]);
+
     const handleStartClick = () => {
         setStatus('prep_start');
         setTimeLeft(3);
@@ -70,16 +84,22 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
     const handleStartAudio = () => {
         setStatus('playing');
         setAudioCurrentTime(0);
+        setIsPlaying(true); // Start playing immediately
         if (questionAudioRef.current) {
             questionAudioRef.current.currentTime = 0;
-            questionAudioRef.current.play().catch(err => {
-                console.error("Playback blocked", err);
-                moveToPrepRecord();
-            });
+            // No need to call play() here, useEffect will handle it based on isPlaying
         }
     };
 
-    // New: Handle Slider Interaction
+    const handleTogglePlayPause = () => {
+        setIsPlaying((prev) => !prev);
+    };
+
+    const handleToggleTranscript = () => {
+        setShowTranscript((prev) => !prev);
+    };
+
+    // Handle Slider Interaction
     const handleSliderChange = (e) => {
         const time = parseFloat(e.target.value);
         setAudioCurrentTime(time);
@@ -89,6 +109,7 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
     };
 
     const onAudioEnded = () => {
+        setIsPlaying(false); // Stop playing when audio ends
         moveToPrepRecord();
     };
 
@@ -179,6 +200,8 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
         setMaxTime(3);
         resetTranscript();
         transcriptRef.current = "";
+        setIsPlaying(false); // Reset play state
+        setShowTranscript(false); // Reset transcript visibility
     };
 
     const formatTime = (seconds) => {
@@ -194,13 +217,23 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
             <audio
                 ref={questionAudioRef}
                 src={question.audioUrl}
-                className="hidden"
+                className="hidden" // Still hidden, controlled via state
                 onLoadedMetadata={(e) => setAudioDuration(e.target.duration)}
                 onTimeUpdate={(e) => setAudioCurrentTime(e.target.currentTime)}
                 onEnded={onAudioEnded}
             />
+            <div>
+                    <h1>
+                        Re-Tell Lecture
+                    </h1>
+                    <p>
+                        You will hear a lecture. After listening to the lecture, in 10 seconds, please speak into the microphone and retell what you have just heard from the lecture in your own words. You will have 40 seconds to give your response.
+
+                    </p>
+                </div>
 
             <div className="flex items-center justify-between">
+                
                 <div className="flex items-center gap-2">
                     <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 hover:bg-slate-100 rounded-full">
                         <ArrowLeft size={20} />
@@ -217,12 +250,31 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
                         <span className="font-bold text-slate-700">#{question?._id?.slice(-5)?.toUpperCase()}</span>
                         <span className="text-slate-500 text-sm">{question?.title}</span>
                     </div>
+                    <button
+                        onClick={handleToggleTranscript}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full font-bold transition-colors"
+                    >
+                        <Eye size={18} /> {showTranscript ? "Hide Transcript" : "Show Transcript"}
+                    </button>
                 </div>
+
+                {showTranscript && (
+                    <div className="p-4 bg-slate-100 border-b border-slate-200 text-slate-700 italic">
+                        {question.transcript}
+                    </div>
+                )}
 
                 <div className="flex-1 p-8 flex flex-col items-center justify-center">
 
-                    {/* 1. IDLE STATE */}
-                    {/* Auto-start enabled */}
+                    {/* 1. IDLE STATE / START BUTTON */}
+                    {status === 'idle' && (
+                        <button
+                            onClick={handleStartClick}
+                            className="flex items-center gap-3 px-8 py-4 bg-primary-600 text-white rounded-full text-xl font-bold shadow-lg hover:bg-primary-700 transition-all active:scale-95"
+                        >
+                            <PlayCircle size={28} /> Start Re-Tell
+                        </button>
+                    )}
 
                     {/* 2. PREP START (4s) */}
                     {status === 'prep_start' && (
@@ -232,11 +284,19 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
                         </div>
                     )}
 
-                    {/* 3. PLAYING AUDIO WITH SLIDER */}
+                    {/* 3. PLAYING AUDIO WITH SLIDER & PLAY/PAUSE */}
                     {status === 'playing' && (
                         <div className="flex flex-col items-center gap-8 w-full max-w-lg">
-                            <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center animate-pulse">
-                                <Volume2 size={40} />
+                             <div className="flex items-center gap-4">
+                                <button
+                                    onClick={handleTogglePlayPause}
+                                    className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors"
+                                >
+                                    {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" />}
+                                </button>
+                                <div className="text-slate-500 text-sm font-medium">
+                                    {isPlaying ? "Playing Speaker Audio..." : "Audio Paused"}
+                                </div>
                             </div>
 
                             <div className="w-full space-y-2">
@@ -254,7 +314,6 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
                                     onChange={handleSliderChange}
                                     className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-700 transition-all"
                                 />
-                                <p className="text-center text-slate-500 text-sm font-medium">Listening to Speaker...</p>
                             </div>
                         </div>
                     )}
@@ -388,9 +447,10 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
                 <ControlBtn icon={<ChevronRight />} label="Next" onClick={nextButton} />
             </div>
 
-            {question.lastAttempts && question.lastAttempts.length > 0 && status === 'idle' && (
+            {question.lastAttempts && question.lastAttempts.length > 0  && (
                 <ImageAttemptHistory
                     question={question}
+                    module={"retell-lecture"}
                     onSelectAttempt={(attempt) => { setResult(attempt); setStatus('result'); }}
                 />
             )}
@@ -403,8 +463,8 @@ const ControlBtn = ({ icon, label, onClick, className = "" }) => {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl 
-      bg-slate-100 text-slate-700 font-semibold shadow-sm 
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl
+      bg-slate-100 text-slate-700 font-semibold shadow-sm
       hover:bg-slate-800 hover:text-white transition-all ${className}`}
         >
             {icon}

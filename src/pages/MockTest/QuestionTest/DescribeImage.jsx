@@ -78,7 +78,7 @@ export default function DescribeImageMockTest({ backendData }) {
     <div className="min-h-screen bg-white flex flex-col font-sans select-none overflow-hidden">
       {/* HEADER: Dark Grey */}
       <div className="bg-[#4d4d4d] text-[#e0e0e0] px-4 py-2 flex justify-between items-center text-sm">
-        <div className="text-lg font-medium">APEUni Mock Test</div>
+        <div className="text-lg font-medium">Pawan PTE</div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <span className="opacity-70">🕒 Time Remaining</span>

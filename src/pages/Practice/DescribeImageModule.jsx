@@ -22,24 +22,19 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion, nextButton, pr
         let interval;
         const activeStates = ['prep', 'recording', 'prep_start'];
 
-        // Specific Timer Logic
-        if (status === 'prep_start' && timeLeft > 0) interval = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-        else if (status === 'prep' && timeLeft > 0) interval = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-
-        // Recording: Count UP
-        else if (status === 'recording' && timeLeft < maxTime) interval = setInterval(() => setTimeLeft((prev) => prev + 1), 1000);
-
-        // State Transitions
-        else if (timeLeft === 0 && status === 'prep_start') {
-            setStatus('prep');
-            setTimeLeft(25);
-            setMaxTime(25);
+        if (activeStates.includes(status) && timeLeft > 0) {
+            interval = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+        } else if (timeLeft === 0) {
+            if (status === 'prep_start') {
+                setStatus('prep');
+                setTimeLeft(25);
+                setMaxTime(25);
+            }
+            else if (status === 'prep') startRecording();
+            else if (status === 'recording') stopRecording();
         }
-        else if (timeLeft === 0 && status === 'prep') startRecording();
-        else if (timeLeft >= maxTime && status === 'recording') stopRecording();
-
         return () => clearInterval(interval);
-    }, [status, timeLeft, maxTime]);
+    }, [status, timeLeft]);
 
     const handleStartClick = () => {
         setStatus('prep');
@@ -55,7 +50,7 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion, nextButton, pr
     const startRecording = async () => {
         resetTranscript();
         setStatus('recording');
-        setTimeLeft(0); // Count UP starts at 0
+        setTimeLeft(40);
         setMaxTime(40);
         SpeechRecognition.startListening({ continuous: true });
         try {
@@ -160,11 +155,9 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion, nextButton, pr
                                     <div className="relative flex items-center justify-center">
                                         <svg className="w-40 h-40 transform -rotate-90">
                                             <circle cx="80" cy="80" r="70" stroke="#333" strokeWidth="6" fill="transparent" />
-                                            <circle cx="80" cy="80" r="70" stroke={(status === 'prep' || status === 'prep_start') ? "#3b82f6" : "#ef4444"} strokeWidth="6" fill="transparent" strokeDasharray={440} strokeDashoffset={440 - (440 * (status === 'recording' ? timeLeft : timeLeft)) / maxTime} className="transition-all duration-1000 ease-linear" strokeLinecap="round" />
+                                            <circle cx="80" cy="80" r="70" stroke={(status === 'prep' || status === 'prep_start') ? "#3b82f6" : "#ef4444"} strokeWidth="6" fill="transparent" strokeDasharray={440} strokeDashoffset={440 - (440 * timeLeft) / maxTime} className="transition-all duration-1000 ease-linear" strokeLinecap="round" />
                                         </svg>
-                                        <span className="absolute text-5xl font-black text-black">
-                                            {(status === 'recording') ? `${timeLeft}/${maxTime}` : timeLeft}
-                                        </span>
+                                        <span className="absolute text-5xl font-black text-black">{timeLeft}</span>
                                     </div>
                                     <p className={`text-sm font-bold uppercase tracking-[0.2em] ${(status === 'prep' || status === 'prep_start') ? 'text-blue-400' : 'text-red-500 animate-pulse'}`}>
                                         {status === 'prep_start' ? 'Starting Soon...' : status === 'prep' ? 'Preparation' : 'Recording...'}
@@ -302,7 +295,7 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion, nextButton, pr
             </div>
 
             {/* History Table */}
-            {status === 'idle' && question.lastAttempts?.length > 0 && (
+            { question.lastAttempts&& (
                 <div className="mt-8 space-y-4">
                     {/* Header */}
                     <h3 className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-widest px-4">
@@ -312,6 +305,7 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion, nextButton, pr
                     {/* ImageAttemptHistory component */}
                     <ImageAttemptHistory
                         question={question}
+                        module={"image"}
                         onSelectAttempt={handleSelectAttempt}
                     />
                 </div>

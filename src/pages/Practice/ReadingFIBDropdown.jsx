@@ -209,6 +209,11 @@ const ReadingFIBDropdown = ({ question, setActiveSpeechQuestion, nextButton, pre
     return (
         <div className="max-w-5xl mx-auto space-y-6">
 
+            <div>
+                <h1>Fill in the Blanks (Drop Down)</h1>
+                <p>There are some words missing in the following text. Please select the correct word in the drop-down box.</p>
+            </div>
+
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

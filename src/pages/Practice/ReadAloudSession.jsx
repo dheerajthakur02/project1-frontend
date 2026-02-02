@@ -429,6 +429,12 @@ const ReadAloudSession = () => {
     <DashboardLayout>
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Top Navigation / Header */}
+       <div>
+        <h1>Read Aloud</h1>
+        <p>
+           Look at the text below. In 40 seconds, you must read this text aloud as naturally and clearly as possible. You have 40 seconds to read aloud.
+        </p>
+       </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button onClick={() => navigate('/practice')} className="p-2 hover:bg-slate-100 rounded-full transition-colors">

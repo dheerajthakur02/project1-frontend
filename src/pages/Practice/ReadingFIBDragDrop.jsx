@@ -281,7 +281,12 @@ const ReadingFIBDragDrop = ({ question, setActiveSpeechQuestion, nextButton, pre
 
     return (
         <div className="max-w-5xl mx-auto space-y-6 font-sans">
-
+                <div>
+                    <h1>Fill in the Blanks (Drag and Drop)</h1>
+                    <p>
+                        In the text below some words are missing. Drag words from the box below to the appropriate place in the text. To undo an answer choice, drag the word back to the box below the text.
+                    </p>
+                </div>
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

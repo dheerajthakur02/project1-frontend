@@ -9,6 +9,7 @@ import ImageAttemptHistory from './ImageAttemptHistory';
 import { useSelector } from 'react-redux';
 
 const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, previousButton, shuffleButton }) => {
+    console.log(question)
     const navigate = useNavigate();
     const transcriptRef = useRef("");
     const { user } = useSelector((state) => state.auth)
@@ -18,6 +19,7 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
     const [result, setResult] = useState(null);
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+      const [showTranscript, setShowTranscript] = useState(false);
 
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
@@ -167,6 +169,9 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
         resetTranscript();
         transcriptRef.current = "";
     };
+      const handleToggleTranscript = () => {
+        setShowTranscript((prev) => !prev);
+    };
 
     const progressPercent = ((maxTime - timeLeft) / maxTime) * 100;
 
@@ -182,6 +187,12 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
             />
 
             <div className="flex items-center justify-between">
+                 <div>
+                        <h1>Repeat Sentence</h1>
+                        <p>
+                        You will hear a sentence. Please repeat the sentence exactly as you hear it. You will hear the sentence only once
+                        </p>
+                    </div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 hover:bg-slate-100 rounded-full">
                         <ArrowLeft size={20} />
@@ -190,6 +201,7 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
                         Repeat Sentence <span className="text-xs font-bold text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">Ai+</span>
                     </h1>
                 </div>
+                
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[450px] flex flex-col">
@@ -201,7 +213,20 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
                     <div className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">
                         {question.difficulty || 'Medium'}
                     </div>
-                </div>
+                      <button
+                                        onClick={handleToggleTranscript}
+                                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full font-bold transition-colors"
+                                    >
+                                        <Eye size={18} /> {showTranscript ? "Hide Transcript" : "Show Transcript"}
+                                    </button>
+                                </div>
+                
+                                {showTranscript && (
+                                    <div className="p-4 bg-slate-100 border-b border-slate-200 text-slate-700 italic">
+                                        {question.transcript}
+                                    </div>
+                                )}
+             
 
                 <div className="flex-1 p-8 flex flex-col items-center justify-center">
 
@@ -353,9 +378,10 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
                 <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" onClick={shuffleButton} />
                 <ControlBtn icon={<ChevronRight />} label="Next" onClick={nextButton} />
             </div>
-            {question.lastAttempts && question.lastAttempts.length > 0 && (
+            {question.lastAttempts && (
                 <ImageAttemptHistory
                     question={question}
+                    module={"repeat-sentence"}
                     onSelectAttempt={handleSelectAttempt}
                 />
             )}

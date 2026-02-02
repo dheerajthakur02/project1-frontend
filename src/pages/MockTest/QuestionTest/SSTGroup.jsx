@@ -87,10 +87,10 @@ function SSTIntro({ onStart }) {
 
   return (
     <div className="flex flex-col h-screen">
-      <Header title="APEUni Mock Test" timer={formatTime(timeLeft)} counter="Intro" />
+      <Header title="Pawan PTE Mock Test" timer={formatTime(timeLeft)} counter="Intro" />
       <div className="flex-grow p-12 space-y-4 text-[15px] leading-relaxed">
         <p>This is a single-question type test.</p>
-        <p>After the exam, please go to the Study Center to check the correctness of your answers. APEUni's AI will help you analyze how to continue preparing for the exam.</p>
+        <p>After the exam, please go to the Study Center to check the correctness of your answers. Pawan PTE AI will help you analyze how to continue preparing for the exam.</p>
         <p>Please click 'Next' to start the test.</p>
       </div>
       <Footer onNext={onStart} />
@@ -155,7 +155,7 @@ function SSTController({ question, currentIdx, total, onNext }) {
   return (
     <div className="flex flex-col h-screen">
       <Header
-        title="APEUni Mock Test"
+        title="Pawan PTE Mock Test"
         timer={formatTime(examTime)}
         counter={`${currentIdx + 1} of ${total}`}
       />

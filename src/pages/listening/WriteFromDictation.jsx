@@ -201,7 +201,6 @@ export default function WriteFromDictation({ question, setActiveSpeechQuestion, 
                     </div>
                 </div>
             )}
-}
 
 
             {/* ATTEMPT HISTORY SECTION */}

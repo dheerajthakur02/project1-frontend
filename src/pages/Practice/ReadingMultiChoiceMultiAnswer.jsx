@@ -195,6 +195,11 @@ const ReadingMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, next
     return (
         <div className="max-w-5xl mx-auto space-y-6 font-sans">
 
+            <div>
+                <h1>Multiple Choice (Multiple)</h1>
+                <p>Read the text and answer the question by selecting all the correct responses. More than one response is correct.</p>
+            </div>
+
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

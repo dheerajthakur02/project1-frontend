@@ -92,7 +92,7 @@ export default function ReadAloudMockTest({ backendData }) {
       {/* Header */}
       <div className="bg-[#eeeeee] border-b border-gray-300">
         <div className="px-6 py-2 flex justify-between items-center text-sm font-bold text-gray-600">
-          <span>APEUni PTE - Read Aloud</span>
+          <span>Pawan PTE - Read Aloud</span>
           <button className="bg-white border border-gray-400 px-3 py-1 rounded text-xs hover:bg-gray-100">Exit</button>
         </div>
         <div className="h-9 bg-slate-900 flex items-center justify-end px-6 space-x-6 text-white text-xs font-medium">

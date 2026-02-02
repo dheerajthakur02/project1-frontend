@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import {
-    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye
-} from 'lucide-react';
+    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Pause, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye
+} from 'lucide-react'; // Added Pause icon
 import { submitRepeatAttempt, submitShortAnswerAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
 import { useSelector } from 'react-redux';
@@ -18,6 +18,7 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
     const [result, setResult] = useState(null);
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(false); // New state for play/pause
 
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
@@ -29,6 +30,7 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
         transcriptRef.current = transcript;
     }, [transcript]);
 
+    // Main Timer Logic
     useEffect(() => {
         let interval;
         // Prep: Countdown
@@ -51,6 +53,17 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
         return () => clearInterval(interval);
     }, [status, timeLeft, maxTime]);
 
+    // New: Effect to manage audio play/pause when `isPlaying` changes
+    useEffect(() => {
+        if (questionAudioRef.current) {
+            if (isPlaying) {
+                questionAudioRef.current.play().catch(err => console.error("Playback blocked", err));
+            } else {
+                questionAudioRef.current.pause();
+            }
+        }
+    }, [isPlaying]);
+
     const handleStartClick = () => {
         setStatus('prep');
         setTimeLeft(3);
@@ -60,23 +73,33 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
     const handleStartListening = () => {
         setStatus('listening');
         setAudioCurrentTime(0);
+        setIsPlaying(true); // Start playing immediately
         if (questionAudioRef.current) {
             questionAudioRef.current.currentTime = 0;
-            questionAudioRef.current.play().catch(err => {
-                console.error("Playback blocked", err);
-                startRecording();
-            });
+            // No need to call play() here, useEffect will handle it based on isPlaying
         }
     };
 
+    const handleTogglePlayPause = () => {
+        setIsPlaying((prev) => !prev);
+    };
+
+    // Handle Slider Interaction
+    const handleSliderChange = (e) => {
+        const time = parseFloat(e.target.value);
+        setAudioCurrentTime(time);
+        if (questionAudioRef.current) {
+            questionAudioRef.current.currentTime = time;
+        }
+    };
 
     const handleSelectAttempt = (attempt) => {
         setResult(attempt);
         setStatus('result');
     };
 
-
     const onAudioEnded = () => {
+        setIsPlaying(false); // Stop playing when audio ends
         startRecording();
     };
 
@@ -163,6 +186,13 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
         setMaxTime(3);
         resetTranscript();
         transcriptRef.current = "";
+        setIsPlaying(false); // Reset play state
+    };
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
     const progressPercent = (timeLeft / maxTime) * 100; // Count UP Logic
@@ -172,13 +202,17 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
             <audio
                 ref={questionAudioRef}
                 src={question.audioUrl}
-                className="hidden"
-                onLoadedMetadata={(e) => setAudioDuration(Math.ceil(e.target.duration))}
-                onTimeUpdate={(e) => setAudioCurrentTime(Math.ceil(e.target.currentTime))}
+                className="hidden" // Still hidden, controlled via state
+                onLoadedMetadata={(e) => setAudioDuration(e.target.duration)} // Use e.target.duration directly
+                onTimeUpdate={(e) => setAudioCurrentTime(e.target.currentTime)} // Use e.target.currentTime directly
                 onEnded={onAudioEnded}
             />
-
+                <div>
+                    <h1>Answer Short Questions</h1>
+                    <p>You will hear a question. Please give a simple and short answer. Often just one or a few words is enough.</p>
+                </div>
             <div className="flex items-center justify-between">
+                
                 <div className="flex items-center gap-2">
                     <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 hover:bg-slate-100 rounded-full">
                         <ArrowLeft size={20} />
@@ -202,8 +236,16 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
 
                 <div className="flex-1 p-8 flex flex-col items-center justify-center">
 
-                    {/* 1. IDLE STATE WITH HISTORY */}
-                    {/* Auto-start enabled */}
+                    {/* 1. IDLE STATE WITH HISTORY (if needed, otherwise 'prep' is initial) */}
+                    {/* If you need an explicit "Start" button before prep, uncomment this block */}
+                    {/* {status === 'idle' && (
+                        <button
+                            onClick={handleStartClick}
+                            className="flex items-center gap-3 px-8 py-4 bg-primary-600 text-white rounded-full text-xl font-bold shadow-lg hover:bg-primary-700 transition-all active:scale-95"
+                        >
+                            <PlayCircle size={28} /> Start Question
+                        </button>
+                    )} */}
 
                     {/* 2. PREP STATE */}
                     {status === 'prep' && (
@@ -216,20 +258,36 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
                         </div>
                     )}
 
-                    {/* 3. LISTENING STATE */}
+                    {/* 3. LISTENING STATE (Interactive Audio Player) */}
                     {status === 'listening' && (
-                        <div className="flex flex-col items-center gap-6">
-                            <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center animate-pulse">
-                                <Volume2 size={40} />
-                            </div>
-                            <div className="text-center space-y-1">
-                                <span className="font-bold text-blue-600 text-lg">Listening to Speaker...</span>
-                                <div className="text-slate-500 font-semibold text-sm">
-                                    {audioCurrentTime || 0} / {audioDuration || 0} sec
+                        <div className="flex flex-col items-center gap-8 w-full max-w-lg">
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={handleTogglePlayPause}
+                                    className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors"
+                                >
+                                    {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" />}
+                                </button>
+                                <div className="text-slate-500 text-sm font-medium">
+                                    {isPlaying ? "Playing Speaker Audio..." : "Audio Paused"}
                                 </div>
                             </div>
-                            <div className="w-64 h-2 bg-blue-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-600 transition-all duration-300" style={{ width: audioDuration ? `${(audioCurrentTime / audioDuration) * 100}%` : '0%' }} />
+
+                            <div className="w-full space-y-2">
+                                <div className="flex justify-between text-sm font-mono text-blue-600 font-bold">
+                                    <span>{formatTime(audioCurrentTime)}</span>
+                                    <span>{formatTime(audioDuration)}</span>
+                                </div>
+                                {/* INTERACTIVE SLIDER */}
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max={audioDuration || 0}
+                                    step="0.1"
+                                    value={audioCurrentTime}
+                                    onChange={handleSliderChange}
+                                    className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-700 transition-all"
+                                />
                             </div>
                         </div>
                     )}
@@ -240,6 +298,9 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
                             <div className="flex items-center gap-3 text-red-600">
                                 <div className="w-3 h-3 bg-red-600 rounded-full animate-ping" />
                                 <span className="font-bold text-2xl">Recording... {timeLeft} / {maxTime}</span>
+
+                                <span className="font-bold text-2xl">Recording... {formatTime(timeLeft)}</span> {/* Use formatTime here */}
+
                             </div>
                             <button onClick={stopRecording} className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 shadow-lg transition-colors">
                                 <Square size={18} fill="currentColor" /> Finish Recording
@@ -300,21 +361,9 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
 
                                 {/* AUDIO PLAYERS */}
                                 <div className="grid grid-rows-2 gap-6 col-span-12 md:col-span-8">
-                                    <AudioPlayerCard label="Question" duration="0:04" url={question.audioUrl} />
-                                    <AudioPlayerCard label="My Answer" duration="00:06" url={result.studentAudio?.url} isAnswer />
+                                    <AudioPlayerCard label="Question" url={question.audioUrl} />
+                                    <AudioPlayerCard label="My Answer" url={result.studentAudio?.url} isAnswer />
                                 </div>
-
-
-                                {/* <div className="col-span-12 md:col-span-8 bg-white rounded-3xl border border-slate-100 p-6">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h3 className="flex items-center gap-2 font-bold text-slate-700">Scoring Parameters</h3>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <ParameterCard label="Content" score={result.content} max={5} />
-                                        <ParameterCard label="Pronunciation" score={result.pronunciation} max={5} />
-                                        <ParameterCard label="Oral Fluency" score={result.fluency} max={5} />
-                                    </div>
-                                </div> */}
                             </div>
 
                             <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
@@ -351,7 +400,7 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
                 <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" onClick={shuffleButton} />
                 <ControlBtn icon={<ChevronRight />} label="Next" onClick={nextButton} />
             </div>
-            {question.lastAttempts && question.lastAttempts.length > 0 && (
+            {question.lastAttempts && (
                 <ImageAttemptHistory
                     question={question}
                     onSelectAttempt={handleSelectAttempt}
@@ -362,14 +411,13 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
     );
 };
 
-// ... Sub-components (ControlBtn, ParameterCard, AudioPlayerCard) remain the same as your original file
-
+// Sub-components
 const ControlBtn = ({ icon, label, onClick, className = "" }) => {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl 
-      bg-slate-100 text-slate-700 font-semibold shadow-sm 
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl
+      bg-slate-100 text-slate-700 font-semibold shadow-sm
       hover:bg-slate-800 hover:text-white transition-all ${className}`}
         >
             {icon}
@@ -390,26 +438,96 @@ const ParameterCard = ({ label, score, max }) => (
     </div>
 );
 
-const AudioPlayerCard = ({ label, url, duration, isAnswer }) => (
-    <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex items-center gap-4">
-        <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-500">{label}</span>
-            </div>
-            <div className="flex items-center gap-3">
-                <button onClick={() => {
-                    const a = new Audio(url);
-                    a.play();
-                }} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200">
-                    <Play size={14} fill="currentColor" />
-                </button>
-                <div className="flex-1 h-1.5 bg-slate-100 rounded-full relative overflow-hidden">
-                    <div className="absolute left-0 top-0 h-full bg-slate-500 w-1/3"></div>
+// Modified AudioPlayerCard to be interactive
+const AudioPlayerCard = ({ label, url, isAnswer }) => {
+    const audioRef = useRef(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+
+    useEffect(() => {
+        if (audioRef.current) {
+            if (isPlaying) {
+                audioRef.current.play().catch(err => console.error("Playback blocked", err));
+            } else {
+                audioRef.current.pause();
+            }
+        }
+    }, [isPlaying]);
+
+    const handleLoadedMetadata = () => {
+        if (audioRef.current) {
+            setDuration(audioRef.current.duration);
+        }
+    };
+
+    const handleTimeUpdate = () => {
+        if (audioRef.current) {
+            setCurrentTime(audioRef.current.currentTime);
+        }
+    };
+
+    const handleEnded = () => {
+        setIsPlaying(false);
+        setCurrentTime(0); // Reset to start
+    };
+
+    const handleSliderChange = (e) => {
+        const time = parseFloat(e.target.value);
+        if (audioRef.current) {
+            audioRef.current.currentTime = time;
+            setCurrentTime(time);
+        }
+    };
+
+    const formatTime = (seconds) => {
+        if (isNaN(seconds) || seconds < 0) return "0:00";
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    };
+
+    return (
+        <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex items-center gap-4">
+            <audio
+                ref={audioRef}
+                src={url}
+                onLoadedMetadata={handleLoadedMetadata}
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleEnded}
+                preload="metadata" // Load metadata to get duration without playing
+                className="hidden"
+            />
+            <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-500">{label}</span>
                 </div>
-                <div className="text-[10px] text-slate-400 tabular-nums">{duration}</div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"
+                    >
+                        {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+                    </button>
+                    <div className="flex-1">
+                        <input
+                            type="range"
+                            min="0"
+                            max={duration || 0}
+                            step="0.1"
+                            value={currentTime}
+                            onChange={handleSliderChange}
+                            className="w-full h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer accent-slate-600 hover:accent-slate-700 transition-all"
+                        />
+                    </div>
+                    <div className="text-[10px] text-slate-400 tabular-nums">
+                        {formatTime(currentTime)} / {formatTime(duration)}
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
+
 
 export default ShortAnswer;

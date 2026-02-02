@@ -196,14 +196,22 @@ const RespondSituation = ({ question, setActiveSpeechQuestion, nextButton, previ
                 onTimeUpdate={(e) => setAudioCurrentTime(e.target.currentTime)}
                 onEnded={onAudioEnded}
             />
-
+                 <div>
+                    <h1>
+                        Respond To a Situation
+                    </h1>
+                    <p>Listen to and read a description of a situation. You will have 10 seconds to think about your answer. Then you will hear a beep. You will have 40 seconds to answer the question. Please answer as completely as you can.
+</p>
+                </div>
+                
             <div className="flex items-center justify-between">
+               
                 <div className="flex items-center gap-2">
                     <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 hover:bg-slate-100 rounded-full">
                         <ArrowLeft size={20} />
                     </button>
                     <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        Summarize Spoken Text <span className="text-xs font-bold text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">Ai+</span>
+                        Respons To Situation <span className="text-xs font-bold text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">Ai+</span>
                     </h1>
                 </div>
             </div>
@@ -387,9 +395,10 @@ const RespondSituation = ({ question, setActiveSpeechQuestion, nextButton, previ
                 <ControlBtn icon={<ChevronRight />} label="Next" onClick={nextButton} />
             </div>
 
-            {question.lastAttempts && question.lastAttempts.length > 0 && status === 'idle' && (
+            {question.lastAttempts  && (
                 <ImageAttemptHistory
                     question={question}
+                    module={"respond-situation"}
                     onSelectAttempt={(attempt) => { setResult(attempt); setStatus('result'); }}
                 />
             )}

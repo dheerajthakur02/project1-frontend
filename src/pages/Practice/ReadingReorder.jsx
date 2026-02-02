@@ -222,6 +222,13 @@ const ReadingReorder = ({ question, setActiveSpeechQuestion, nextButton, previou
 
     return (
         <div className="max-w-6xl mx-auto space-y-6 font-sans">
+            <div>
+                <h1>
+                    Reorder Paragraph
+                </h1>
+                <p>The text boxes in the left panel have been placed in a random order. Restore the original order by dragging the text boxes from the left panel to the right panel.
+</p>
+            </div>
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

@@ -17,6 +17,7 @@ import ReadingMultiChoiceMultiAnswer from './ReadingMultiChoiceMultiAnswer';
 import ReadingMultiChoiceSingleAnswer from './ReadingMultiChoiceSingleAnswer';
 import ReadingFIBDragDrop from './ReadingFIBDragDrop';
 import ReadingReorder from './ReadingReorder';
+import QuestionFilter from '../../components/Practice/QuestionFilter';
 
 
 
@@ -79,6 +80,25 @@ function Practice() {
     // Session State
     const [activeSpeechQuestion, setActiveSpeechQuestion] = useState(false);
     const [speechQuestion, setSpeechQuestion] = useState(null);
+
+    // Filters
+    const [filters, setFilters] = useState({
+        prediction: false,
+        difficulty: 'All',
+        status: 'All'
+    });
+
+    const handleFilterChange = (key, value) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleResetFilters = () => {
+        setFilters({
+            prediction: false,
+            difficulty: 'All',
+            status: 'All'
+        });
+    };
 
     // --- FETCH FUNCTIONS ---
     const fetchReadAloud = async () => {
@@ -374,7 +394,7 @@ function Practice() {
     }, [activeTab]);
 
     // --- LOGIC ---
-    const displayQuestions = (() => {
+    const getRawQuestions = () => {
         switch (activeSubTab) {
             case 'Read Aloud': return readAloudQuestions;
             case 'Repeat Sentence': return repeatSentenceQuestions;
@@ -394,13 +414,37 @@ function Practice() {
             case 'Summarize Spoken Text': return sstQuestions;
             case 'Highlight Correct Summary': return hcsQuestions;
             case 'Listen: Multiple Choice, choose Single Answer': return listeningMCQSingleQuestions;
-            case 'Select Missing Word': return selectMissingWordQuestions; // Implement when data and component are ready
-            case 'Highlight Incorrect Words': return highlightIncorrectWordsQuestions; // Implement when data and component are ready
+            case 'Select Missing Word': return selectMissingWordQuestions;
+            case 'Highlight Incorrect Words': return highlightIncorrectWordsQuestions;
             case 'Fill in the blanks (Type In)': return listeningFIBQuestions;
             case 'Listening: Multiple Choice, Choose Multiple Answer': return listeningMCQMultipleQuestions;
             case 'Write From Dictation': return writeFromDictationQuestions;
             default: return [];
         }
+    };
+
+    const displayQuestions = (() => {
+        let questions = getRawQuestions();
+
+        if (filters.prediction) {
+            questions = questions.filter(q => q.isPrediction);
+            // If isPrediction is missing/undefined, it excludes it. 
+            // Ensure backend sends this boolean or default to false.
+        }
+
+        if (filters.difficulty !== 'All') {
+            questions = questions.filter(q => q.difficulty === filters.difficulty);
+        }
+
+        if (filters.status !== 'All') {
+            if (filters.status === 'Not Practiced') {
+                questions = questions.filter(q => !q.attemptCount && q.status !== 'Completed' && q.status !== 'Practiced');
+            } else if (filters.status === 'Practiced') {
+                questions = questions.filter(q => (q.attemptCount > 0) || q.status === 'Practiced' || q.status === 'Completed');
+            }
+        }
+
+        return questions;
     })();
 
     const handleNextButton = () => {
@@ -505,6 +549,12 @@ function Practice() {
                             </button>
                         ))}
                     </div>
+
+                    <QuestionFilter
+                        filters={filters}
+                        onFilterChange={handleFilterChange}
+                        onReset={handleResetFilters}
+                    />
 
                     {/* Question List Table */}
                     <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">

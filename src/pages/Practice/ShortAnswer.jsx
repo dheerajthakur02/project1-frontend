@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import {
-    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Pause, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye
+    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Pause, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye, Languages
 } from 'lucide-react'; // Added Pause icon
 import { submitRepeatAttempt, submitShortAnswerAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
@@ -19,6 +19,7 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false); // New state for play/pause
+    const [showFlashAnswer, setShowFlashAnswer] = useState(false); // Answer Flash State
 
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
@@ -29,6 +30,11 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
     useEffect(() => {
         transcriptRef.current = transcript;
     }, [transcript]);
+
+    // Reset session when question changes
+    useEffect(() => {
+        resetSession();
+    }, [question]);
 
     // Main Timer Logic
     useEffect(() => {
@@ -82,6 +88,13 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
 
     const handleTogglePlayPause = () => {
         setIsPlaying((prev) => !prev);
+    };
+
+    const handleShowAnswer = () => {
+        setShowFlashAnswer(true);
+        setTimeout(() => {
+            setShowFlashAnswer(false);
+        }, 4000);
     };
 
     // Handle Slider Interaction
@@ -207,12 +220,12 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
                 onTimeUpdate={(e) => setAudioCurrentTime(e.target.currentTime)} // Use e.target.currentTime directly
                 onEnded={onAudioEnded}
             />
-                <div>
-                    <h1>Answer Short Questions</h1>
-                    <p>You will hear a question. Please give a simple and short answer. Often just one or a few words is enough.</p>
-                </div>
+            <div>
+                <h1>Answer Short Questions</h1>
+                <p>You will hear a question. Please give a simple and short answer. Often just one or a few words is enough.</p>
+            </div>
             <div className="flex items-center justify-between">
-                
+
                 <div className="flex items-center gap-2">
                     <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 hover:bg-slate-100 rounded-full">
                         <ArrowLeft size={20} />
@@ -391,14 +404,51 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
             </div>
 
             {/* Bottom Controls */}
-            <div className="flex items-center justify-center gap-6 pb-10">
-                <ControlBtn icon={<ChevronLeft />} label="Previous" onClick={previousButton} />
-                <ControlBtn icon={<RefreshCw size={18} />} label="Redo" onClick={resetSession} />
-                <button className="w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 shadow-inner">
-                    <CheckCircle size={24} />
-                </button>
-                <ControlBtn icon={<Shuffle size={18} />} label="Shuffle" onClick={shuffleButton} />
-                <ControlBtn icon={<ChevronRight />} label="Next" onClick={nextButton} />
+            <div className="flex items-center justify-between pb-10">
+                {/* LEFT SIDE: Translate, Answer, Redo */}
+                <div className="flex items-center gap-4">
+                    {/* Translate (Static) */}
+                    <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <Languages size={18} />
+                        </div>
+                        <span className="text-xs font-medium">Translate</span>
+                    </button>
+
+                    {/* Answer (Working) */}
+                    <button onClick={handleShowAnswer} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <Eye size={18} />
+                        </div>
+                        <span className="text-xs font-medium">Answer</span>
+                    </button>
+
+                    {/* Redo */}
+                    <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <RefreshCw size={18} />
+                        </div>
+                        <span className="text-xs font-medium">Redo</span>
+                    </button>
+                </div>
+
+
+                {/* RIGHT SIDE: Prev, Next */}
+                <div className="flex items-center gap-4">
+                    <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <ChevronLeft size={20} />
+                        </div>
+                        <span className="text-xs font-medium">Previous</span>
+                    </button>
+
+                    <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                            <ChevronRight size={20} />
+                        </div>
+                        <span className="text-xs font-medium">Next</span>
+                    </button>
+                </div>
             </div>
             {question.lastAttempts && (
                 <ImageAttemptHistory
@@ -406,6 +456,14 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
                     onSelectAttempt={handleSelectAttempt}
                     module={"short-answer"}
                 />
+            )}
+            {/* Flash Message Overlay for Answer */}
+            {showFlashAnswer && (
+                <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-2xl text-center border border-slate-700">
+                    <p className="font-medium text-lg leading-relaxed">
+                        {question.answer || "No answer available."}
+                    </p>
+                </div>
             )}
         </div>
     );

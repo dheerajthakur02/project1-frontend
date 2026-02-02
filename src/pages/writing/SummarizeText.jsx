@@ -12,10 +12,10 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion }) => {
   const { user } = useSelector((state) => state.auth);
 
 
-  const [started, setStarted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(MAX_TIME);
+  const [started, setStarted] = useState(true);
+  const [timeLeft, setTimeLeft] = useState(3);
   const [answer, setAnswer] = useState("");
-  const [status, setStatus] = useState("idle"); // idle | submitting | result
+  const [status, setStatus] = useState("prep"); // prep | writing | submitting | result
   const [result, setResult] = useState(null);
 
   /* ---------------- TIMER ---------------- */
@@ -23,11 +23,17 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion }) => {
     if (!started || timeLeft <= 0) return;
 
     const timer = setInterval(() => {
-      setTimeLeft((t) => t - 1);
+      setTimeLeft((prev) => {
+        if (prev === 1 && status === "prep") {
+          setStatus("writing");
+          return MAX_TIME; // Switch to main timer (10 mins)
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [started, timeLeft]);
+  }, [started, timeLeft, status]);
 
   /* ---------------- HELPERS ---------------- */
   const wordCount = answer.trim()
@@ -73,6 +79,14 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion }) => {
           <ArrowLeft size={20} />
         </button>
 
+        <button
+          onClick={() => { setStatus("prep"); setStarted(true); setTimeLeft(3); setAnswer(""); setResult(null); }}
+          className="p-2 hover:bg-slate-100 rounded-full text-slate-500"
+          title="Redo / Restart"
+        >
+          <Clock size={20} />
+        </button>
+
         <h1 className="text-xl font-bold text-slate-800">
           Summarize Written Text{" "}
           <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded font-bold">
@@ -83,23 +97,18 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion }) => {
 
       {/* Card */}
       <div className="bg-white rounded-xl border shadow-sm p-6 space-y-6">
-        {/* START SCREEN */}
-        {!started && (
+        {/* PREP SCREEN */}
+        {status === "prep" && (
           <div className="text-center space-y-6 py-20">
-            <h2 className="text-2xl font-bold text-slate-800">
-              Ready to start?
-            </h2>
-            <button
-              onClick={() => setStarted(true)}
-              className="bg-primary-600 hover:bg-primary-700 text-white px-10 py-3 rounded-full font-bold shadow"
-            >
-              Start Practice
-            </button>
+            <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
+            <div className="text-6xl font-black text-primary-600 animate-pulse">
+              {timeLeft}
+            </div>
           </div>
         )}
 
         {/* MAIN UI */}
-        {started && (
+        {status === "writing" && (
           <>
             {/* Question Header */}
             <div className="flex justify-between items-center border-b pb-4">
@@ -177,7 +186,7 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion }) => {
                   {question.code} ({question.title})
                   <span className="ml-2 text-purple-600 font-bold">AI+</span>
                 </h2>
-                <button onClick={() => setStatus("idle")}>✕</button>
+                <button onClick={() => { setStatus("prep"); setStarted(true); setTimeLeft(3); setAnswer(""); setResult(null); }}>✕</button>
               </div>
 
               <div className="grid grid-cols-12 gap-6">

@@ -11,10 +11,10 @@ const MAX_WORDS = 500;
 const WriteEssay = ({ question, setActiveSpeechQuestion }) => {
   const { user } = useSelector((state) => state.auth);
 
-  const [started, setStarted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(MAX_TIME);
+  const [started, setStarted] = useState(true);
+  const [timeLeft, setTimeLeft] = useState(3);
   const [answer, setAnswer] = useState("");
-  const [status, setStatus] = useState("idle"); // idle | submitting | result
+  const [status, setStatus] = useState("prep"); // prep | writing | submitting | result
   const [result, setResult] = useState(null);
   const [isLocked, setIsLocked] = useState(false);
 
@@ -22,9 +22,18 @@ const WriteEssay = ({ question, setActiveSpeechQuestion }) => {
   useEffect(() => {
     if (!started || timeLeft <= 0) return;
 
-    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev === 1 && status === "prep") {
+          setStatus("writing");
+          return MAX_TIME; // Switch to main timer
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
     return () => clearInterval(timer);
-  }, [started, timeLeft]);
+  }, [started, timeLeft, status]);
 
   const wordCount = answer.trim() ? answer.trim().split(/\s+/).length : 0;
 
@@ -94,6 +103,13 @@ const WriteEssay = ({ question, setActiveSpeechQuestion }) => {
         >
           <ArrowLeft size={20} />
         </button>
+        <button
+          onClick={() => { setStatus("prep"); setStarted(true); setTimeLeft(3); setAnswer(""); setResult(null); setIsLocked(false); }}
+          className="p-2 hover:bg-slate-100 rounded-full text-slate-500"
+          title="Redo / Restart"
+        >
+          <Clock size={20} />
+        </button>
 
 
 
@@ -105,21 +121,18 @@ const WriteEssay = ({ question, setActiveSpeechQuestion }) => {
       {/* Card */}
       <div className="bg-white rounded-xl border shadow-sm p-6 space-y-6">
 
-        {/* Start Screen */}
-        {!started && status === "idle" && (
+        {/* Prep Screen */}
+        {status === "prep" && (
           <div className="text-center space-y-6 py-20">
-            <h2 className="text-2xl font-bold text-slate-800">Ready to start?</h2>
-            <button
-              onClick={() => setStarted(true)}
-              className="bg-primary-600 hover:bg-primary-700 text-white px-10 py-3 rounded-full font-bold shadow"
-            >
-              Start Practice
-            </button>
+            <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
+            <div className="text-6xl font-black text-primary-600 animate-pulse">
+              {timeLeft}
+            </div>
           </div>
         )}
 
         {/* Main UI */}
-        {started && (
+        {status === "writing" && (
           <>
             {/* Header */}
             <div className="flex justify-between items-center border-b pb-4">
@@ -180,7 +193,7 @@ const WriteEssay = ({ question, setActiveSpeechQuestion }) => {
                 <h2 className="font-bold text-lg">
                   {question.title} <span className="ml-2 text-purple-600 font-bold">AI+</span>
                 </h2>
-                <button onClick={() => { setStatus("idle"); setAnswer(""); setIsLocked(false); }}>✕</button>
+                <button onClick={() => { setStatus("prep"); setStarted(true); setTimeLeft(3); setAnswer(""); setResult(null); setIsLocked(false); }}>✕</button>
               </div>
 
               <div className="grid grid-cols-12 gap-6">

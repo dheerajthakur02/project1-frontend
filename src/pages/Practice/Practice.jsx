@@ -290,7 +290,7 @@ function Practice() {
     const fetchHighlightSummary = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/hsc/attempts/${user._id}`);
+            const response = await fetch(`/api/hcs/attempts/${user._id}`);
             const data = await response.json();
             setHCSQuestions(data?.data || []);
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Volume2, RotateCcw, ChevronRight, X, Play, CheckCircle2, Info, Headphones, BookOpen, Share2, History, Calendar, Trash2, Languages, Eye, RefreshCw, ChevronLeft } from "lucide-react";
+import { ArrowLeft, Volume2, RotateCcw, ChevronRight, X, Play, CheckCircle2, Info, Headphones, BookOpen, Share2, History, Calendar, Trash2, Languages, Eye, RefreshCw, ChevronLeft, Pause } from "lucide-react";
 import { submitChooseSingleAnswerAttempt, submitHighlightAttempt } from "../../services/api";
 import { useSelector } from "react-redux";
 
@@ -13,6 +13,8 @@ export default function ChooseSingleAnswer({ question, setActiveSpeechQuestion, 
   const [result, setResult] = useState(null);
   const [audioDuration, setAudioDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+const [isPlaying, setIsPlaying] = useState(false);
+const [audioFinished, setAudioFinished] = useState(false);
 
   const audioRef = useRef(null);
   const progressRef = useRef(null);
@@ -38,12 +40,36 @@ export default function ChooseSingleAnswer({ question, setActiveSpeechQuestion, 
   const handleStartPrep = () => setStatus("countdown");
 
   const handleAudioStart = () => {
-    setStatus("playing");
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play();
-    }
-  };
+  setStatus("playing");
+  setAudioFinished(false);
+  if (audioRef.current) {
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
+    setIsPlaying(true);
+  }
+};
+
+const togglePlayPause = () => {
+  if (!audioRef.current || audioFinished) return;
+
+  if (isPlaying) {
+    audioRef.current.pause();
+    setIsPlaying(false);
+  } else {
+    audioRef.current.play().catch(() => {});
+    setIsPlaying(true);
+  }
+};
+const handleSkipAudio = () => {
+  if (!audioRef.current) return;
+
+  audioRef.current.pause();
+  audioRef.current.currentTime = audioDuration;
+  setIsPlaying(false);
+  setAudioFinished(true);
+  setStatus("finished");
+};
+
 
   /* ---------------- VIEW PREVIOUS RESULT ---------------- */
   const handleViewPrevious = (attempt) => {
@@ -117,42 +143,59 @@ export default function ChooseSingleAnswer({ question, setActiveSpeechQuestion, 
           ) : (
             <div className="bg-white rounded-[2.5rem] border shadow-sm relative overflow-hidden flex flex-col min-h-[600px]">
               {/* AUDIO CONTROL BAR */}
-              <div className="px-10 py-8 bg-slate-50/80 border-b flex items-center gap-8">
-                <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                  {status === "countdown" ? prepTimer : <Headphones size={24} />}
-                </div>
+             <div className="px-10 py-8 bg-slate-50/80 border-b flex items-center gap-6">
 
-                <div className="flex-1 flex flex-col gap-2">
-                  <div
-                    ref={progressRef}
-                    onClick={(e) => {
-                      if (status !== 'playing' && status !== 'finished') return;
-                      const rect = progressRef.current.getBoundingClientRect();
-                      const percent = (e.clientX - rect.left) / rect.width;
-                      audioRef.current.currentTime = percent * audioDuration;
-                    }}
-                    className="h-2 bg-slate-200 rounded-full overflow-hidden relative cursor-pointer"
-                  >
-                    <div
-                      className="h-full bg-blue-500 transition-all"
-                      style={{ width: `${(currentTime / audioDuration) * 100 || 0}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs font-bold text-slate-400">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatTime(audioDuration)}</span>
-                  </div>
-                </div>
+  {/* PLAY / PAUSE */}
+  <button
+    onClick={togglePlayPause}
+    disabled={audioFinished}
+    className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 
+               text-white flex items-center justify-center shadow-md"
+  >
+    {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
+  </button>
 
-                <div className="flex items-center gap-4">
-                  <Volume2 size={20} className="text-slate-400" />
-                  <select className="bg-white border rounded-lg px-2 py-1 text-xs font-bold outline-none">
-                    <option>1.0x</option>
-                    <option>0.75x</option>
-                    <option>1.2x</option>
-                  </select>
-                </div>
-              </div>
+  {/* PROGRESS BAR */}
+  <div className="flex-1 flex flex-col gap-2">
+    <div
+      ref={progressRef}
+      onClick={(e) => {
+        if (!audioRef.current) return;
+        const rect = progressRef.current.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        audioRef.current.currentTime = percent * audioDuration;
+      }}
+      className="h-2 bg-slate-200 rounded-full overflow-hidden cursor-pointer"
+    >
+      <div
+        className="h-full bg-blue-500 transition-all"
+        style={{
+          width: audioDuration
+            ? `${(currentTime / audioDuration) * 100}%`
+            : "0%",
+        }}
+      />
+    </div>
+
+    <div className="flex justify-between text-xs font-bold text-slate-400">
+      <span>{formatTime(currentTime)}</span>
+      <span>{formatTime(audioDuration)}</span>
+    </div>
+  </div>
+
+  {/* SKIP BUTTON */}
+  {!audioFinished && (
+    <button
+      onClick={handleSkipAudio}
+      className="text-sm font-bold text-blue-600 hover:text-blue-800"
+    >
+      Skip Audio
+    </button>
+  )}
+
+  <Volume2 size={20} className="text-slate-400" />
+</div>
+
 
               {/* OVERLAY FOR START */}
               {/* OVERLAY FOR START - REMOVED FOR AUTO START */}
@@ -319,13 +362,20 @@ export default function ChooseSingleAnswer({ question, setActiveSpeechQuestion, 
 
       {/* AUDIO ELEMENT */}
       <audio
-        ref={audioRef}
-        src={question.audioUrl}
-        onLoadedMetadata={() => setAudioDuration(audioRef.current.duration)}
-        onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
-        onEnded={() => setStatus("finished")}
-        className="hidden"
-      />
+  ref={audioRef}
+  src={question.audioUrl}
+  onLoadedMetadata={() => setAudioDuration(audioRef.current.duration)}
+  onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
+  onPlay={() => setIsPlaying(true)}
+  onPause={() => setIsPlaying(false)}
+  onEnded={() => {
+    setIsPlaying(false);
+    setAudioFinished(true);
+    setStatus("finished");
+  }}
+  className="hidden"
+/>
+
 
       {/* RESULT MODAL */}
       {status === "result" && result && (

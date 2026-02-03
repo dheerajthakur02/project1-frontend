@@ -288,6 +288,7 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
                     {/* 3. PLAYING AUDIO WITH SLIDER & PLAY/PAUSE */}
                     {(status === 'playing' || status === 'recording') && (
                         <div className="flex flex-col items-center gap-8 w-full max-w-lg">
+                            <button onClick={()=>{setStatus("prep_record"); handleTogglePlayPause()}} className={`p-4 m-2 bg-blue-400 text-white ${status === 'recording'? "hidden":""}`}>Skip Audio</button>
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={handleTogglePlayPause}

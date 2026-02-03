@@ -91,6 +91,8 @@ const ListeningMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, ne
     const [selectedOptions, setSelectedOptions] = useState([]);
     const [result, setResult] = useState(null);
     const [history, setHistory] = useState([]);
+    const [audioProgress, setAudioProgress] = useState(0); // 0 → 100
+
 
     // Audio State
     const audioRef = useRef(null);
@@ -105,6 +107,9 @@ const ListeningMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, ne
     const [viewAttempt, setViewAttempt] = useState(null);
     const [status, setStatus] = useState("idle");
 
+    const [audioFinished, setAudioFinished] = useState(false);
+
+
     // Timer Effect
     useEffect(() => {
         if (prepStatus === "countdown" && prepTimer > 0) {
@@ -113,11 +118,38 @@ const ListeningMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, ne
         } else if (prepStatus === "countdown" && prepTimer === 0) {
             setPrepStatus("finished");
             if (audioRef.current) {
-                audioRef.current.play().catch(e => console.log(e));
-                setIsPlaying(true);
+audioRef.current.currentTime = 0;
+audioRef.current.play().catch(() => {});
+setIsPlaying(true);
+setAudioFinished(false);
+
             }
         }
     }, [prepStatus, prepTimer]);
+
+   const handleSkipAudio = () => {
+    if (!audioRef.current) return;
+
+    audioRef.current.pause();
+    audioRef.current.currentTime = audioRef.current.duration;
+    setIsPlaying(false);
+    setAudioFinished(true);
+    setAudioProgress(100);
+};
+
+
+const toggleAudio = () => {
+    if (!audioRef.current || audioFinished) return;
+
+    if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+    } else {
+        audioRef.current.play().catch(() => {});
+        setIsPlaying(true);
+    }
+};
+
 
     // Initialize on load
     useEffect(() => {
@@ -134,6 +166,10 @@ const ListeningMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, ne
             // Reset Timer
             setPrepStatus("countdown");
             setPrepTimer(3);
+            setAudioProgress(0);
+setAudioFinished(false);
+
+            
             setHistory(question.lastAttempts || []);
         }
     }, [question]);
@@ -150,20 +186,20 @@ const ListeningMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, ne
         }
         setPrepStatus("countdown");
         setPrepTimer(3);
+        setAudioProgress(0);
+setAudioFinished(false);
+
     }
 
-    const toggleAudio = () => {
-        if (audioRef.current) {
-            if (isPlaying) {
-                audioRef.current.pause();
-            } else {
-                audioRef.current.play();
-            }
-            setIsPlaying(!isPlaying);
-        }
-    };
+    
 
-    const handleAudioEnded = () => setIsPlaying(false);
+ const handleAudioEnded = () => {
+    setIsPlaying(false);
+    setAudioFinished(true);
+    setAudioProgress(100);
+};
+
+
 
     const handleOptionToggle = (option) => {
         setSelectedOptions(prev => {
@@ -262,29 +298,62 @@ const ListeningMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, ne
 
                     <div className="p-8 space-y-8">
                         {/* PLAYER */}
-                        <div className="flex items-center gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                            <button
-                                onClick={toggleAudio}
-                                className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-200 transition-transform active:scale-95"
-                            >
-                                {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
-                            </button>
-                            <div className="flex-1">
-                                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                                    <div className={`h-full bg-blue-500 transition-all duration-300 ${isPlaying ? 'w-full animate-[width_10s_linear]' : 'w-0'}`}></div>
-                                </div>
-                            </div>
-                            <audio
-                                ref={audioRef}
-                                src={question?.audioUrl}
-                                onEnded={handleAudioEnded}
-                                className="hidden"
-                            />
-                            <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-wider">
-                                <Volume2 size={16} />
-                                Audio
-                            </div>
-                        </div>
+                     <div className="flex items-center gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
+    {/* PLAY / PAUSE */}
+    <button
+        onClick={toggleAudio}
+        disabled={audioFinished}
+        className="w-12 h-12 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-full flex items-center justify-center shadow-md"
+    >
+        {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
+    </button>
+
+    {/* FAKE PROGRESS (UI only, same as before) */}
+    <div className="flex-1">
+        <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+           <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+    <div
+        className="h-full bg-blue-500 transition-[width] duration-200"
+        style={{ width: `${audioProgress}%` }}
+    />
+</div>
+
+        </div>
+    </div>
+
+    {/* AUDIO */}
+    <audio
+    ref={audioRef}
+    src={question?.audioUrl}
+    onEnded={handleAudioEnded}
+    onTimeUpdate={() => {
+        if (!audioRef.current) return;
+        const progress =
+            (audioRef.current.currentTime / audioRef.current.duration) * 100;
+        setAudioProgress(progress || 0);
+    }}
+    onPlay={() => setIsPlaying(true)}
+    onPause={() => setIsPlaying(false)}
+    className="hidden"
+/>
+
+
+    <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase">
+        <Volume2 size={16} />
+        Audio
+    </div>
+
+    {/* SKIP */}
+    {!audioFinished && (
+        <button
+            onClick={handleSkipAudio}
+            className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+        >
+            Skip Audio
+        </button>
+    )}
+</div>
+
 
                         {/* Question Text */}
                         <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100">

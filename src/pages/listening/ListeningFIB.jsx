@@ -90,6 +90,8 @@ export default function ListeningFIB({ question, setActiveSpeechQuestion, nextBu
     const [isPlaying, setIsPlaying] = useState(false);
     const [userAnswers, setUserAnswers] = useState({});
     const [status, setStatus] = useState('idle'); // idle, playing, submitting, result
+const [audioFinished, setAudioFinished] = useState(false);
+const [audioProgress, setAudioProgress] = useState(0); // 0 → 100
 
     // Prep Timer State
     const [prepStatus, setPrepStatus] = useState("countdown");
@@ -114,10 +116,13 @@ export default function ListeningFIB({ question, setActiveSpeechQuestion, nextBu
             // Auto-start audio if desired? Or just remove overlay.
             // ListeningFIB usually has manual play button? Line 350 has button.
             // If we want auto-play:
-            if (audioRef.current) {
-                audioRef.current.play().catch(e => console.log("Autoplay blocked", e));
-                setIsPlaying(true);
-            }
+           if (audioRef.current) {
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
+    setIsPlaying(true);
+    setAudioFinished(false);
+}
+
         }
     }, [prepStatus, prepTimer]);
 
@@ -167,21 +172,42 @@ export default function ListeningFIB({ question, setActiveSpeechQuestion, nextBu
             setResult(null);
             setIsResultOpen(false);
             setViewAttempt(null);
+
+            setAudioProgress(0);
+setAudioFinished(false);
+
         }
     }, [question]);
 
-    const toggleAudio = () => {
-        if (audioRef.current) {
-            if (isPlaying) {
-                audioRef.current.pause();
-            } else {
-                audioRef.current.play();
-            }
-            setIsPlaying(!isPlaying);
-        }
-    };
+   const toggleAudio = () => {
+    if (!audioRef.current || audioFinished) return;
 
-    const handleAudioEnded = () => setIsPlaying(false);
+    if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+    } else {
+        audioRef.current.play().catch(() => {});
+        setIsPlaying(true);
+    }
+};
+
+const handleSkipAudio = () => {
+    if (!audioRef.current) return;
+
+    audioRef.current.pause();
+    audioRef.current.currentTime = audioRef.current.duration;
+    setIsPlaying(false);
+    setAudioFinished(true);
+    setAudioProgress(100);
+};
+
+
+
+   const handleAudioEnded = () => {
+    setIsPlaying(false);
+    setAudioFinished(true);
+};
+
 
     const handleInputChange = (index, value) => {
         setUserAnswers(prev => ({ ...prev, [index]: value }));
@@ -228,11 +254,14 @@ export default function ListeningFIB({ question, setActiveSpeechQuestion, nextBu
         setIsResultOpen(false);
         setViewAttempt(null);
         // Reset audio?
-        if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-            setIsPlaying(false);
-        }
+      if (audioRef.current) {
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+}
+setIsPlaying(false);
+setAudioFinished(false);
+setAudioProgress(0);
+
         setPrepStatus("countdown");
         setPrepTimer(3);
     };
@@ -387,29 +416,62 @@ export default function ListeningFIB({ question, setActiveSpeechQuestion, nextBu
 
                     <div className="p-8 space-y-8">
                         {/* PLAYER */}
-                        <div className="flex items-center gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                            <button
-                                onClick={toggleAudio}
-                                className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-200 transition-transform active:scale-95"
-                            >
-                                {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
-                            </button>
-                            <div className="flex-1">
-                                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                                    <div className={`h-full bg-blue-500 transition-all duration-300 ${isPlaying ? 'w-full animate-[width_10s_linear]' : 'w-0'}`}></div>
-                                </div>
-                            </div>
-                            <audio
-                                ref={audioRef}
-                                src={question.audioUrl}
-                                onEnded={handleAudioEnded}
-                                className="hidden"
-                            />
-                            <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-wider">
-                                <Volume2 size={16} />
-                                Audio
-                            </div>
-                        </div>
+                    <div className="flex items-center gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
+    {/* PLAY / PAUSE */}
+    <button
+        onClick={toggleAudio}
+        disabled={audioFinished}
+        className="w-12 h-12 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-full flex items-center justify-center shadow-md transition-transform active:scale-95"
+    >
+        {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
+    </button>
+
+    {/* FAKE PROGRESS BAR (same style as your other components) */}
+    <div className="flex-1">
+        <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+           <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+    <div
+        className="h-full bg-blue-500 transition-[width] duration-200"
+        style={{ width: `${audioProgress}%` }}
+    />
+</div>
+
+        </div>
+    </div>
+
+    {/* AUDIO ELEMENT */}
+    <audio
+    ref={audioRef}
+    src={question.audioUrl}
+    onEnded={handleAudioEnded}
+    onTimeUpdate={() => {
+        if (!audioRef.current) return;
+        const progress =
+            (audioRef.current.currentTime / audioRef.current.duration) * 100;
+        setAudioProgress(progress || 0);
+    }}
+    onPlay={() => setIsPlaying(true)}
+    onPause={() => setIsPlaying(false)}
+    className="hidden"
+/>
+
+
+    <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase">
+        <Volume2 size={16} />
+        Audio
+    </div>
+
+    {/* SKIP BUTTON */}
+    {!audioFinished && (
+        <button
+            onClick={handleSkipAudio}
+            className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+        >
+            Skip
+        </button>
+    )}
+</div>
+
 
                         {/* TEXT CONTENT */}
                         <div className="leading-loose text-lg text-slate-700 font-normal">

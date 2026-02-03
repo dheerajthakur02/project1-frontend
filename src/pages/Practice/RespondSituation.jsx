@@ -108,7 +108,7 @@ const RespondSituation = ({ question, setActiveSpeechQuestion, nextButton, previ
         setMaxTime(10);
     };
 
-
+ const [isPlaying, setIsPlaying] = useState(false);
     const getAISuggestion = (score) => {
         if (score >= 11) {
             return {
@@ -196,6 +196,9 @@ const RespondSituation = ({ question, setActiveSpeechQuestion, nextButton, previ
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     };
+     const handleTogglePlayPause = () => {
+        setIsPlaying((prev) => !prev);
+    };
 
     const progressPercent = (timeLeft / maxTime) * 100;
 
@@ -253,11 +256,23 @@ const RespondSituation = ({ question, setActiveSpeechQuestion, nextButton, previ
                     {/* 3. PLAYING AUDIO WITH SLIDER */}
                     {status === 'playing' && (
                         <div className="flex flex-col items-center gap-8 w-full max-w-lg">
+
                             <div>{question.transcript}</div>
                             <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center animate-pulse">
                                 <Volume2 size={40} />
                             </div>
-
+                           <button onClick={()=>{setStatus("prep_record"); handleTogglePlayPause()}} className={`p-4 m-2 bg-blue-400 text-white ${status === 'recording'? "hidden":""}`}>Skip Audio</button>
+                             <div className="flex items-center gap-4">
+                                <button
+                                    onClick={handleTogglePlayPause}
+                                    className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors"
+                                >
+                                    {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" />}
+                                </button>
+                                <div className="text-slate-500 text-sm font-medium">
+                                    {isPlaying ? "Playing Speaker Audio..." : "Audio Paused"}
+                                </div>
+                            </div>
                             <div className="w-full space-y-2">
                                 <div className="flex justify-between text-sm font-mono text-blue-600 font-bold">
                                     <span>{formatTime(audioCurrentTime)}</span>

@@ -95,6 +95,14 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
     }
   };
 
+  const handleSkipAudio = () => {
+  if (!audioRef.current) return;
+
+  audioRef.current.pause();              // stop audio
+  audioRef.current.currentTime = audioRef.current.duration; // jump to end
+  setAudioFinished(true);                 // enable typing & timer
+};
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 p-4">
       {/* HEADER */}
@@ -129,6 +137,16 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
               controls
               className="w-full"
             />
+           {!audioFinished && (
+            <button
+              onClick={handleSkipAudio}
+              className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+            >
+              Skip Audio
+            </button>
+          )}
+
+
           </div>
 
           <div className="grid grid-cols-12 gap-6">

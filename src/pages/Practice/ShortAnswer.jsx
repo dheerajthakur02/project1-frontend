@@ -274,6 +274,7 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
                     {/* 3. LISTENING STATE (Interactive Audio Player) */}
                     {(status === 'listening' || status === 'recording')  && (
                         <div className="flex flex-col items-center gap-8 w-full max-w-lg">
+                              <button onClick={()=>{setStatus("recording"); handleTogglePlayPause()}} className={`p-4 m-2 bg-blue-400 text-white ${status === 'recording'? "hidden":""}`}>Skip Audio</button>
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={handleTogglePlayPause}

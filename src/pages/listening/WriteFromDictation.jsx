@@ -1,296 +1,289 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Clock, Volume2, RotateCcw, ChevronRight, X, ChevronLeft, RefreshCw, CheckCircle, Shuffle, History, Share2, Trash2, Info, Hash } from "lucide-react";
+//import { ArrowLeft, Clock, Volume2, RotateCcw, ChevronRight, X, ChevronLeft, RefreshCw, CheckCircle, Shuffle, History, Share2, Trash2, Info, Hash } from "lucide-react";
 import { useSelector } from "react-redux";
 import { submitWriteFromDictationAttempt } from "../../services/api";
 
 const MAX_TIME = 60; // Usually short for WFD
 
-export default function WriteFromDictation({ question, setActiveSpeechQuestion, nextButton, previousButton, shuffleButton }) {
-    const { user } = useSelector((state) => state.auth);
-    const audioRef = useRef(null);
+import {
+  ArrowLeft,
+  Clock,
+  Volume2,
+  Play,
+  Pause,
+  ChevronRight,
+  ChevronLeft,
+  RefreshCw,
+  CheckCircle,
+  Shuffle,
+  History,
+  Hash,
+} from "lucide-react";
 
-    const [started, setStarted] = useState(false);
-    const [prepStatus, setPrepStatus] = useState("countdown"); // "countdown", "finished"
-    const [prepTimer, setPrepTimer] = useState(3);
 
-    const [audioFinished, setAudioFinished] = useState(false);
-    const [timeLeft, setTimeLeft] = useState(MAX_TIME);
-    const [answer, setAnswer] = useState("");
-    const [status, setStatus] = useState("idle");
-    const [result, setResult] = useState(null);
+export default function WriteFromDictation({
+  question,
+  setActiveSpeechQuestion,
+  nextButton,
+  previousButton,
+  shuffleButton,
+}) {
+  const { user } = useSelector((state) => state.auth);
 
-    /* ---------------- TIMER ---------------- */
-    // 3-sec Prep Timer
-    useEffect(() => {
-        if (prepStatus === "countdown" && prepTimer > 0) {
-            const timer = setInterval(() => setPrepTimer((prev) => prev - 1), 1000);
-            return () => clearInterval(timer);
-        } else if (prepStatus === "countdown" && prepTimer === 0) {
-            setPrepStatus("finished");
-            handleStart();
-        }
-    }, [prepStatus, prepTimer]);
+  const audioRef = useRef(null);
 
-    useEffect(() => {
-        if (!audioFinished || timeLeft <= 0 || status === "result") return;
-        const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-        return () => clearInterval(timer);
-    }, [audioFinished, timeLeft, status]);
+  const [started, setStarted] = useState(false);
+  const [prepTimer, setPrepTimer] = useState(3);
 
-    /* ---------------- HELPERS ---------------- */
-    const wordCount = answer.trim().split(/\s+/).filter(Boolean).length;
+  const [currentTime, setCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioFinished, setAudioFinished] = useState(false);
 
-    const formatTime = (sec) => {
-        const m = Math.floor(sec / 60);
-        const s = sec % 60;
-        return `${m}:${s < 10 ? "0" : ""}${s}`;
-    };
+  const [timeLeft, setTimeLeft] = useState(MAX_TIME);
+  const [answer, setAnswer] = useState("");
+  const [status, setStatus] = useState("idle");
+  const [result, setResult] = useState(null);
 
-    const handleStart = () => {
-        setStarted(true);
-        setTimeout(() => audioRef.current?.play(), 300);
-    };
+  /* ---------------- PREP TIMER ---------------- */
+  useEffect(() => {
+    if (prepTimer > 0 && !started) {
+      const t = setTimeout(() => setPrepTimer((p) => p - 1), 1000);
+      return () => clearTimeout(t);
+    }
 
-    const handleSubmit = async () => {
-        setStatus("submitting");
-        try {
-            const res = await submitWriteFromDictationAttempt({
-                questionId: question._id,
-                studentTranscript: answer,
-                userId: user._id,
-                timeTaken: MAX_TIME - timeLeft,
-            });
-            setResult(res.data);
-            setStatus("result");
-        } catch (error) {
-            console.error("Submission failed", error);
-            setStatus("idle");
-        }
-    };
+    if (prepTimer === 0 && !started) {
+      handleStart();
+    }
+  }, [prepTimer, started]);
 
-    const resetSession = () => {
-        setResult(null);
-        setStatus('idle');
-        setAnswer("");
-        setStarted(false);
-        setPrepStatus("countdown");
-        setPrepTimer(3);
-        setAudioFinished(false);
-        setTimeLeft(MAX_TIME);
-    };
+  /* ---------------- MAIN TIMER ---------------- */
+  useEffect(() => {
+    if (!audioFinished || timeLeft <= 0 || status === "result") return;
+    const t = setInterval(() => setTimeLeft((p) => p - 1), 1000);
+    return () => clearInterval(t);
+  }, [audioFinished, timeLeft, status]);
 
-    return (
-        <div className="max-w-6xl mx-auto space-y-6 p-4">
-            <div>
-                <h1>Write From Dictation</h1>
-                <p>You will hear a sentence. Type the sentence in the box below exactly as you hear it. Write as much of the sentence as you can. You will hear the sentence only once.
-</p>
+  /* ---------------- AUDIO CONTROL ---------------- */
+  const handleStart = () => {
+    setStarted(true);
+
+    setTimeout(() => {
+      if (!audioRef.current) return;
+      audioRef.current.currentTime = 0;
+      audioRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => {});
+    }, 300);
+  };
+
+  const togglePlayPause = () => {
+    if (!audioRef.current || audioFinished) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(() => {});
+    }
+  };
+
+  const handleSkipAudio = () => {
+    if (!audioRef.current) return;
+
+    audioRef.current.pause();
+    audioRef.current.currentTime = audioDuration;
+    setAudioFinished(true);
+    setIsPlaying(false);
+  };
+
+  /* ---------------- HELPERS ---------------- */
+  const formatTime = (sec) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+  };
+
+  const wordCount = answer.trim().split(/\s+/).filter(Boolean).length;
+
+  /* ---------------- SUBMIT ---------------- */
+  const handleSubmit = async () => {
+    setStatus("submitting");
+    try {
+      const res = await submitWriteFromDictationAttempt({
+        questionId: question._id,
+        studentTranscript: answer,
+        userId: user._id,
+        timeTaken: MAX_TIME - timeLeft,
+      });
+      setResult(res.data);
+      setStatus("result");
+    } catch {
+      setStatus("idle");
+    }
+  };
+
+  const resetSession = () => {
+    setStarted(false);
+    setPrepTimer(3);
+    setCurrentTime(0);
+    setAudioFinished(false);
+    setIsPlaying(false);
+    setTimeLeft(MAX_TIME);
+    setAnswer("");
+    setStatus("idle");
+    setResult(null);
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto p-4 space-y-6">
+      {/* HEADER */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setActiveSpeechQuestion(false)}
+          className="p-2 hover:bg-slate-100 rounded-full"
+        >
+          <ArrowLeft />
+        </button>
+        <h1 className="text-xl font-bold">
+          Write From Dictation{" "}
+          <span className="text-purple-600 font-black italic">AI+</span>
+        </h1>
+      </div>
+
+      {/* MAIN */}
+      {!started ? (
+        <div className="bg-white border rounded-2xl p-20 text-center">
+          <h2 className="text-2xl font-bold mb-4">Starting Soon…</h2>
+          <div className="text-6xl font-black text-blue-600 animate-pulse">
+            {prepTimer}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white border rounded-2xl p-6 space-y-6">
+          {/* AUDIO BAR */}
+          <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl">
+            <button
+              onClick={togglePlayPause}
+              disabled={audioFinished}
+              className="w-12 h-12 bg-blue-600 hover:bg-blue-700
+                         disabled:bg-slate-300 rounded-full text-white
+                         flex items-center justify-center"
+            >
+              {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+            </button>
+
+            <div className="flex-1">
+              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 transition-all"
+                  style={{
+                    width:
+                      audioDuration > 0
+                        ? `${Math.min(
+                            (currentTime / audioDuration) * 100,
+                            100
+                          )}%`
+                        : "0%",
+                  }}
+                />
+              </div>
+
+              <div className="flex justify-between text-xs font-semibold text-slate-400 mt-1">
+                <span>{formatTime(currentTime)}</span>
+                <span>{formatTime(audioDuration)}</span>
+              </div>
             </div>
-            {/* HEADER */}
-            <div className="flex items-center gap-2">
-                <button onClick={() => setActiveSpeechQuestion(false)} className="hover:bg-gray-100 p-2 rounded-full transition">
-                    <ArrowLeft size={24} />
-                </button>
-                <h1 className="text-xl font-bold">
-                    Write From Dictation <span className="text-purple-600 font-black italic">AI+</span>
-                </h1>
-            </div>
 
-            {/* MAIN CARD */}
-            {!started ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-20 text-center space-y-6">
-                    <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
-                    <div className="text-6xl font-black text-blue-600 animate-pulse">{prepTimer}</div>
-                </div>
-            ) : (
-                <div className="bg-white rounded-2xl p-6 shadow-sm border space-y-6">
-                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center mb-6 rounded-t-xl -mx-6 -mt-6">
-                        <div className="flex gap-4 items-center">
-                            <span className="font-bold text-slate-700 flex items-center gap-1">
-                                <Hash size={14} />
-                                {question?._id?.slice(-5)?.toUpperCase()}
-                            </span>
-                            <span className="text-slate-500 text-sm font-medium border-l border-slate-200 pl-4">
-                                {question?.title || "Write From Dictation Task"}
-                            </span>
-                        </div>
-                        {
-                            question?.difficulty && (
-                                <span className={`px-2 py-1 rounded-md text-xs font-bold shadow-sm ${question.difficulty === 'Hard' ? 'bg-red-100 text-red-600' :
-                                    question.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
-                                    }`}>
-                                    {question.difficulty}
-                                </span>
-                            )
-                        }
-                    </div >
-
-                    <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl">
-                        <div className="bg-blue-600 p-3 rounded-full text-white">
-                            <Volume2 size={20} />
-                        </div>
-                        <audio
-                            ref={audioRef}
-                            src={question.audioUrl}
-                            onEnded={() => setAudioFinished(true)}
-                            controls
-                            className="w-full"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-12 gap-6">
-                        <div className="col-span-12 lg:col-span-9">
-                            <textarea
-                                // disabled={!audioFinished || status === "submitting"}
-                                value={answer}
-                                onChange={(e) => setAnswer(e.target.value)}
-                                placeholder={audioFinished ? "Type the sentence you heard..." : "Listening..."}
-                                className="w-full h-40 border-2 border-dashed border-blue-200 focus:border-blue-500 rounded-xl p-4 outline-none resize-none transition-colors text-lg"
-                            />
-                        </div>
-
-                        <div className="col-span-12 lg:col-span-3 bg-slate-50 rounded-xl p-6 flex flex-col items-center justify-between border">
-                            <div className="space-y-4 w-full text-center">
-                                <div className="flex justify-center items-center gap-2 text-blue-600 font-bold text-xl bg-blue-50 py-2 rounded-lg">
-                                    <Clock size={20} /> {formatTime(timeLeft)}
-                                </div>
-
-                                <div>
-                                    <div className="text-4xl font-black text-slate-800">{wordCount}</div>
-                                    <p className="text-sm text-slate-500 font-medium">Word Count</p>
-                                </div>
-
-                                <button
-                                    disabled={status === "submitting"} // Allow submitting even if word count is low, as sentences can be short
-                                    onClick={handleSubmit}
-                                    className="w-full bg-blue-600 disabled:bg-slate-300 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 disabled:shadow-none"
-                                >
-                                    {status === "submitting" ? "Evaluating..." : "Submit Answer"}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    {/* Bottom Controls */}
-                    <div className="flex items-center justify-center gap-6 pb-10">
-                        <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                                <ChevronLeft size={20} />
-                            </div>
-                            <span className="text-xs font-medium">Previous</span>
-                        </button>
-
-                        <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                                <RefreshCw size={18} />
-                            </div>
-                            <span className="text-xs font-medium">Redo</span>
-                        </button>
-
-                        <button className="w-12 h-12 rounded-xl bg-slate-300 flex items-center justify-center text-white shadow-inner">
-                            <CheckCircle size={24} fill="currentColor" className="text-white" />
-                        </button>
-
-                        <button onClick={shuffleButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                                <Shuffle size={18} />
-                            </div>
-                            <span className="text-xs font-medium">Shuffle</span>
-                        </button>
-
-                        <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-                                <ChevronRight size={20} />
-                            </div>
-                            <span className="text-xs font-medium">Next</span>
-                        </button>
-                    </div>
-                </div>
+            {!audioFinished && (
+              <button
+                onClick={handleSkipAudio}
+                className="text-sm font-bold text-blue-600"
+              >
+                Skip
+              </button>
             )}
+          </div>
 
+          {/* INPUT + TIMER */}
+          <div className="grid grid-cols-12 gap-6">
+            <textarea
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              placeholder={
+                audioFinished
+                  ? "Type the sentence you heard…"
+                  : "Listening…"
+              }
+              className="col-span-12 lg:col-span-9 h-40 p-4 border-2
+                         border-dashed border-blue-200 rounded-xl
+                         resize-none text-lg break-words"
+            />
 
-            {/* ATTEMPT HISTORY SECTION */}
-            <div className="mt-8 font-sans">
-                <div className="flex items-center gap-2 mb-6 border-b border-slate-200 pb-4">
-                    <History className="text-purple-600" size={20} />
-                    <h3 className="font-bold text-slate-800">History ({question.lastAttempts?.length || 0})</h3>
-                </div>
+            <div className="col-span-12 lg:col-span-3 bg-slate-50
+                            rounded-xl p-6 border text-center space-y-4">
+              <div className="flex justify-center items-center gap-2
+                              text-blue-600 font-bold text-xl">
+                <Clock /> {formatTime(timeLeft)}
+              </div>
 
-                <div className="space-y-4">
-                    {question.lastAttempts && question.lastAttempts.length > 0 ? (
-                        question.lastAttempts.map((attempt, idx) => (
-                            <div
-                                key={attempt._id || idx}
-                                onClick={() => { setResult(attempt); setStatus("result"); }}
-                                className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center gap-6 hover:shadow-md transition-shadow group cursor-pointer"
-                            >
-                                {/* Date */}
-                                <div className="min-w-[150px]">
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Date</span>
-                                    <div className="text-sm font-semibold text-slate-700">
-                                        {attempt.createdAt ? new Date(attempt.createdAt).toLocaleString('en-US', {
-                                            day: 'numeric',
-                                            month: 'short',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                        }) : 'Just now'}
-                                    </div>
-                                </div>
+              <div>
+                <div className="text-4xl font-black">{wordCount}</div>
+                <p className="text-sm text-slate-500">Words</p>
+              </div>
 
-                                {/* Score */}
-                                <div className="flex-1">
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Score</span>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className={`text-xl font-bold ${attempt.totalScore >= 9 ? 'text-green-600' :
-                                            attempt.totalScore >= 5 ? 'text-blue-600' : 'text-red-500'
-                                            }`}>
-                                            {attempt.totalScore}
-                                        </span>
-                                        <span className="text-sm text-slate-400 font-medium">/ 10</span>
-                                    </div>
-                                </div>
-
-                                {/* Status/Badge */}
-                                <div>
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${attempt.totalScore >= 9 ? 'bg-green-100 text-green-700' :
-                                        'bg-slate-100 text-slate-600'
-                                        }`}>
-                                        {attempt.totalScore >= 9 ? 'Perfect' : 'Completed'}
-                                    </span>
-                                </div>
-
-                                {/* View Action */}
-                                <div className="opacity-0 group-hover:opacity-100 transition-opacity text-purple-600 font-bold text-sm flex items-center gap-1">
-                                    View Result <ChevronRight size={16} />
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-slate-100">
-                                <History size={20} className="text-slate-300" />
-                            </div>
-                            <p className="text-sm font-medium">No attempts yet</p>
-                            <p className="text-xs mt-1 opacity-70">Complete the exercise to see your history</p>
-                        </div>
-                    )}
-                </div>
+              <button
+                onClick={handleSubmit}
+                disabled={status === "submitting"}
+                className="w-full bg-blue-600 hover:bg-blue-700
+                           disabled:bg-slate-300 text-white py-3
+                           rounded-xl font-bold"
+              >
+                Submit
+              </button>
             </div>
+          </div>
 
-            {
-                status === "result" && result && (
-                    <WFDResultModal
-                        result={result}
-                        question={question}
-                        onClose={() => setStatus("idle")}
-                        onRedo={resetSession}
-                        onNext={nextButton}
-                    />
-                )
-            }
-        </div >
-    );
+          {/* BOTTOM NAV */}
+          <div className="flex justify-center gap-6">
+            <button onClick={previousButton}>
+              <ChevronLeft />
+            </button>
+            <button onClick={resetSession}>
+              <RefreshCw />
+            </button>
+            <button onClick={shuffleButton}>
+              <Shuffle />
+            </button>
+            <button onClick={nextButton}>
+              <ChevronRight />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* AUDIO ELEMENT */}
+      <audio
+        ref={audioRef}
+        src={question.audioUrl}
+        className="hidden"
+        onLoadedMetadata={() =>
+          setAudioDuration(audioRef.current.duration)
+        }
+        onTimeUpdate={() =>
+          setCurrentTime(audioRef.current.currentTime)
+        }
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => {
+          setIsPlaying(false);
+          setAudioFinished(true);
+        }}
+      />
+    </div>
+  );
 }
+
 
 // Custom Result Modal for WFD
 const WFDResultModal = ({ result, onClose, onRedo, onNext, question }) => {

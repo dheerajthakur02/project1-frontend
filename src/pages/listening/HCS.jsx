@@ -1,341 +1,261 @@
-import React, { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Volume2, RotateCcw, ChevronRight, X, Play, CheckCircle2, Info, Headphones, BookOpen, Share2, History, Calendar, Trash2, Languages, Eye, RefreshCw, ChevronLeft } from "lucide-react";
-import { submitHighlightAttempt } from "../../services/api";
+
+
+import React, { useEffect, useRef, useState } from "react";
+import {
+  ArrowLeft,
+  Info,
+  BookOpen,
+  Headphones,
+  Volume2,
+  Play,
+  Pause,
+  SkipForward,
+  RotateCcw,
+  CheckCircle2,
+  ChevronRight,
+  History,
+  Share2,
+  Trash2
+} from "lucide-react";
 import { useSelector } from "react-redux";
+import { submitHighlightAttempt } from "../../services/api";
 
 const PREP_TIME = 3;
 
 export default function HCS({ question, setActiveSpeechQuestion }) {
-  const [status, setStatus] = useState("countdown");
-  const [prepTimer, setPrepTimer] = useState(PREP_TIME);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [result, setResult] = useState(null);
-  const [audioDuration, setAudioDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
+  const { user } = useSelector((state) => state.auth);
 
   const audioRef = useRef(null);
   const progressRef = useRef(null);
-  const { user } = useSelector((state) => state.auth);
 
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
+  const [status, setStatus] = useState("countdown");
+  const [prepTimer, setPrepTimer] = useState(PREP_TIME);
 
-  /* ---------------- TIMER LOGIC ---------------- */
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioFinished, setAudioFinished] = useState(false);
+
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [result, setResult] = useState(null);
+
+  /* ---------------- TIMER ---------------- */
   useEffect(() => {
-    let timer;
-    if (status === "countdown" && prepTimer > 0) {
-      timer = setInterval(() => setPrepTimer((prev) => prev - 1), 1000);
-    } else if (status === "countdown" && prepTimer === 0) {
-      handleAudioStart();
-    }
-    return () => clearInterval(timer);
+    if (status !== "countdown" || prepTimer <= 0) return;
+
+    const t = setTimeout(() => setPrepTimer(p => p - 1), 1000);
+    return () => clearTimeout(t);
   }, [status, prepTimer]);
 
-  const handleStartPrep = () => setStatus("countdown");
+  useEffect(() => {
+    if (status === "countdown" && prepTimer === 0) {
+      handleAudioStart();
+    }
+  }, [prepTimer, status]);
 
+  /* ---------------- AUDIO ---------------- */
   const handleAudioStart = () => {
     setStatus("playing");
-    if (audioRef.current) {
+
+    setTimeout(() => {
+      if (!audioRef.current) return;
       audioRef.current.currentTime = 0;
-      audioRef.current.play();
+      audioRef.current.play().catch(() => {});
+    }, 300);
+  };
+
+  const togglePlayPause = () => {
+    if (!audioRef.current || audioFinished) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(() => {});
     }
   };
 
-  /* ---------------- VIEW PREVIOUS RESULT ---------------- */
-  const handleViewPrevious = (attempt) => {
-    // Mapping backend attempt history structure to Modal structure
-    const mappedResult = {
-      score: attempt.isCorrect ? 1 : 0,
-      readingScore: attempt.isCorrect ? 0.5 : 0,
-      listeningScore: attempt.isCorrect ? 0.5 : 0,
-      myAnswer: String.fromCharCode(65 + attempt.selectedSummaryIndex),
-      correctAnswer: String.fromCharCode(65 + question.summaries.findIndex(s => s.isCorrect)),
-      myAnswerText: question.summaries[attempt.selectedSummaryIndex]?.text,
-      correctAnswerText: question.summaries.find(s => s.isCorrect)?.text,
-      questionId: question.questionId || "HCS_RESULT",
-      isHistory: true
-    };
-    setResult(mappedResult);
-    setStatus("result");
+  const handleSkip = () => {
+    if (!audioRef.current) return;
+    audioRef.current.pause();
+    audioRef.current.currentTime = audioDuration;
+    setAudioFinished(true);
+    setIsPlaying(false);
   };
 
-  /* ---------------- SUBMIT LOGIC ---------------- */
+  /* ---------------- HELPERS ---------------- */
+  const formatTime = (t) => {
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async () => {
     try {
       const res = await submitHighlightAttempt({
         questionId: question._id,
         selectedSummaryIndex: selectedOption,
         userId: user._id,
-        timeTaken: Math.floor(audioRef.current?.currentTime || 0),
+        timeTaken: Math.floor(currentTime),
       });
-
-      // Backend usually returns { success: true, data: { ... } }
       setResult(res.data);
       setStatus("result");
     } catch (err) {
-      console.error("Submission error:", err);
+      console.error(err);
     }
   };
 
+  /* ---------------- UI ---------------- */
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-4 lg:p-8">
-      <div>
-        <h1>Highlight Correct Summary</h1>
-        <p>You will hear a recording. Click on the paragraph that best relates to the recording</p>
-      </div>
-      <div className="max-w-7xl mx-auto  gap-8">
+    <div className="min-h-screen bg-[#f8fafc] p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
 
-        {/* LEFT COLUMN: MAIN TASK */}
-        <div className=" space-y-6">
-          {/* HEADER */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 bg-white shadow-sm border rounded-full hover:bg-slate-50 transition">
-                <ArrowLeft size={20} className="text-slate-600" />
-              </button>
-              <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                Highlight Correct Summary <Info size={16} className="text-blue-500" />
-              </h1>
-            </div>
-            <button className="flex items-center gap-2 text-blue-600 font-bold bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition">
-              <BookOpen size={18} /> Study Guide
+        {/* HEADER */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setActiveSpeechQuestion(false)} className="p-2 bg-white border rounded-full">
+              <ArrowLeft />
             </button>
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              Highlight Correct Summary <Info size={16} className="text-blue-500" />
+            </h1>
           </div>
-
-          {/* TASK CARD */}
-          {status === "countdown" ? (
-            <div className="bg-white rounded-[2.5rem] border shadow-sm p-20 text-center space-y-6 flex flex-col items-center justify-center min-h-[600px]">
-              <h2 className="text-2xl font-bold text-slate-800">Starting Soon...</h2>
-              <div className="text-6xl font-black text-blue-600 animate-pulse">{prepTimer}</div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-[2.5rem] border shadow-sm relative overflow-hidden flex flex-col min-h-[600px]">
-              {/* AUDIO CONTROL BAR */}
-              <div className="px-10 py-8 bg-slate-50/80 border-b flex items-center gap-8">
-                <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                  {status === "countdown" ? prepTimer : <Headphones size={24} />}
-                </div>
-
-                <div className="flex-1 flex flex-col gap-2">
-                  <div
-                    ref={progressRef}
-                    onClick={(e) => {
-                      if (status !== 'playing' && status !== 'finished') return;
-                      const rect = progressRef.current.getBoundingClientRect();
-                      const percent = (e.clientX - rect.left) / rect.width;
-                      audioRef.current.currentTime = percent * audioDuration;
-                    }}
-                    className="h-2 bg-slate-200 rounded-full overflow-hidden relative cursor-pointer"
-                  >
-                    <div
-                      className="h-full bg-blue-500 transition-all"
-                      style={{ width: `${(currentTime / audioDuration) * 100 || 0}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs font-bold text-slate-400">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatTime(audioDuration)}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <Volume2 size={20} className="text-slate-400" />
-                  <select className="bg-white border rounded-lg px-2 py-1 text-xs font-bold outline-none">
-                    <option>1.0x</option>
-                    <option>0.75x</option>
-                    <option>1.2x</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* OVERLAY FOR START */}
-              {/* OVERLAY FOR START - REMOVED FOR AUTO START */}
-              {/* {status === "idle" && ( ... )} */}
-
-              {/* OPTIONS BOX */}
-              <div className="p-10 flex-1">
-                <div className="border-2 border-dashed border-slate-100 rounded-[2rem] p-6 space-y-4">
-                  {question.summaries.map((option, index) => {
-                    const isSelected = selectedOption === index;
-                    return (
-                      <div
-                        key={option._id}
-                        onClick={() => setSelectedOption(index)}
-                        className={`flex gap-6 p-5 rounded-2xl border-2 transition-all cursor-pointer ${isSelected ? "border-blue-500 bg-blue-50/30" : "border-transparent hover:bg-slate-50"
-                          }`}
-                      >
-                        <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center mt-1 ${isSelected ? "border-blue-500 bg-blue-500" : "border-slate-300"}`}>
-                          {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
-                        </div>
-                        <div className="flex-1">
-                          <span className={`font-black text-sm mb-1 block ${isSelected ? "text-blue-600" : "text-slate-400"}`}>
-                            OPTION {String.fromCharCode(65 + index)}
-                          </span>
-                          <p className={`text-[15px] leading-relaxed font-medium ${isSelected ? "text-slate-900" : "text-slate-600"}`}>
-                            {option.text}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* FOOTER NAV */}
-
-              {/* SUBMIT BUTTON SECTION */}
-              <div className="px-10 py-6 bg-slate-50 border-t flex justify-end">
-                <button
-                  disabled={selectedOption === null || status === "idle"}
-                  onClick={handleSubmit}
-                  className="bg-blue-600 disabled:bg-slate-300 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
-                >
-                  <CheckCircle2 size={20} /> Submit Answer
-                </button>
-              </div>
-
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT COLUMN: HISTORY */}
-
-      </div>
-      {/* Footer Nav */}
-      <div className="flex items-center justify-between pb-6 mt-6">
-        {/* LEFT SIDE: Translate, Answer, Redo */}
-        <div className="flex items-center gap-4">
-          {/* Translate (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-              <Languages size={18} />
-            </div>
-            <span className="text-xs font-medium">Translate</span>
-          </button>
-
-          {/* Answer (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default text-opacity-50">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-              <Eye size={18} />
-            </div>
-            <span className="text-xs font-medium">Answer</span>
-          </button>
-
-          {/* Redo */}
-          <button onClick={() => { setSelectedOption(null); setStatus("countdown"); setPrepTimer(PREP_TIME); }} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-              <RefreshCw size={18} />
-            </div>
-            <span className="text-xs font-medium">Redo</span>
+          <button className="flex items-center gap-2 text-blue-600 font-bold bg-blue-50 px-4 py-2 rounded-xl">
+            <BookOpen size={18} /> Study Guide
           </button>
         </div>
 
-        {/* RIGHT SIDE: Prev, Next */}
-        <div className="flex items-center gap-4">
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-              <ChevronLeft size={20} />
+        {/* MAIN CARD */}
+        {status === "countdown" ? (
+          <div className="bg-white rounded-3xl border p-24 text-center">
+            <h2 className="text-2xl font-bold">Starting Soon…</h2>
+            <div className="text-6xl font-black text-blue-600 animate-pulse">
+              {prepTimer}
             </div>
-            <span className="text-xs font-medium">Previous</span>
-          </button>
+          </div>
+        ) : (
+          <div className="bg-white rounded-3xl border overflow-hidden">
 
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
-              <ChevronRight size={20} />
-            </div>
-            <span className="text-xs font-medium">Next</span>
-          </button>
-        </div>
-      </div>
+            {/* AUDIO BAR */}
+            <div className="px-8 py-6 bg-slate-50 border-b flex items-center gap-6">
+              <button
+                onClick={togglePlayPause}
+                disabled={audioFinished}
+                className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center disabled:bg-slate-300"
+              >
+                {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+              </button>
 
-      <div>
-        <div className="bg-white rounded-[2rem] border shadow-sm p-6 min-h-[400px]">
-          <h3 className="font-black text-slate-800 flex items-center gap-2 mb-6">
-            <History size={20} className="text-blue-500" />
-            Attempt History
-          </h3>
-
-          <div className="space-y-4">
-            {question.lastAttempts && question.lastAttempts.length > 0 ? (
-              question.lastAttempts.map((attempt, index) => (
+              <div className="flex-1">
                 <div
-                  key={attempt._id || index}
-                  className="bg-slate-50 rounded-2xl px-6 py-4 flex items-center justify-between"
+                  ref={progressRef}
+                  className="h-2 bg-slate-200 rounded-full overflow-hidden"
                 >
-                  {/* LEFT */}
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-black text-slate-600">
-                      K
-                    </div>
-
-                    <div>
-                      <p className="font-bold text-slate-800">Krishna kant</p>
-                      <p className="text-xs text-slate-400">
-                        {new Date(attempt.createdAt).toLocaleDateString()}{" "}
-                        {new Date(attempt.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* CENTER SCORE BUTTON */}
-                  <button
-                    onClick={() => handleViewPrevious(attempt)}
-                    className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold px-6 py-2 rounded-xl flex items-center gap-2 shadow-sm transition"
-                  >
-                    Score {attempt.isCorrect ? "1/1" : "0/1"}
-                    <RotateCcw size={16} />
-                  </button>
-
-                  {/* RIGHT ICONS */}
-                  <div className="flex items-center gap-3 text-slate-400">
-                    <button className="hover:text-indigo-500 transition">
-                      <Share2 size={18} />
-                    </button>
-                    <button className="hover:text-red-500 transition">
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
+                  <div
+                    className="h-full bg-blue-600 transition-all"
+                    style={{
+                      width: audioDuration
+                        ? `${Math.min((currentTime / audioDuration) * 100, 100)}%`
+                        : "0%",
+                    }}
+                  />
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-10">
-                <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <History size={20} className="text-slate-300" />
+
+                <div className="flex justify-between text-xs text-slate-400 font-bold mt-1">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(audioDuration)}</span>
                 </div>
-                <p className="text-xs font-bold text-slate-400">No previous attempts</p>
               </div>
-            )}
+
+              {!audioFinished && (
+                <button onClick={handleSkip} className="text-blue-600 font-bold">
+                  <SkipForward size={20} />
+                </button>
+              )}
+            </div>
+
+            {/* OPTIONS */}
+            <div className="p-8 space-y-4">
+              {question.summaries.map((opt, i) => (
+                <div
+                  key={opt._id}
+                  onClick={() => setSelectedOption(i)}
+                  className={`p-5 rounded-2xl border-2 cursor-pointer transition
+                    ${selectedOption === i
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-transparent hover:bg-slate-50"}`}
+                >
+                  <p className="font-bold text-sm text-slate-400 mb-1">
+                    OPTION {String.fromCharCode(65 + i)}
+                  </p>
+                  <p className="text-slate-700 leading-relaxed break-words">
+                    {opt.text}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* FOOTER */}
+        <div className="flex justify-between items-center bg-white p-6 rounded-2xl border">
+          <button
+            onClick={() => {
+              setStatus("countdown");
+              setPrepTimer(PREP_TIME);
+              setSelectedOption(null);
+              setAudioFinished(false);
+            }}
+            className="flex items-center gap-2 text-slate-400 font-bold"
+          >
+            <RotateCcw /> Redo
+          </button>
+
+          <button
+            onClick={handleSubmit}
+            disabled={selectedOption === null}
+            className="bg-blue-600 text-white px-10 py-3 rounded-2xl font-black disabled:bg-slate-300"
+          >
+            <CheckCircle2 /> Submit
+          </button>
+
+          <button className="flex items-center gap-2 text-blue-600 font-bold">
+            Next <ChevronRight />
+          </button>
         </div>
       </div>
 
-      {/* AUDIO ELEMENT */}
+      {/* AUDIO */}
       <audio
         ref={audioRef}
         src={question.audioUrl}
+        className="hidden"
         onLoadedMetadata={() => setAudioDuration(audioRef.current.duration)}
         onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
-        onEnded={() => setStatus("finished")}
-        className="hidden"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => {
+          setIsPlaying(false);
+          setAudioFinished(true);
+        }}
       />
 
-      {/* RESULT MODAL */}
+      {/* RESULT */}
       {status === "result" && result && (
         <HCSResultModal
           result={result}
           onClose={() => setStatus("idle")}
-          onRedo={() => { setStatus("countdown"); setSelectedOption(null); setPrepTimer(PREP_TIME); }}
+          onRedo={() => {
+            setStatus("countdown");
+            setPrepTimer(PREP_TIME);
+            setSelectedOption(null);
+          }}
         />
       )}
     </div>
   );
 }
+
 
 /* ================= RESULT MODAL ================= */
 const HCSResultModal = ({ result, onClose, onRedo }) => {

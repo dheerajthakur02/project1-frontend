@@ -23,7 +23,7 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false); // New state for play/pause
-    const [showTranscript, setShowTranscript] = useState(false); // New state for transcript visibility
+
     const [showFlashAnswer, setShowFlashAnswer] = useState(false); // Answer Flash State
 
 
@@ -102,9 +102,6 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
         setIsPlaying((prev) => !prev);
     };
 
-    const handleToggleTranscript = () => {
-        setShowTranscript((prev) => !prev);
-    };
 
     const handleShowAnswer = () => {
         setShowFlashAnswer(true);
@@ -217,7 +214,7 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
         resetTranscript();
         transcriptRef.current = "";
         setIsPlaying(false); // Reset play state
-        setShowTranscript(false); // Reset transcript visibility
+      
     };
 
     const formatTime = (seconds) => {
@@ -439,21 +436,7 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
                     )}
                 </div>
             </div>
-            <div>
-                <button
-                        onClick={handleToggleTranscript}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full font-bold transition-colors"
-                    >
-                        <Eye size={18} /> {showTranscript ? "Hide Answer" : "Show Answer"}
-                    </button>
-                
-
-                {showTranscript && (
-                    <div className="p-4 bg-slate-100 border-b border-slate-200 text-slate-700 italic">
-                        {question.transcript}
-                    </div>
-                )}
-                </div>
+            
 
             {/* Bottom Controls */}
             <div className="flex items-center justify-between pb-10">

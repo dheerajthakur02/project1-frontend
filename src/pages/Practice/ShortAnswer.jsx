@@ -20,7 +20,7 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false); // New state for play/pause
     const [showFlashAnswer, setShowFlashAnswer] = useState(false); // Answer Flash State
-    const [showTranscript, setShowTranscript] = useState(false);
+   
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
     const questionAudioRef = useRef(null);
@@ -403,22 +403,7 @@ const ShortAnswer = ({ question, setActiveSpeechQuestion, nextButton, previousBu
                 </div>
             </div>
 
-            <div>
-                <button
-                    onClick={() => setShowTranscript(!showTranscript)}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full font-bold transition-colors"
-                >
-                    <Eye size={18} /> {showTranscript ? "Hide Answer" : "Show Answer"}
-                </button>
-
-
-                {showTranscript && (
-                    <div className="p-4 bg-slate-100 border-b border-slate-200 text-slate-700 italic">
-                        {question?.answer}
-                    </div>
-                )}
-            </div>
-
+           
             {/* Bottom Controls */}
             <div className="flex items-center justify-between pb-10">
                 {/* LEFT SIDE: Translate, Answer, Redo */}

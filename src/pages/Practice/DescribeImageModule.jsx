@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import {
     ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info,
-    BarChart2, CheckCircle, Volume2, PlayCircle, SkipForward, History, Eye, BookOpen, Languages
+    BarChart2, CheckCircle, Volume2, PlayCircle, SkipForward, History, Eye, BookOpen, Languages, X, Target
 } from 'lucide-react';
 import { submitDescribeImageAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
@@ -13,6 +13,7 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion, nextButton, pr
     const [timeLeft, setTimeLeft] = useState(3);
     const [maxTime, setMaxTime] = useState(3);
     const [result, setResult] = useState(null);
+    const [showAnswerModal, setShowAnswerModal] = useState(false);
     const { user } = useSelector((state) => state.auth)
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
@@ -280,7 +281,7 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion, nextButton, pr
                     </button>
 
                     {/* Answer (Static) */}
-                    <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+                    <button onClick={() => setShowAnswerModal(true)} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
                         <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
                             <Eye size={18} />
                         </div>
@@ -329,6 +330,34 @@ const DescribeImageModule = ({ question, setActiveSpeechQuestion, nextButton, pr
                         module={"image"}
                         onSelectAttempt={handleSelectAttempt}
                     />
+                </div>
+            )}
+
+            {/* Answer Modal */}
+            {showAnswerModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50">
+                            <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2">
+                                <BookOpen className="text-blue-600" size={24} /> Model Answer
+                            </h3>
+                            <button onClick={() => setShowAnswerModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+                                <X size={24} className="text-slate-500" />
+                            </button>
+                        </div>
+                        <div className="p-8">
+                            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
+                                <p className="text-lg leading-relaxed text-slate-700 font-medium">
+                                    {question.modelAnswer || "No model answer provided for this question."}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+                            <button onClick={() => setShowAnswerModal(false)} className="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-800 transition-colors">
+                                Close
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 

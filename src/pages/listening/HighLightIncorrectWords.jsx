@@ -1,20 +1,24 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-//import { ArrowLeft, Volume2, RotateCcw, Headphones, Play, ChevronRight, RotateCw, History, Trash2, Share2, X, CheckCircle2, Info } from "lucide-react";
-import { submitHIWAttempt } from "../../services/api";
 import { useSelector } from "react-redux";
-
-
 import {
-  ArrowLeft, Headphones, Volume2, RotateCcw, ChevronRight,
-  Play, Pause, X, History, Share2, Trash2, CheckCircle2
+  ArrowLeft,
+  Headphones,
+  Volume2,
+  RotateCcw,
+  Play,
+  Pause,
+  X,
+  History,
+  Share2,
+  Trash2,
+  CheckCircle2,
+  ChevronRight,
 } from "lucide-react";
-
 
 export default function HighlightIncorrectWords({ question, setActiveSpeechQuestion }) {
   const [status, setStatus] = useState("countdown");
   const [prepTimer, setPrepTimer] = useState(3);
   const [selectedIndices, setSelectedIndices] = useState([]);
-  const [result, setResult] = useState(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -33,7 +37,7 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
   useEffect(() => {
     let timer;
     if (status === "countdown" && prepTimer > 0) {
-      timer = setInterval(() => setPrepTimer(t => t - 1), 1000);
+      timer = setInterval(() => setPrepTimer((t) => t - 1), 1000);
     }
     if (status === "countdown" && prepTimer === 0) {
       setStatus("playing");
@@ -76,8 +80,8 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
   /* ================= WORD CLICK ================= */
   const handleWordClick = (index) => {
     if (status !== "playing") return;
-    setSelectedIndices(prev =>
-      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    setSelectedIndices((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
 
@@ -88,9 +92,12 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
     setAudioFinished(true);
     setStatus("submitted");
     setShowModal(true);
+
+    // Optional: call API to submit attempt
+    // await submitHIWAttempt(user.id, question.id, selectedIndices);
   };
 
-  /* ================= RESET ON QUESTION ================= */
+  /* ================= RESET ON QUESTION CHANGE ================= */
   useEffect(() => {
     setPrepTimer(3);
     setStatus("countdown");
@@ -99,6 +106,7 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
     setDuration(0);
     setIsPlaying(false);
     setAudioFinished(false);
+
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -107,7 +115,6 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
-
       {/* ================= HEADER ================= */}
       <div className="flex items-center gap-4">
         <button onClick={() => setActiveSpeechQuestion(false)}>
@@ -124,7 +131,6 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
         </div>
       ) : (
         <div className="bg-white rounded-3xl border shadow-sm flex flex-col min-h-[600px]">
-
           {/* ================= AUDIO BAR ================= */}
           <div className="p-6 bg-slate-50 border-b flex items-center gap-6">
             <button
@@ -149,10 +155,7 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
             </div>
 
             {!audioFinished && (
-              <button
-                onClick={handleSkipAudio}
-                className="text-blue-600 font-bold text-sm"
-              >
+              <button onClick={handleSkipAudio} className="text-blue-600 font-bold text-sm">
                 Skip
               </button>
             )}
@@ -161,9 +164,9 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
           </div>
 
           {/* ================= CONTENT ================= */}
-         <div className="p-10 text-lg lg:text-xl leading-[3rem] text-slate-700 font-medium 
-                break-words break-all overflow-hidden">
-
+          <div
+            className="p-10 text-lg lg:text-xl leading-[3rem] text-slate-700 font-medium break-words break-all overflow-hidden"
+          >
             {words.map((word, index) => {
               const isSelected = selectedIndices.includes(index);
               return (
@@ -204,8 +207,8 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
       <audio
         ref={audioRef}
         src={question.audioUrl}
-        onLoadedMetadata={e => setDuration(e.target.duration)}
-        onTimeUpdate={e => setCurrentTime(e.target.currentTime)}
+        onLoadedMetadata={(e) => setDuration(e.target.duration)}
+        onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
         onEnded={handleAudioEnded}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}

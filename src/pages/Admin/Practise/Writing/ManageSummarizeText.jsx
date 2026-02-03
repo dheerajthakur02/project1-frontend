@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import { 
-  Plus, Edit, Trash2, X, Search, 
-  FileText, Clock, BarChart3, 
-  AlertCircle, Loader2, Eye, 
+import {
+  Plus, Edit, Trash2, X, Search,
+  FileText, Clock, BarChart3,
+  AlertCircle, Loader2, Eye,
   WholeWord, AlignLeft, Info,
   BookOpen
 } from "lucide-react";
@@ -19,6 +19,7 @@ const initialForm = {
   maxWords: 75,
   difficulty: "easy",
   answerTime: 600, // 10 minutes (Standard PTE time)
+  modelAnswer: "",
 };
 
 const ManageSummarizeText = () => {
@@ -56,7 +57,7 @@ const ManageSummarizeText = () => {
 
   /* ---------------- SEARCH & FILTER ---------------- */
   const filteredQuestions = useMemo(() => {
-    return questions.filter(q => 
+    return questions.filter(q =>
       q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       q.paragraph?.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -67,8 +68,8 @@ const ManageSummarizeText = () => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: (name === "maxWords" || name === "answerTime") 
-        ? Number(value) 
+      [name]: (name === "maxWords" || name === "answerTime")
+        ? Number(value)
         : value,
     }));
   };
@@ -86,6 +87,7 @@ const ManageSummarizeText = () => {
       maxWords: q.maxWords,
       difficulty: q.difficulty,
       answerTime: q.answerTime,
+      modelAnswer: q.modelAnswer || "",
     });
     setEditingId(q._id);
     setOpenModal(true);
@@ -137,7 +139,7 @@ const ManageSummarizeText = () => {
   return (
     <AdminLayout>
       <div className="p-8 bg-[#f8fafc] min-h-screen">
-        
+
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
@@ -157,7 +159,7 @@ const ManageSummarizeText = () => {
         {/* SEARCH BAR */}
         <div className="relative mb-6">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-          <input 
+          <input
             type="text"
             placeholder="Search by title or passage content..."
             value={searchTerm}
@@ -210,10 +212,10 @@ const ManageSummarizeText = () => {
                       <td className="px-6 py-4">
                         <div className="flex flex-col items-center gap-1">
                           <span className="flex items-center gap-1 text-xs text-slate-500">
-                            <WholeWord size={12}/> Max {q.maxWords} words
+                            <WholeWord size={12} /> Max {q.maxWords} words
                           </span>
                           <span className="flex items-center gap-1 text-xs font-medium text-indigo-600">
-                            <Clock size={12}/> {q.answerTime / 60} mins
+                            <Clock size={12} /> {q.answerTime / 60} mins
                           </span>
                         </div>
                       </td>
@@ -224,9 +226,9 @@ const ManageSummarizeText = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
-                          <ActionButton onClick={() => handleView(q)} icon={<Eye size={18}/>} color="text-slate-400 hover:text-indigo-600" />
-                          <ActionButton onClick={() => openEditModal(q)} icon={<Edit size={18}/>} color="text-slate-400 hover:text-emerald-600" />
-                          <ActionButton onClick={() => handleDelete(q._id)} icon={<Trash2 size={18}/>} color="text-slate-400 hover:text-rose-600" />
+                          <ActionButton onClick={() => handleView(q)} icon={<Eye size={18} />} color="text-slate-400 hover:text-indigo-600" />
+                          <ActionButton onClick={() => openEditModal(q)} icon={<Edit size={18} />} color="text-slate-400 hover:text-emerald-600" />
+                          <ActionButton onClick={() => handleDelete(q._id)} icon={<Trash2 size={18} />} color="text-slate-400 hover:text-rose-600" />
                         </div>
                       </td>
                     </motion.tr>
@@ -241,18 +243,18 @@ const ManageSummarizeText = () => {
         <AnimatePresence>
           {openModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={() => setOpenModal(false)}
                 className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
               />
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
                 className="bg-white w-full max-w-xl rounded-2xl shadow-2xl relative overflow-hidden"
               >
                 <div className="px-6 py-4 border-b flex justify-between items-center bg-slate-50">
                   <h2 className="text-xl font-bold text-slate-800">{editingId ? "Edit Summary Passage" : "New Summary Passage"}</h2>
-                  <button onClick={() => setOpenModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20}/></button>
+                  <button onClick={() => setOpenModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20} /></button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
@@ -272,6 +274,17 @@ const ManageSummarizeText = () => {
                       name="paragraph" value={form.paragraph} onChange={handleChange}
                       placeholder="Enter the full text that students need to summarize..."
                       rows={6}
+                      className="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-4 focus:ring-indigo-50 outline-none resize-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Model Answer / Summary</label>
+                    <textarea
+                      name="modelAnswer" value={form.modelAnswer} onChange={handleChange}
+                      placeholder="Enter the ideal summary (required)..."
+                      rows={3}
                       className="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-4 focus:ring-indigo-50 outline-none resize-none"
                       required
                     />
@@ -301,7 +314,7 @@ const ManageSummarizeText = () => {
                     disabled={submitLoading}
                     className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                   >
-                    {submitLoading ? <Loader2 className="animate-spin"/> : editingId ? "Update Passage" : "Create Passage"}
+                    {submitLoading ? <Loader2 className="animate-spin" /> : editingId ? "Update Passage" : "Create Passage"}
                   </button>
                 </form>
               </motion.div>
@@ -313,17 +326,17 @@ const ManageSummarizeText = () => {
         <AnimatePresence>
           {viewModal && viewData && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={() => setViewModal(false)}
                 className="absolute inset-0 bg-slate-900/70 backdrop-blur-md"
               />
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
                 className="bg-slate-900 text-white w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl relative"
               >
-                <button onClick={() => setViewModal(false)} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors z-10"><X/></button>
-                
+                <button onClick={() => setViewModal(false)} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors z-10"><X /></button>
+
                 <div className="p-8 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
                   <div className="space-y-2">
                     <span className="text-indigo-400 text-xs font-bold tracking-[0.2em] uppercase">Summarize Written Text</span>
@@ -347,12 +360,23 @@ const ManageSummarizeText = () => {
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest">
-                      <AlignLeft size={16}/> Source Passage
+                      <AlignLeft size={16} /> Source Passage
                     </div>
                     <div className="bg-white/5 p-6 rounded-2xl border border-white/10 leading-relaxed text-slate-300 text-lg">
                       {viewData.paragraph}
                     </div>
                   </div>
+
+                  {viewData.modelAnswer && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest">
+                        <Info size={16} /> Model Answer
+                      </div>
+                      <div className="bg-emerald-500/10 p-6 rounded-2xl border border-emerald-500/20 leading-relaxed text-emerald-100 text-lg">
+                        {viewData.modelAnswer}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="bg-indigo-500/10 p-5 rounded-2xl border border-indigo-500/20 flex items-start gap-4">
                     <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
@@ -361,7 +385,7 @@ const ManageSummarizeText = () => {
                     <div className="space-y-1">
                       <p className="text-sm font-bold text-indigo-100">Scoring Guidelines</p>
                       <p className="text-xs text-indigo-200/60 leading-normal">
-                        Students must summarize this text in a **single sentence** between 5 and 75 words. 
+                        Students must summarize this text in a **single sentence** between 5 and 75 words.
                         Scores are calculated based on Content (2), Form (1), Grammar (2), and Vocabulary (2).
                       </p>
                     </div>

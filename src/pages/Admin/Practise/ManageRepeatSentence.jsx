@@ -7,6 +7,7 @@ const ManageRepeatSentence = () => {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [title, setTitle] = useState('');
+    const [transcript, setTranscript] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -38,14 +39,15 @@ const ManageRepeatSentence = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!selectedFile || !title) {
-            alert("Title and Audio file are required");
+        if (!selectedFile || !title || !transcript) {
+            alert("Title, Audio file, and Transcript are required");
             return;
         }
 
         setSubmitting(true);
         const formData = new FormData();
         formData.append('title', title);
+        if (transcript) formData.append('transcript', transcript);
         formData.append('audio', selectedFile);
         formData.append('prepareTime', 3); // Default
         formData.append('answerTime', 15); // Default
@@ -56,6 +58,7 @@ const ManageRepeatSentence = () => {
                 withCredentials: true
             });
             setTitle('');
+            setTranscript('');
             setSelectedFile(null);
             // Reset file input manually if needed
             document.getElementById('audio-upload').value = null;
@@ -107,6 +110,18 @@ const ManageRepeatSentence = () => {
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Transcript</label>
+                                <textarea
+                                    required
+                                    placeholder="Enter the exact text spoken in the audio..."
+                                    value={transcript}
+                                    onChange={(e) => setTranscript(e.target.value)}
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                                    rows="3"
                                 />
                             </div>
 

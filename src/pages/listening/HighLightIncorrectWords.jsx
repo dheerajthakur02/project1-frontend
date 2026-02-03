@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { ArrowLeft, Volume2, RotateCcw, Headphones, Play, ChevronRight, RotateCw, History, Trash2, Share2, X, CheckCircle2, Info } from "lucide-react";
+import { ArrowLeft, Volume2, RotateCcw, Headphones, Play, ChevronRight, RotateCw, History, Trash2, Share2, X, CheckCircle2, Info, Languages, Eye, RefreshCw, ChevronLeft } from "lucide-react";
 import { submitHIWAttempt } from "../../services/api";
 import { useSelector } from "react-redux";
 
@@ -77,10 +77,10 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
 
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div>
-            <h1>Highlight Incorrect Words</h1>
-            <p>You will hear a recording. Below is a transcription of the recording. Some words in the transcription differ from what the speaker said. Please click on the words that are different.</p>
-          </div>
+        <div>
+          <h1>Highlight Incorrect Words</h1>
+          <p>You will hear a recording. Below is a transcription of the recording. Some words in the transcription differ from what the speaker said. Please click on the words that are different.</p>
+        </div>
         <div className="bg-white rounded-[2.5rem] w-full max-w-5xl overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-300">
 
           {/* Header */}
@@ -248,28 +248,74 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
             </div>
           </div>
 
-          <div className="p-8 border-t flex justify-between items-center bg-white">
-            <button onClick={() => window.location.reload()} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600 transition">
-              <RotateCcw size={20} /> Redo
-            </button>
+
+          {/* SUBMIT BUTTON SECTION */}
+          <div className="px-10 py-6 bg-slate-50 border-t flex justify-end">
             {status !== "submitted" ? (
-              <button onClick={handleSubmit} disabled={status !== "playing"} className="bg-blue-600 disabled:bg-slate-200 text-white px-16 py-3 rounded-2xl font-black shadow-xl hover:bg-blue-700 transition active:scale-95">
-                Submit Answer
+              <button
+                disabled={status !== "playing"}
+                onClick={handleSubmit}
+                className="bg-blue-600 disabled:bg-slate-300 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
+              >
+                <CheckCircle2 size={20} /> Submit Answer
               </button>
             ) : (
               <div className="flex gap-4">
                 <button onClick={() => setShowModal(true)} className="bg-indigo-500 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-indigo-600 transition">
                   View Result Details
                 </button>
-                <button className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-700 transition">
-                  Next Question <ChevronRight size={18} />
-                </button>
               </div>
             )}
-            <div className="text-sm font-bold text-slate-300">ID: {question?._id?.slice(-6)}</div>
           </div>
         </div>
       )}
+
+      {/* Footer Nav */}
+      <div className="flex items-center justify-between pb-6 mt-6">
+        {/* LEFT SIDE: Translate, Answer, Redo */}
+        <div className="flex items-center gap-4">
+          {/* Translate (Static) */}
+          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <Languages size={18} />
+            </div>
+            <span className="text-xs font-medium">Translate</span>
+          </button>
+
+          {/* Answer (Static) */}
+          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default text-opacity-50">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <Eye size={18} />
+            </div>
+            <span className="text-xs font-medium">Answer</span>
+          </button>
+
+          {/* Redo */}
+          <button onClick={() => window.location.reload()} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <RefreshCw size={18} />
+            </div>
+            <span className="text-xs font-medium">Redo</span>
+          </button>
+        </div>
+
+        {/* RIGHT SIDE: Prev, Next */}
+        <div className="flex items-center gap-4">
+          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <ChevronLeft size={20} />
+            </div>
+            <span className="text-xs font-medium">Previous</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <ChevronRight size={20} />
+            </div>
+            <span className="text-xs font-medium">Next</span>
+          </button>
+        </div>
+      </div>
 
       {/* HISTORY TAB */}
       <div className="bg-white rounded-[2rem] border shadow-sm p-6">

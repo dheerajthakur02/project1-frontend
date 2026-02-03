@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Volume2, RotateCcw, ChevronRight, X, Play, CheckCircle2, Info, Headphones, BookOpen, Share2, History, Calendar, Trash2 } from "lucide-react";
+import { ArrowLeft, Volume2, RotateCcw, ChevronRight, X, Play, CheckCircle2, Info, Headphones, BookOpen, Share2, History, Calendar, Trash2, Languages, Eye, RefreshCw, ChevronLeft } from "lucide-react";
 import { submitHighlightAttempt } from "../../services/api";
 import { useSelector } from "react-redux";
 
@@ -186,6 +186,17 @@ export default function HCS({ question, setActiveSpeechQuestion }) {
 
               {/* FOOTER NAV */}
 
+              {/* SUBMIT BUTTON SECTION */}
+              <div className="px-10 py-6 bg-slate-50 border-t flex justify-end">
+                <button
+                  disabled={selectedOption === null || status === "idle"}
+                  onClick={handleSubmit}
+                  className="bg-blue-600 disabled:bg-slate-300 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
+                >
+                  <CheckCircle2 size={20} /> Submit Answer
+                </button>
+              </div>
+
             </div>
           )}
         </div>
@@ -193,26 +204,50 @@ export default function HCS({ question, setActiveSpeechQuestion }) {
         {/* RIGHT COLUMN: HISTORY */}
 
       </div>
-      <div className="p-8 border-t bg-white flex justify-between items-center">
-        <div className="flex gap-4">
-          <button className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
-            <ArrowLeft size={20} /> Previous
+      {/* Footer Nav */}
+      <div className="flex items-center justify-between pb-6 mt-6">
+        {/* LEFT SIDE: Translate, Answer, Redo */}
+        <div className="flex items-center gap-4">
+          {/* Translate (Static) */}
+          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <Languages size={18} />
+            </div>
+            <span className="text-xs font-medium">Translate</span>
           </button>
-          <button onClick={() => { setSelectedOption(null); setStatus("countdown"); setPrepTimer(PREP_TIME); }} className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-600">
-            <RotateCcw size={20} /> Redo
+
+          {/* Answer (Static) */}
+          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default text-opacity-50">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <Eye size={18} />
+            </div>
+            <span className="text-xs font-medium">Answer</span>
+          </button>
+
+          {/* Redo */}
+          <button onClick={() => { setSelectedOption(null); setStatus("countdown"); setPrepTimer(PREP_TIME); }} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <RefreshCw size={18} />
+            </div>
+            <span className="text-xs font-medium">Redo</span>
           </button>
         </div>
 
-        <button
-          disabled={selectedOption === null || status === "idle"}
-          onClick={handleSubmit}
-          className="bg-blue-600 disabled:bg-slate-200 text-white px-10 py-3 rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
-        >
-          <CheckCircle2 size={20} /> Submit Answer
-        </button>
-
+        {/* RIGHT SIDE: Prev, Next */}
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 font-bold text-blue-600">Next <ChevronRight size={20} /></button>
+          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <ChevronLeft size={20} />
+            </div>
+            <span className="text-xs font-medium">Previous</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+              <ChevronRight size={20} />
+            </div>
+            <span className="text-xs font-medium">Next</span>
+          </button>
         </div>
       </div>
 

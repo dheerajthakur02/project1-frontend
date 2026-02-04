@@ -562,8 +562,8 @@ const ReadAloudSession = () => {
         <div>
           <h1>Read Aloud</h1>
           <p>
-            Look at the text below. In {isOneLineMode ? '10' : '40'} seconds, you must read this text aloud as naturally and clearly as possible.
-            You have {isOneLineMode ? '10' : '40'} seconds to read aloud.
+            Look at the text below. In {isOneLineMode ? '40' : '40'} seconds, you must read this text aloud as naturally and clearly as possible.
+            You have {isOneLineMode ? '40' : '40'} seconds to read aloud.
           </p>
         </div>
         <div className="flex items-center justify-between">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import axios from 'axios';
 
 // Layout
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
@@ -21,8 +22,7 @@ import QuestionFilter from '../../components/Practice/QuestionFilter';
 
 
 
-// Writing Components (Create these if not already existing)
-// For now, I am assuming standard naming based on your imports.
+// Writing Components
 import SummarizeWrittenText from '../writing/SummarizeText';
 import WriteEssay from '../writing/WriteEssay';
 import SST from '../listening/SST';
@@ -34,6 +34,52 @@ import ListeningFIB from '../listening/ListeningFIB';
 import ListeningMultiChoiceMultiAnswer from '../listening/ListeningMultiChoiceMultiAnswer';
 import WriteFromDictation from '../listening/WriteFromDictation';
 import { getWriteFromDictationQuestions } from '../../services/api';
+
+
+const PracticeCard = ({ title, icon, color, count, total, onClick }) => {
+    const colorClasses = {
+        blue: 'bg-blue-100 text-blue-600',
+        yellow: 'bg-yellow-100 text-yellow-600',
+        green: 'bg-green-100 text-green-600',
+        red: 'bg-red-100 text-red-600',
+    };
+
+    const bgClasses = {
+        blue: 'bg-blue-50',
+        yellow: 'bg-yellow-50',
+        green: 'bg-green-50',
+        red: 'bg-red-50',
+    };
+
+    return (
+        <div onClick={onClick} className={`${bgClasses[color]} p-6 rounded-2xl transition-transform hover:scale-[1.02] cursor-pointer`}>
+            <div className="flex items-center gap-4 mb-6">
+                <div className={`w-12 h-12 rounded-full ${colorClasses[color]} flex items-center justify-center`}>
+                    {icon}
+                </div>
+                <h3 className="text-xl font-bold text-slate-800">{title}</h3>
+            </div>
+
+            <div className="mb-2">
+                <div className="text-sm font-semibold text-slate-700 mb-1">Practiced Ques : {count}</div>
+                <div className="w-full bg-white/50 h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-slate-300 h-full w-0" style={{ width: `${total ? (count / total) * 100 : 0}%` }} />
+                </div>
+            </div>
+
+            <div className="flex justify-between items-end text-sm">
+                <div>
+                    <span className="font-bold text-slate-700">{total ? Math.round((count / total) * 100) : 0}%</span>
+                    <div className="text-slate-500 text-xs">Completed</div>
+                </div>
+                <div className="text-right">
+                    <span className="font-bold text-slate-700">Total:</span>
+                    <div className="font-bold text-slate-800">{total}</div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 
 function Practice() {
@@ -48,6 +94,14 @@ function Practice() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    // Stats State
+    const [stats, setStats] = useState({
+        speaking: { total: 0, practiced: 0 },
+        writing: { total: 0, practiced: 0 },
+        reading: { total: 0, practiced: 0 },
+        listening: { total: 0, practiced: 0 }
+    });
+
     // Module Data States
     const [readAloudQuestions, setReadAloudQuestions] = useState([]);
     const [repeatSentenceQuestions, setRepeatSentenceQuestions] = useState([]);
@@ -61,8 +115,6 @@ function Practice() {
     const [readingMultiChoiceSingleAnswerQuestions, setReadingMultiChoiceSingleAnswerQuestions] = useState([]);
     const [readingFIBDragDropQuestions, setReadingFIBDragDropQuestions] = useState([]);
     const [readingReorderQuestions, setReadingReorderQuestions] = useState([]);
-
-
 
 
     const [summarizeTextQuestions, setSummarizeTextQuestions] = useState([]);
@@ -101,6 +153,23 @@ function Practice() {
     };
 
     // --- FETCH FUNCTIONS ---
+
+    // Fetch Stats
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const { data } = await axios.get('/api/dashboard/stats', { withCredentials: true });
+                if (data.success) {
+                    setStats(data.data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch practice stats", err);
+            }
+        };
+        fetchStats();
+    }, []);
+
+
     const fetchReadAloud = async () => {
         setLoading(true);
         try {
@@ -517,6 +586,42 @@ function Practice() {
             {!activeSpeechQuestion ? (
                 <div className="p-6 space-y-6 w-full">
                     <h1 className="text-2xl font-bold text-slate-800">Practice</h1>
+
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                        <PracticeCard
+                            title="Speaking"
+                            color="blue"
+                            count={stats.speaking.practiced}
+                            total={stats.speaking.total}
+                            onClick={() => setActiveTab('Speaking')}
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></svg>}
+                        />
+                        <PracticeCard
+                            title="Writing"
+                            color="yellow"
+                            count={stats.writing.practiced}
+                            total={stats.writing.total}
+                            onClick={() => setActiveTab('Writing')}
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>}
+                        />
+                        <PracticeCard
+                            title="Reading"
+                            color="green"
+                            count={stats.reading.practiced}
+                            total={stats.reading.total}
+                            onClick={() => setActiveTab('Reading')}
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>}
+                        />
+                        <PracticeCard
+                            title="Listening"
+                            color="red"
+                            count={stats.listening.practiced}
+                            total={stats.listening.total}
+                            onClick={() => setActiveTab('Listening')}
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" /></svg>}
+                        />
+                    </div>
 
                     {/* Main Category Tabs */}
                     <div className="bg-white p-1 rounded-xl inline-flex shadow-sm border border-slate-100">

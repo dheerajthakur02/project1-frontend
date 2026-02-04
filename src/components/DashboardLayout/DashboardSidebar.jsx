@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 const navItems = [
     { name: 'Dashboard', icon: <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />, path: '/dashboard' },
     { name: 'Practice', icon: <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />, path: '/practice' },
-    { name: 'Section Test', icon: <path d="M21 12H3M21 6H3M21 18H3" />, path: '/section-test' },
+
     { name: 'Mock Test', icon: <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />, path: '/mock-test' },
     { name: 'Pricing', icon: <path d="M3 6h18M3 12h18M3 18h18" />, path: '/pricing', isNew: true },
     { name: 'Buy Vouchers', icon: <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z M6 6h12 M6 10h12 M6 14h12" />, path: '/buy-vouchers' },

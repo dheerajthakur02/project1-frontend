@@ -78,15 +78,17 @@ const DashboardLayout = ({ children }) => {
 
                     {/* Right: User Profile & Upgrade */}
                     <div className="flex items-center gap-6">
-                        <button
-                            onClick={() => navigate('/pricing')}
-                            className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-colors hover:bg-purple-200"
-                        >
-                            <span className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center text-white text-xs">
-                                &lt;
-                            </span>
-                            Upgrade to Prime
-                        </button>
+                        {!user?.isPremium && (
+                            <button
+                                onClick={() => navigate('/pricing')}
+                                className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-colors hover:bg-purple-200"
+                            >
+                                <span className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center text-white text-xs">
+                                    &lt;
+                                </span>
+                                Upgrade to Prime
+                            </button>
+                        )}
 
                         <div className="relative" ref={dropdownRef}>
                             <button
@@ -98,7 +100,7 @@ const DashboardLayout = ({ children }) => {
                                 </div>
                                 <div className="hidden lg:block text-left">
                                     <div className="text-sm font-bold text-slate-700">{displayName}</div>
-                                    <div className="text-xs text-slate-500">Free User</div>
+                                    <div className="text-xs text-slate-500">{user?.isPremium ? "Premium User" : "Free User"}</div>
                                 </div>
                                 <ChevronDown
                                     size={16}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Import useRef
 import { useParams, useNavigate } from 'react-router-dom';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import axios from 'axios';
@@ -18,9 +18,11 @@ import {
   Sparkles as InventoryIcon,
   Languages,
   Eye,
+  AlignLeft, // New icon for one-line mode
 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import { submitReadAloudAttempt, getReadAloudHistory } from '../../services/api';
+import { useSelector } from 'react-redux';
 
 
 
@@ -234,6 +236,11 @@ const ReadAloudSession = () => {
   // TTS State
   const [isSpeaking, setIsSpeaking] = useState(false);
 
+  // NEW: One-Line Mode State
+  const [isOneLineMode, setIsOneLineMode] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
+  const textContainerRef = useRef(null); // Ref for the text paragraph
+
   useEffect(() => {
     const fetchQuestion = async () => {
       setLoading(true);
@@ -286,6 +293,7 @@ const ReadAloudSession = () => {
     setMaxTime(3);
     setResult(null);
     setIsStarted(true); // Auto-start
+    setSelectedText(''); // Clear selected text on reset
 
     resetTranscript();
     window.speechSynthesis.cancel();
@@ -322,7 +330,8 @@ const ReadAloudSession = () => {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
     } else {
-      const utterance = new SpeechSynthesisUtterance(question.text);
+      const textToSpeak = isOneLineMode && selectedText ? selectedText : question.text; // Speak selected text in one-line mode
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.lang = 'en-US';
       utterance.rate = 0.9;
       utterance.onend = () => setIsSpeaking(false);
@@ -355,10 +364,16 @@ const ReadAloudSession = () => {
   }, [status, timeLeft, isStarted, maxTime]);
 
   const startRecording = () => {
+    // In one-line mode, only allow recording if text is selected
+    if (isOneLineMode && !selectedText) {
+      alert("Please select some text to start speaking in One-Line Mode.");
+      return;
+    }
+
     setIsStarted(true);
     setStatus('recording');
     setTimeLeft(0); // Start at 0 for count-up
-    setMaxTime(40);
+    setMaxTime(isOneLineMode ? 10 : 40); // Shorter max time for one-line mode
     resetTranscript();
     SpeechRecognition.startListening({ continuous: true });
   };
@@ -368,57 +383,61 @@ const ReadAloudSession = () => {
     setStatus('submitting');
 
     const finalTranscript = transcript; // Ensure transcript is captured
+    const referenceText = isOneLineMode && selectedText ? selectedText : question.text;
 
     try {
-      // Construct payload for submitRL
-      // It expects { testId, answers: [{ questionId, audioUrl }] }
-      // We don't have audio upload here yet? 'transcript' is sent.
-      // My backend submitRL calculates score but doesn't strictly require audioUrl for mock scoring.
-      // But it expects 'questionId'.
+      // For one-line mode, we'll calculate a basic score on the frontend
+      let simulatedResult;
+      if (isOneLineMode) {
+        simulatedResult = calculateFrontendScore(finalTranscript, referenceText);
+      } else {
+        // Normal mode, send to backend
+        const payload = {
+          testId: sectionId || question._id,
+          answers: [{
+            questionId: question._id || question.id,
+            transcript: finalTranscript,
+            audioUrl: "mock-audio.mp3"
+          }],
+          userId: "user_from_auth_if_needed"
+        };
 
-      const payload = {
-        testId: sectionId || question._id, // Use sectionId if available
-        answers: [{
-          questionId: question._id || question.id,
-          transcript: finalTranscript,
-          audioUrl: "mock-audio.mp3" // Placeholder or implement upload
-        }],
+        const res = await submitReadAloudAttempt(payload);
 
-        userId: "user_from_auth_if_needed"
-      };
+        if (res.success) {
+          const data = res.data;
+          const qScore = data.scores?.find(s => s.questionId === (question._id || question.id)) || data.scores?.[0];
 
-      const res = await submitReadAloudAttempt(payload);
-
-      if (res.success) {
-        // Map backend SpeakingResult to frontend 'result' object
-        const data = res.data; // SpeakingResult document
-        // Extract the specific question score
-        const qScore = data.scores?.find(s => s.questionId === (question._id || question.id)) || data.scores?.[0];
-
-        if (qScore) {
-          const mappedResult = {
-            score: (qScore.contentScore || 0) + (qScore.pronunciationScore || 0) + (qScore.fluencyScore || 0),
-            fluency: qScore.fluencyScore || 0,
-            pronunciation: qScore.pronunciationScore || 0,
-            content: qScore.contentScore || 0,
-            transcript: qScore.userTranscript || finalTranscript,
-            _id: data._id,
-            wordAnalysis: qScore.wordAnalysis // Ensure granular analysis is available
-          };
-
-          setResult(mappedResult);
-          setSelectedAttempt(mappedResult);
-          setIsResultOpen(true);
-          setStatus('result');
-          // Refresh history? Ideally yes, but for now user can refresh page
+          if (qScore) {
+            simulatedResult = { // Map backend result to local format
+              score: (qScore.contentScore || 0) + (qScore.pronunciationScore || 0) + (qScore.fluencyScore || 0),
+              fluency: qScore.fluencyScore || 0,
+              pronunciation: qScore.pronunciationScore || 0,
+              content: qScore.contentScore || 0,
+              transcript: qScore.userTranscript || finalTranscript,
+              _id: data._id,
+              wordAnalysis: qScore.wordAnalysis
+            };
+          }
         }
       }
+
+      if (simulatedResult) {
+        setResult(simulatedResult);
+        setSelectedAttempt(simulatedResult);
+        setIsResultOpen(true);
+        setStatus('result');
+      } else if (!isOneLineMode) { // Only alert for backend failure in normal mode
+         alert(`Submission failed: ${'Could not process backend response.'}`);
+         setStatus('prep');
+      }
+
+
     } catch (err) {
       console.error('Submission error', err);
 
-      // Check if it's the practice limit error
       if (err.response && err.response.status === 403 && err.response.data.message === "PRACTICE_LIMIT_REACHED") {
-        alert("Practice limit reached! Please upgrade to continue."); // Simple alert for now
+        alert("Practice limit reached! Please upgrade to continue.");
         setStatus('prep');
         return;
       }
@@ -428,7 +447,105 @@ const ReadAloudSession = () => {
     }
   };
 
+  const {user} = useSelector(state => state.auth)
+  // NEW: Frontend Scoring Logic
+  const calculateFrontendScore = async(userTranscript, referenceText) => {
+    const userWords = userTranscript.toLowerCase().split(/\s+/).filter(Boolean);
+    const refWords = referenceText.toLowerCase().split(/\s+/).filter(Boolean);
+
+    let correctWords = 0;
+    const wordAnalysis = [];
+
+    // Simple word-by-word comparison
+    for (let i = 0; i < refWords.length; i++) {
+      if (userWords[i] === refWords[i]) {
+        correctWords++;
+        wordAnalysis.push({ word: refWords[i], status: 'good' });
+      } else {
+        wordAnalysis.push({ word: refWords[i], status: 'bad' });
+      }
+    }
+
+    const accuracy = correctWords / refWords.length;
+
+    // Simulate PTE-like scoring (max 5 for each, total 15)
+    // This is a very basic simulation.
+    const contentScore = Math.min(5, Math.round(accuracy * 5));
+    const pronunciationScore = Math.min(5, Math.round(accuracy * 5)); // Placeholder
+    const fluencyScore = Math.min(5, Math.round(accuracy * 5)); // Placeholder
+
+    const totalScore = contentScore + pronunciationScore + fluencyScore;
+
+    // ✅ Payload that backend expects
+  const payload = {
+    userId: user._id,
+    paragraphId: question._id, // ⚠️ use questionId (not paragraphId unless backend expects it)
+    transcript: userTranscript,
+
+    score: totalScore,
+    content: contentScore,
+    pronunciation: pronunciationScore,
+    fluency: fluencyScore,
+
+    wordAnalysis,
+    aiFeedback: `You got ${correctWords} out of ${refWords.length} words correct. Try to match the selected text more closely!`,
+  };
+
+  // ✅ Correct API call
+  const res = await axios.post(
+    "/api/attempts/save/attempt",
+    payload
+  );
+
+ console.log( res.data.data)
+
+    return {
+      score: totalScore,
+      fluency: fluencyScore,
+      pronunciation: pronunciationScore,
+      content: contentScore,
+      transcript: userTranscript,
+      _id: 'frontend_scored_' + Date.now(),
+      wordAnalysis: wordAnalysis,
+      aiFeedback: `Frontend analysis: You got ${correctWords} out of ${refWords.length} words correct. Try to match the selected text more closely!`
+    };
+  };
+
   const handleSkipPrep = () => startRecording();
+
+  // NEW: Handle text selection
+  const handleTextSelection = () => {
+    if (!isOneLineMode) return;
+
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      setSelectedText(selection.toString().trim());
+      // Optionally, immediately start recording or give a "Speak Selected" button
+      // For now, it just sets the selectedText. User still clicks "Record".
+    } else {
+      setSelectedText('');
+    }
+  };
+
+  useEffect(() => {
+    const textElement = textContainerRef.current;
+    if (textElement && isOneLineMode) {
+      textElement.addEventListener('mouseup', handleTextSelection);
+      textElement.addEventListener('keyup', handleTextSelection); // For keyboard selection
+    } else if (textElement) {
+      textElement.removeEventListener('mouseup', handleTextSelection);
+      textElement.removeEventListener('keyup', handleTextSelection);
+      setSelectedText(''); // Clear selected text when leaving one-line mode
+    }
+
+    return () => {
+      if (textElement) {
+        textElement.removeEventListener('mouseup', handleTextSelection);
+        textElement.removeEventListener('keyup', handleTextSelection);
+      }
+    };
+  }, [isOneLineMode, question]); // Re-attach listeners when mode changes or question changes
+
 
   if (loading) return <div className="p-8 text-center">Loading Question...</div>;
   if (!question) return <div className="p-8 text-center text-red-500">Question not found</div>;
@@ -445,7 +562,8 @@ const ReadAloudSession = () => {
         <div>
           <h1>Read Aloud</h1>
           <p>
-            Look at the text below. In 40 seconds, you must read this text aloud as naturally and clearly as possible. You have 40 seconds to read aloud.
+            Look at the text below. In {isOneLineMode ? '10' : '40'} seconds, you must read this text aloud as naturally and clearly as possible.
+            You have {isOneLineMode ? '10' : '40'} seconds to read aloud.
           </p>
         </div>
         <div className="flex items-center justify-between">
@@ -461,6 +579,20 @@ const ReadAloudSession = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* NEW: One-Line Mode Toggle */}
+            <button
+              onClick={() => {
+                setIsOneLineMode(!isOneLineMode);
+                resetSession(); // Reset session when switching modes
+              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-semibold transition-colors ${isOneLineMode ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+            >
+              <AlignLeft size={14} />
+              {isOneLineMode ? 'Exit One-Line Mode' : 'One-Line Mode'}
+            </button>
+
+
             <button
               onClick={toggleTTS}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-semibold transition-colors ${isSpeaking ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -505,7 +637,14 @@ const ReadAloudSession = () => {
           {/* Content Area */}
           <div className="p-8">
             <div className="mb-12">
-              <p className="text-xl leading-relaxed text-slate-800 font-normal">{question.text}</p>
+              <p ref={textContainerRef} className="text-xl leading-relaxed text-slate-800 font-normal select-text">
+                {question.text}
+              </p>
+              {isOneLineMode && selectedText && (
+                <div className="mt-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg text-indigo-800 text-sm font-medium">
+                  Selected for One-Line Mode: <span className="font-bold">"{selectedText}"</span>
+                </div>
+              )}
             </div>
 
             {/* Interactive Area */}
@@ -742,7 +881,7 @@ const ReadAloudSession = () => {
                     <h4 className="font-bold text-slate-800 text-lg">My Answer</h4>
                     <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full text-xs font-semibold text-slate-600">
                       <Volume2 size={14} />
-                      <span>00:40</span>
+                      <span>00:{isOneLineMode ? '10' : '40'}</span>
                     </div>
                   </div>
 
@@ -753,7 +892,7 @@ const ReadAloudSession = () => {
                     <div className="flex-1 h-2 bg-slate-200 rounded-full relative overflow-hidden">
                       <div className="absolute top-0 left-0 h-full w-1/3 bg-slate-400 rounded-full"></div>
                     </div>
-                    <span className="text-sm font-medium text-slate-500">0:12 / 0:40</span>
+                    <span className="text-sm font-medium text-slate-500">0:12 / 0:{isOneLineMode ? '10' : '40'}</span>
                   </div>
                 </div>
 
@@ -783,7 +922,7 @@ const ReadAloudSession = () => {
 
                   <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
                     <p className="text-lg leading-relaxed text-slate-700">
-                      {(view.wordAnalysis || question.text.split(' ').map((w) => ({ word: w, status: 'good' }))).map((item, index) => {
+                      {(view.wordAnalysis || (isOneLineMode && selectedText ? selectedText.split(' ') : question.text.split(' ')).map((w) => ({ word: w, status: 'good' }))).map((item, index) => {
                         let colorClass = 'decoration-green-400';
                         let textColor = 'text-green-700';
 
@@ -807,24 +946,25 @@ const ReadAloudSession = () => {
                     </p>
                   </div>
 
+                  {/* Dynamic counts based on actual words in the reference text */}
                   <div className="flex flex-wrap items-center gap-4 mt-6">
                     <div className="flex items-center gap-3 bg-green-50 text-green-700 px-4 py-2 rounded-xl border border-green-100">
                       <div className="w-6 h-6 rounded-full bg-green-200 flex items-center justify-center font-bold text-xs">
-                        {Math.floor(question.text.split(' ').length * 0.7)}
+                        {view.wordAnalysis?.filter(item => item.status === 'good').length || 0}
                       </div>
                       <span className="font-semibold text-sm">Good Pronun.</span>
                     </div>
 
                     <div className="flex items-center gap-3 bg-yellow-50 text-yellow-800 px-4 py-2 rounded-xl border border-yellow-100">
                       <div className="w-6 h-6 rounded-full bg-yellow-200 flex items-center justify-center font-bold text-xs">
-                        {Math.floor(question.text.split(' ').length * 0.15)}
+                        {view.wordAnalysis?.filter(item => item.status === 'average').length || 0}
                       </div>
                       <span className="font-semibold text-sm">Average Pronun.</span>
                     </div>
 
                     <div className="flex items-center gap-3 bg-red-50 text-red-800 px-4 py-2 rounded-xl border border-red-100">
                       <div className="w-6 h-6 rounded-full bg-red-200 flex items-center justify-center font-bold text-xs">
-                        {Math.floor(question.text.split(' ').length * 0.15)}
+                        {view.wordAnalysis?.filter(item => item.status === 'bad').length || 0}
                       </div>
                       <span className="font-semibold text-sm">Bad Pronun. / Missing</span>
                     </div>
@@ -848,5 +988,3 @@ const ReadAloudSession = () => {
 };
 
 export default ReadAloudSession;
-
-

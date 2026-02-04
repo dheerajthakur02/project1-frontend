@@ -6,11 +6,32 @@ import { User, Settings, LogOut, ChevronDown, LayoutDashboard } from 'lucide-rea
 import DashboardSidebar from './DashboardSidebar';
 
 const DashboardLayout = ({ children }) => {
-    const { user } = useSelector((state) => state.auth);
+    const { user, token } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef(null);
+
+    // Fetch latest user profile when dropdown opens to show updated stats
+    useEffect(() => {
+        if (showDropdown) {
+            const refreshProfile = async () => {
+                try {
+                    const { fetchUserProfile } = await import('../../services/api');
+                    const res = await fetchUserProfile();
+                    if (res.success && res.data) {
+                        // Update redux state with fresh user data. 
+                        // We reuse setCredentials, assuming token hasn't changed.
+                        const { setCredentials } = await import('../../redux/slices/authSlice');
+                        dispatch(setCredentials({ user: res.data, token }));
+                    }
+                } catch (error) {
+                    console.error("Failed to refresh profile stats", error);
+                }
+            };
+            refreshProfile();
+        }
+    }, [showDropdown]);
 
     const displayName = user?.name || "Guest";
     const initial = displayName.charAt(0).toUpperCase();
@@ -90,7 +111,7 @@ const DashboardLayout = ({ children }) => {
                                 <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
                                     <div className="px-4 py-3 border-b border-slate-100 mb-2">
                                         <div className="font-bold text-slate-800">{displayName}</div>
-                                        <div className="text-xs text-slate-500">{user?.email || "user@example.com"}</div>
+                                        <div className="text-xs text-slate-500 mb-3">{user?.email || "user@example.com"}</div>
                                     </div>
 
                                     <div className="px-2">
@@ -106,7 +127,13 @@ const DashboardLayout = ({ children }) => {
                                                 Admin Panel
                                             </button>
                                         )}
-                                        <button className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-primary-600 rounded-lg transition-colors text-sm font-medium">
+                                        <button
+                                            onClick={() => {
+                                                navigate('/profile');
+                                                setShowDropdown(false);
+                                            }}
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-primary-600 rounded-lg transition-colors text-sm font-medium"
+                                        >
                                             <User size={18} />
                                             Profile
                                         </button>

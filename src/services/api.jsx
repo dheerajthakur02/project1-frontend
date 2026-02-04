@@ -490,3 +490,12 @@ export const getUserListeningResults = async () => {
   const res = await api.get("/question/listening/result/my");
   return res.data;
 };
+
+export const fetchUserProfile = async () => {
+  try {
+    const response = await api.get('/auth/profile');
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};

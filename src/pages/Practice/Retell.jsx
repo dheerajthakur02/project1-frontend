@@ -214,7 +214,7 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
         resetTranscript();
         transcriptRef.current = "";
         setIsPlaying(false); // Reset play state
-      
+
     };
 
     const formatTime = (seconds) => {
@@ -286,75 +286,75 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
                     )}
 
                     {/* 3. PLAYING AUDIO WITH SLIDER & PLAY/PAUSE */}
-                   {(status === "playing" || status === "recording") && (
+                    {(status === "playing" || status === "recording") && (
                         <div className="relative w-full max-w-xl mx-auto bg-white rounded-2xl border border-slate-200 p-8 shadow-sm space-y-6">
 
                             {/* Skip Audio */}
                             {status !== "recording" && (
-                            <button
-                                onClick={() => {
-                                handleTogglePlayPause();
-                                setStatus("prep_record");
-                                }}
-                                className="absolute top-4 right-4 text-xs font-semibold text-blue-600 hover:underline"
-                            >
-                                Skip Audio
-                            </button>
+                                <button
+                                    onClick={() => {
+                                        handleTogglePlayPause();
+                                        setStatus("prep_record");
+                                    }}
+                                    className="absolute top-4 right-4 text-xs font-semibold text-blue-600 hover:underline"
+                                >
+                                    Skip Audio
+                                </button>
                             )}
 
                             {/* Play / Pause */}
                             <div className="flex flex-col items-center gap-4">
-                            <button
-                                onClick={handleTogglePlayPause}
-                                className="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition"
-                            >
-                                {isPlaying ? <Pause size={30} /> : <Play size={30} />}
-                            </button>
+                                <button
+                                    onClick={handleTogglePlayPause}
+                                    className="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition"
+                                >
+                                    {isPlaying ? <Pause size={30} /> : <Play size={30} />}
+                                </button>
 
-                            <p className="text-sm font-medium text-slate-500">
-                                {isPlaying ? "Playing audio..." : "Audio paused"}
-                            </p>
+                                <p className="text-sm font-medium text-slate-500">
+                                    {isPlaying ? "Playing audio..." : "Audio paused"}
+                                </p>
                             </div>
 
                             {/* Slider */}
                             <div className="space-y-2">
-                            <div className="flex justify-between text-xs font-mono text-slate-500">
-                                <span>{formatTime(audioCurrentTime)}</span>
-                                <span>{formatTime(audioDuration)}</span>
-                            </div>
+                                <div className="flex justify-between text-xs font-mono text-slate-500">
+                                    <span>{formatTime(audioCurrentTime)}</span>
+                                    <span>{formatTime(audioDuration)}</span>
+                                </div>
 
-                            <input
-                                type="range"
-                                min="0"
-                                max={audioDuration || 0}
-                                step="0.1"
-                                value={audioCurrentTime}
-                                onChange={handleSliderChange}
-                                className="w-full accent-blue-600 cursor-pointer"
-                            />
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max={audioDuration || 0}
+                                    step="0.1"
+                                    value={audioCurrentTime}
+                                    onChange={handleSliderChange}
+                                    className="w-full accent-blue-600 cursor-pointer"
+                                />
                             </div>
                         </div>
-                        )}
+                    )}
 
 
                     {/* 4. PREP RECORD (10s Skipable) */}
-                 {status === "prep_record" && (
-                    <div className="text-center space-y-6">
-                        <p className="uppercase text-xs tracking-widest text-slate-400">
-                        Prepare to summarize
-                        </p>
+                    {status === "prep_record" && (
+                        <div className="text-center space-y-6">
+                            <p className="uppercase text-xs tracking-widest text-slate-400">
+                                Prepare to summarize
+                            </p>
 
-                        <div className="text-6xl font-black text-slate-800">
-                        {timeLeft}s
+                            <div className="text-6xl font-black text-slate-800">
+                                {timeLeft}s
+                            </div>
+
+                            <button
+                                onClick={startRecording}
+                                className="inline-flex items-center gap-2 px-6 py-2 text-sm font-bold text-slate-600 bg-slate-100 rounded-full hover:bg-slate-200"
+                            >
+                                <SkipForward size={16} /> Skip
+                            </button>
                         </div>
-
-                        <button
-                        onClick={startRecording}
-                        className="inline-flex items-center gap-2 px-6 py-2 text-sm font-bold text-slate-600 bg-slate-100 rounded-full hover:bg-slate-200"
-                        >
-                        <SkipForward size={16} /> Skip
-                        </button>
-                    </div>
                     )}
 
                     {/* 5. RECORDING (2m) */}
@@ -363,34 +363,34 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
 
                             {/* Timer */}
                             <div className="flex items-center justify-center gap-3 text-red-600">
-                            <span className="w-3 h-3 rounded-full bg-red-600 animate-ping" />
-                            <span className="text-3xl font-bold tabular-nums">
-                                {formatTime(timeLeft)}
-                            </span>
+                                <span className="w-3 h-3 rounded-full bg-red-600 animate-ping" />
+                                <span className="text-3xl font-bold tabular-nums">
+                                    {formatTime(timeLeft)}
+                                </span>
                             </div>
 
                             {/* Progress Bar */}
                             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-red-500 transition-all duration-1000"
-                                style={{ width: `${progressPercent}%` }}
-                            />
+                                <div
+                                    className="h-full bg-red-500 transition-all duration-1000"
+                                    style={{ width: `${progressPercent}%` }}
+                                />
                             </div>
 
                             {/* Transcript */}
                             <div className="min-h-[120px] p-4 bg-slate-50 border border-dashed rounded-xl text-slate-700">
-                            {transcript || "Listening to your response..."}
+                                {transcript || "Listening to your response..."}
                             </div>
 
                             {/* Stop */}
                             <button
-                            onClick={stopRecording}
-                            className="mx-auto flex items-center gap-3 px-10 py-4 bg-red-600 text-white rounded-full font-bold hover:bg-red-700 shadow-lg"
+                                onClick={stopRecording}
+                                className="mx-auto flex items-center gap-3 px-10 py-4 bg-red-600 text-white rounded-full font-bold hover:bg-red-700 shadow-lg"
                             >
-                            <Square size={18} /> Finish Recording
+                                <Square size={18} /> Finish Recording
                             </button>
                         </div>
-                        )}
+                    )}
 
 
                     {/* 6. SUBMITTING */}
@@ -474,52 +474,52 @@ const ReTell = ({ question, setActiveSpeechQuestion, nextButton, previousButton,
                     )}
                 </div>
             </div>
-            
+
 
             {/* Bottom Controls */}
             <div className="flex items-center justify-between pb-10">
                 {/* LEFT SIDE: Translate, Answer, Redo */}
                 <div className="flex items-center gap-4">
                     {/* Translate (Static) */}
-                    <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <Languages size={18} />
                         </div>
-                        <span className="text-xs font-medium">Translate</span>
+                        <span className="text-xs font-bold">Translate</span>
                     </button>
 
                     {/* Answer (Working) */}
-                    <button onClick={handleShowAnswer} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={handleShowAnswer} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <Eye size={18} />
                         </div>
-                        <span className="text-xs font-medium">Answer</span>
+                        <span className="text-xs font-bold">Answer</span>
                     </button>
 
                     {/* Redo */}
-                    <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <RefreshCw size={18} />
                         </div>
-                        <span className="text-xs font-medium">Redo</span>
+                        <span className="text-xs font-bold">Redo</span>
                     </button>
                 </div>
 
 
                 {/* RIGHT SIDE: Prev, Next */}
                 <div className="flex items-center gap-4">
-                    <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <ChevronLeft size={20} />
                         </div>
-                        <span className="text-xs font-medium">Previous</span>
+                        <span className="text-xs font-bold">Previous</span>
                     </button>
 
-                    <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <ChevronRight size={20} />
                         </div>
-                        <span className="text-xs font-medium">Next</span>
+                        <span className="text-xs font-bold">Next</span>
                     </button>
                 </div>
             </div>

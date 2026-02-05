@@ -97,44 +97,44 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
   };
 
   const handleSkipAudio = () => {
-  if (!audioRef.current) return;
+    if (!audioRef.current) return;
 
-  audioRef.current.pause();              // stop audio
-  audioRef.current.currentTime = audioRef.current.duration; // jump to end
-  setAudioFinished(true);                 // enable typing & timer
-};
+    audioRef.current.pause();              // stop audio
+    audioRef.current.currentTime = audioRef.current.duration; // jump to end
+    setAudioFinished(true);                 // enable typing & timer
+  };
 
-const [activeTab, setActiveTab] = useState("my");
-const [communityAttempts, setCommunityAttempts] = useState([]);
-const [loadingCommunity, setLoadingCommunity] = useState(false);
+  const [activeTab, setActiveTab] = useState("my");
+  const [communityAttempts, setCommunityAttempts] = useState([]);
+  const [loadingCommunity, setLoadingCommunity] = useState(false);
 
-const fetchCommunityAttempts = async () => {
-  try {
-    setLoadingCommunity(true);
-    const res = await axios.get(`/api/sst/${question._id}/community`)
-    console.log(res?.data?.data)
-  const data = res?.data?.data
-    if (data) {
-      setCommunityAttempts(data);
+  const fetchCommunityAttempts = async () => {
+    try {
+      setLoadingCommunity(true);
+      const res = await axios.get(`/api/sst/${question._id}/community`)
+      console.log(res?.data?.data)
+      const data = res?.data?.data
+      if (data) {
+        setCommunityAttempts(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingCommunity(false);
     }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoadingCommunity(false);
-  }
-};
+  };
 
-const handleTabChange = (tab) => {
-  setActiveTab(tab);
-  if (tab === "community" && communityAttempts.length === 0) {
-    fetchCommunityAttempts();
-  }
-};
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === "community" && communityAttempts.length === 0) {
+      fetchCommunityAttempts();
+    }
+  };
 
-const attemptsToRender =
-  activeTab === "my"
-    ? question.lastAttempts
-    : communityAttempts;
+  const attemptsToRender =
+    activeTab === "my"
+      ? question.lastAttempts
+      : communityAttempts;
 
 
   return (
@@ -180,14 +180,14 @@ const attemptsToRender =
               controls
               className="w-full"
             />
-           {!audioFinished && (
-            <button
-              onClick={handleSkipAudio}
-              className="text-sm font-semibold text-blue-600 hover:text-blue-800"
-            >
-              Skip Audio
-            </button>
-          )}
+            {!audioFinished && (
+              <button
+                onClick={handleSkipAudio}
+                className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+              >
+                Skip Audio
+              </button>
+            )}
 
 
           </div>
@@ -236,44 +236,44 @@ const attemptsToRender =
         {/* LEFT SIDE: Translate, Answer, Redo */}
         <div className="flex items-center gap-4">
           {/* Translate (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Languages size={18} />
             </div>
-            <span className="text-xs font-medium">Translate</span>
+            <span className="text-xs font-bold">Translate</span>
           </button>
 
           {/* Answer (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default text-opacity-50">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default text-opacity-50">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Eye size={18} />
             </div>
-            <span className="text-xs font-medium">Answer</span>
+            <span className="text-xs font-bold">Answer</span>
           </button>
 
           {/* Redo (Preserved Action) */}
-          <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <RefreshCw size={18} />
             </div>
-            <span className="text-xs font-medium">Redo</span>
+            <span className="text-xs font-bold">Redo</span>
           </button>
         </div>
 
         {/* RIGHT SIDE: Prev, Next */}
         <div className="flex items-center gap-4">
-          <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronLeft size={20} />
             </div>
-            <span className="text-xs font-medium">Previous</span>
+            <span className="text-xs font-bold">Previous</span>
           </button>
 
-          <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronRight size={20} />
             </div>
-            <span className="text-xs font-medium">Next</span>
+            <span className="text-xs font-bold">Next</span>
           </button>
         </div>
       </div>
@@ -297,90 +297,90 @@ const attemptsToRender =
           </h3>
 
           <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => handleTabChange("my")}
-            className={`px-5 py-2 rounded-xl font-bold text-sm transition
+            <button
+              onClick={() => handleTabChange("my")}
+              className={`px-5 py-2 rounded-xl font-bold text-sm transition
               ${activeTab === "my"
-                ? "bg-indigo-500 text-white"
-                : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
-          >
-            My Attempts
-          </button>
+                  ? "bg-indigo-500 text-white"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
+            >
+              My Attempts
+            </button>
 
-          <button
-            onClick={() => handleTabChange("community")}
-            className={`px-5 py-2 rounded-xl font-bold text-sm transition
+            <button
+              onClick={() => handleTabChange("community")}
+              className={`px-5 py-2 rounded-xl font-bold text-sm transition
               ${activeTab === "community"
-                ? "bg-indigo-500 text-white"
-                : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
-          >
-            Community
-          </button>
-       </div>
+                  ? "bg-indigo-500 text-white"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
+            >
+              Community
+            </button>
+          </div>
 
 
           <div className="space-y-4">
-         
-              {attemptsToRender && attemptsToRender.length > 0 ? (
-                attemptsToRender.map((attempt, index) => (
-                  <div
-                    key={attempt._id || index}
-                    className="bg-slate-50 rounded-2xl px-6 py-4 flex items-center justify-between"
-                  >
-                    {/* LEFT */}
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-black text-slate-600">
-                        {activeTab === "community"
-                          ? attempt.user?.name?.charAt(0) || "U"
-                          : "K"}
-                      </div>
 
-                      <div>
-                        <p className="font-bold text-slate-800">
-                          {activeTab === "community"
-                            ? attempt.user?.name
-                            : "Krishna kant"}
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {new Date(attempt.createdAt).toLocaleDateString()}{" "}
-                          {new Date(attempt.createdAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
+            {attemptsToRender && attemptsToRender.length > 0 ? (
+              attemptsToRender.map((attempt, index) => (
+                <div
+                  key={attempt._id || index}
+                  className="bg-slate-50 rounded-2xl px-6 py-4 flex items-center justify-between"
+                >
+                  {/* LEFT */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-black text-slate-600">
+                      {activeTab === "community"
+                        ? attempt.user?.name?.charAt(0) || "U"
+                        : "K"}
                     </div>
 
-                    {/* CENTER */}
-                    <button
-                      onClick={() => handleViewPrevious(attempt)}
-                      className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold px-6 py-2 rounded-xl flex items-center gap-2"
-                    >
-                      Score {attempt.totalScore}/12
-                      <RotateCcw size={16} />
-                    </button>
-
-                    {/* RIGHT */}
-                    <div className="flex items-center gap-3 text-slate-400">
-                      <button className="hover:text-indigo-500">
-                        <Share2 size={18} />
-                      </button>
-
-                      {activeTab === "my" && (
-                        <button className="hover:text-red-500">
-                          <Trash2 size={18} />
-                        </button>
-                      )}
+                    <div>
+                      <p className="font-bold text-slate-800">
+                        {activeTab === "community"
+                          ? attempt.user?.name
+                          : "Krishna kant"}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {new Date(attempt.createdAt).toLocaleDateString()}{" "}
+                        {new Date(attempt.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-10 text-slate-400 text-sm font-bold">
-                  {loadingCommunity
-                    ? "Loading community attempts..."
-                    : "No attempts found"}
+
+                  {/* CENTER */}
+                  <button
+                    onClick={() => handleViewPrevious(attempt)}
+                    className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold px-6 py-2 rounded-xl flex items-center gap-2"
+                  >
+                    Score {attempt.totalScore}/12
+                    <RotateCcw size={16} />
+                  </button>
+
+                  {/* RIGHT */}
+                  <div className="flex items-center gap-3 text-slate-400">
+                    <button className="hover:text-indigo-500">
+                      <Share2 size={18} />
+                    </button>
+
+                    {activeTab === "my" && (
+                      <button className="hover:text-red-500">
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              )}
+              ))
+            ) : (
+              <div className="text-center py-10 text-slate-400 text-sm font-bold">
+                {loadingCommunity
+                  ? "Loading community attempts..."
+                  : "No attempts found"}
+              </div>
+            )}
 
 
           </div>

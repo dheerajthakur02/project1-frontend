@@ -20,7 +20,7 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
 
-const [isPlaying, setIsPlaying] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
 
     // Flash Answer State
     const [showFlashAnswer, setShowFlashAnswer] = useState(false);
@@ -67,46 +67,46 @@ const [isPlaying, setIsPlaying] = useState(false);
         setMaxTime(3);
     };
 
-   const handleStartListening = () => {
-  setStatus("listening");
-  setAudioCurrentTime(0);
+    const handleStartListening = () => {
+        setStatus("listening");
+        setAudioCurrentTime(0);
 
-  if (questionAudioRef.current) {
-    questionAudioRef.current.currentTime = 0;
-    questionAudioRef.current
-      .play()
-      .then(() => setIsPlaying(true))
-      .catch(() => startRecording());
-  }
-};
+        if (questionAudioRef.current) {
+            questionAudioRef.current.currentTime = 0;
+            questionAudioRef.current
+                .play()
+                .then(() => setIsPlaying(true))
+                .catch(() => startRecording());
+        }
+    };
 
-const handleTogglePlayPause = () => {
-  if (!questionAudioRef.current) return;
+    const handleTogglePlayPause = () => {
+        if (!questionAudioRef.current) return;
 
-  if (questionAudioRef.current.paused) {
-    questionAudioRef.current.play();
-    setIsPlaying(true);
-  } else {
-    questionAudioRef.current.pause();
-    setIsPlaying(false);
-  }
-};
+        if (questionAudioRef.current.paused) {
+            questionAudioRef.current.play();
+            setIsPlaying(true);
+        } else {
+            questionAudioRef.current.pause();
+            setIsPlaying(false);
+        }
+    };
 
-useEffect(() => {
-  const audio = questionAudioRef.current;
-  if (!audio) return;
+    useEffect(() => {
+        const audio = questionAudioRef.current;
+        if (!audio) return;
 
-  const onPlay = () => setIsPlaying(true);
-  const onPause = () => setIsPlaying(false);
+        const onPlay = () => setIsPlaying(true);
+        const onPause = () => setIsPlaying(false);
 
-  audio.addEventListener("play", onPlay);
-  audio.addEventListener("pause", onPause);
+        audio.addEventListener("play", onPlay);
+        audio.addEventListener("pause", onPause);
 
-  return () => {
-    audio.removeEventListener("play", onPlay);
-    audio.removeEventListener("pause", onPause);
-  };
-}, []);
+        return () => {
+            audio.removeEventListener("play", onPlay);
+            audio.removeEventListener("pause", onPause);
+        };
+    }, []);
 
 
     const handleSelectAttempt = (attempt) => {
@@ -207,7 +207,7 @@ useEffect(() => {
         resetTranscript();
         transcriptRef.current = "";
     };
-    
+
     const handleShowAnswer = () => {
         setShowFlashAnswer(true);
         setTimeout(() => {
@@ -275,75 +275,75 @@ useEffect(() => {
                     )}
 
                     {/* 3. LISTENING STATE */}
-                  {(status === "listening" || status === "recording") && (
-                    <div className="relative w-full max-w-xl mx-auto bg-white rounded-2xl border border-slate-200 p-8 shadow-sm space-y-6">
+                    {(status === "listening" || status === "recording") && (
+                        <div className="relative w-full max-w-xl mx-auto bg-white rounded-2xl border border-slate-200 p-8 shadow-sm space-y-6">
 
-                        {/* Skip Audio */}
-                        {status !== "recording" && (
-                        <button
-                            onClick={() => {
-                            questionAudioRef.current?.pause();
-                            setIsPlaying(false);
-                            setStatus("recording");
-                            startRecording();
-                            }}
-                            className="absolute top-4 right-4 text-xs font-semibold text-blue-600 hover:underline"
-                        >
-                            Skip Audio
-                        </button>
-                        )}
+                            {/* Skip Audio */}
+                            {status !== "recording" && (
+                                <button
+                                    onClick={() => {
+                                        questionAudioRef.current?.pause();
+                                        setIsPlaying(false);
+                                        setStatus("recording");
+                                        startRecording();
+                                    }}
+                                    className="absolute top-4 right-4 text-xs font-semibold text-blue-600 hover:underline"
+                                >
+                                    Skip Audio
+                                </button>
+                            )}
 
-                        {/* Transcript */}
-                        <div className="text-center text-slate-600 text-sm italic leading-relaxed max-h-24 overflow-y-auto px-4">
-                        {question.transcript}
+                            {/* Transcript */}
+                            <div className="text-center text-slate-600 text-sm italic leading-relaxed max-h-24 overflow-y-auto px-4">
+                                {question.transcript}
+                            </div>
+
+                            {/* Speaker Icon */}
+                            <div className="flex justify-center">
+                                <div className="w-20 h-20 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center animate-pulse">
+                                    <Volume2 size={36} />
+                                </div>
+                            </div>
+
+                            {/* Play / Pause */}
+                            <div className="flex flex-col items-center gap-3">
+                                <button
+                                    onClick={handleTogglePlayPause}
+                                    className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-200 transition"
+                                >
+                                    {isPlaying ? <Square size={30} /> : <Play size={30} />}
+                                </button>
+
+                                <p className="text-sm font-medium text-slate-500">
+                                    {isPlaying ? "Playing speaker audio..." : "Audio paused"}
+                                </p>
+                            </div>
+
+                            {/* Progress */}
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-xs font-mono text-slate-500">
+                                    <span>{audioCurrentTime}s</span>
+                                    <span>{audioDuration}s</span>
+                                </div>
+
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max={audioDuration || 0}
+                                    step="0.1"
+                                    value={audioCurrentTime}
+                                    onChange={(e) => {
+                                        questionAudioRef.current.currentTime = e.target.value;
+                                        setAudioCurrentTime(e.target.value);
+                                    }}
+                                    className="w-full accent-blue-600 cursor-pointer"
+                                />
+
+                                <p className="text-center text-xs text-slate-400">
+                                    Listening to speaker...
+                                </p>
+                            </div>
                         </div>
-
-                        {/* Speaker Icon */}
-                        <div className="flex justify-center">
-                        <div className="w-20 h-20 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center animate-pulse">
-                            <Volume2 size={36} />
-                        </div>
-                        </div>
-
-                        {/* Play / Pause */}
-                        <div className="flex flex-col items-center gap-3">
-                        <button
-                            onClick={handleTogglePlayPause}
-                            className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-200 transition"
-                        >
-                            {isPlaying ? <Square size={30} /> : <Play size={30} />}
-                        </button>
-
-                        <p className="text-sm font-medium text-slate-500">
-                            {isPlaying ? "Playing speaker audio..." : "Audio paused"}
-                        </p>
-                        </div>
-
-                        {/* Progress */}
-                        <div className="space-y-2">
-                        <div className="flex justify-between text-xs font-mono text-slate-500">
-                            <span>{audioCurrentTime}s</span>
-                            <span>{audioDuration}s</span>
-                        </div>
-
-                        <input
-                            type="range"
-                            min="0"
-                            max={audioDuration || 0}
-                            step="0.1"
-                            value={audioCurrentTime}
-                            onChange={(e) => {
-                            questionAudioRef.current.currentTime = e.target.value;
-                            setAudioCurrentTime(e.target.value);
-                            }}
-                            className="w-full accent-blue-600 cursor-pointer"
-                        />
-
-                        <p className="text-center text-xs text-slate-400">
-                            Listening to speaker...
-                        </p>
-                        </div>
-                    </div>
                     )}
 
 
@@ -453,52 +453,52 @@ useEffect(() => {
                 </div>
             </div>
 
-          
+
 
             {/* Bottom Controls */}
             <div className="flex items-center justify-between pb-10">
                 {/* LEFT SIDE: Translate, Answer, Redo */}
                 <div className="flex items-center gap-4">
                     {/* Translate (Static) */}
-                    <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <Languages size={18} />
                         </div>
-                        <span className="text-xs font-medium">Translate</span>
+                        <span className="text-xs font-bold">Translate</span>
                     </button>
 
                     {/* Answer (Flash) */}
-                    <button onClick={handleShowAnswer} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={handleShowAnswer} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <Eye size={18} />
                         </div>
-                        <span className="text-xs font-medium">Answer</span>
+                        <span className="text-xs font-bold">Answer</span>
                     </button>
 
                     {/* Redo */}
-                    <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <RefreshCw size={18} />
                         </div>
-                        <span className="text-xs font-medium">Redo</span>
+                        <span className="text-xs font-bold">Redo</span>
                     </button>
                 </div>
 
 
                 {/* RIGHT SIDE: Prev, Next */}
                 <div className="flex items-center gap-4">
-                    <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <ChevronLeft size={20} />
                         </div>
-                        <span className="text-xs font-medium">Previous</span>
+                        <span className="text-xs font-bold">Previous</span>
                     </button>
 
-                    <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <ChevronRight size={20} />
                         </div>
-                        <span className="text-xs font-medium">Next</span>
+                        <span className="text-xs font-bold">Next</span>
                     </button>
                 </div>
             </div>

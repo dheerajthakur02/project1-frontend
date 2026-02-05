@@ -23,7 +23,7 @@ const SummarizeGroup = ({ question, setActiveSpeechQuestion, nextButton, previou
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false); // New state for play/pause
     const [showFlashAnswer, setShowFlashAnswer] = useState(false); // Answer Flash State
-   
+
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
     const questionAudioRef = useRef(null);
@@ -271,53 +271,53 @@ const SummarizeGroup = ({ question, setActiveSpeechQuestion, nextButton, previou
 
                     {/* 3. PLAYING AUDIO WITH SLIDER & PLAY/PAUSE */}
                     {(status === "playing" || status === "recording") && (
-                    <div className="relative w-full max-w-xl mx-auto bg-white rounded-2xl border border-slate-200 p-8 shadow-sm space-y-6">
+                        <div className="relative w-full max-w-xl mx-auto bg-white rounded-2xl border border-slate-200 p-8 shadow-sm space-y-6">
 
-                        {/* Skip Audio */}
-                        {status !== "recording" && (
-                        <button
-                            onClick={() => {
-                            handleTogglePlayPause();
-                            setStatus("prep_record");
-                            }}
-                            className="absolute top-4 right-4 text-xs font-semibold text-blue-600 hover:underline"
-                        >
-                            Skip Audio
-                        </button>
-                        )}
+                            {/* Skip Audio */}
+                            {status !== "recording" && (
+                                <button
+                                    onClick={() => {
+                                        handleTogglePlayPause();
+                                        setStatus("prep_record");
+                                    }}
+                                    className="absolute top-4 right-4 text-xs font-semibold text-blue-600 hover:underline"
+                                >
+                                    Skip Audio
+                                </button>
+                            )}
 
-                        {/* Play / Pause */}
-                        <div className="flex flex-col items-center gap-4">
-                        <button
-                            onClick={handleTogglePlayPause}
-                            className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-200 transition"
-                        >
-                            {isPlaying ? <Pause size={30} /> : <Play size={30} />}
-                        </button>
+                            {/* Play / Pause */}
+                            <div className="flex flex-col items-center gap-4">
+                                <button
+                                    onClick={handleTogglePlayPause}
+                                    className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-200 transition"
+                                >
+                                    {isPlaying ? <Pause size={30} /> : <Play size={30} />}
+                                </button>
 
-                        <p className="text-sm font-medium text-slate-500">
-                            {isPlaying ? "Playing speaker audio..." : "Audio paused"}
-                        </p>
+                                <p className="text-sm font-medium text-slate-500">
+                                    {isPlaying ? "Playing speaker audio..." : "Audio paused"}
+                                </p>
+                            </div>
+
+                            {/* Progress / Slider */}
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-xs font-mono text-slate-500">
+                                    <span>{formatTime(audioCurrentTime)}</span>
+                                    <span>{formatTime(audioDuration)}</span>
+                                </div>
+
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max={audioDuration || 0}
+                                    step="0.1"
+                                    value={audioCurrentTime}
+                                    onChange={handleSliderChange}
+                                    className="w-full accent-blue-600 cursor-pointer"
+                                />
+                            </div>
                         </div>
-
-                        {/* Progress / Slider */}
-                        <div className="space-y-2">
-                        <div className="flex justify-between text-xs font-mono text-slate-500">
-                            <span>{formatTime(audioCurrentTime)}</span>
-                            <span>{formatTime(audioDuration)}</span>
-                        </div>
-
-                        <input
-                            type="range"
-                            min="0"
-                            max={audioDuration || 0}
-                            step="0.1"
-                            value={audioCurrentTime}
-                            onChange={handleSliderChange}
-                            className="w-full accent-blue-600 cursor-pointer"
-                        />
-                        </div>
-                    </div>
                     )}
 
 
@@ -437,51 +437,51 @@ const SummarizeGroup = ({ question, setActiveSpeechQuestion, nextButton, previou
                 </div>
             </div>
 
-           
+
             {/* Bottom Controls */}
             <div className="flex items-center justify-between pb-10">
                 {/* LEFT SIDE: Translate, Answer, Redo */}
                 <div className="flex items-center gap-4">
                     {/* Translate (Static) */}
-                    <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <Languages size={18} />
                         </div>
-                        <span className="text-xs font-medium">Translate</span>
+                        <span className="text-xs font-bold">Translate</span>
                     </button>
 
                     {/* Answer (Working) */}
-                    <button onClick={handleShowAnswer} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={handleShowAnswer} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <Eye size={18} />
                         </div>
-                        <span className="text-xs font-medium">Answer</span>
+                        <span className="text-xs font-bold">Answer</span>
                     </button>
 
                     {/* Redo */}
-                    <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <RefreshCw size={18} />
                         </div>
-                        <span className="text-xs font-medium">Redo</span>
+                        <span className="text-xs font-bold">Redo</span>
                     </button>
                 </div>
 
 
                 {/* RIGHT SIDE: Prev, Next */}
                 <div className="flex items-center gap-4">
-                    <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <ChevronLeft size={20} />
                         </div>
-                        <span className="text-xs font-medium">Previous</span>
+                        <span className="text-xs font-bold">Previous</span>
                     </button>
 
-                    <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-600 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <ChevronRight size={20} />
                         </div>
-                        <span className="text-xs font-medium">Next</span>
+                        <span className="text-xs font-bold">Next</span>
                     </button>
                 </div>
             </div>

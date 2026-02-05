@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Volume2, RotateCcw, ChevronRight, X, Play, CheckCircle2, Info, Headphones, BookOpen, Share2, History, Calendar, Trash2, Languages, Eye, RefreshCw, ChevronLeft, Pause, Users,
-  User } from "lucide-react";
+import {
+  ArrowLeft, Volume2, RotateCcw, ChevronRight, X, Play, CheckCircle2, Info, Headphones, BookOpen, Share2, History, Calendar, Trash2, Languages, Eye, RefreshCw, ChevronLeft, Pause, Users,
+  User
+} from "lucide-react";
 import { submitChooseSingleAnswerAttempt, submitHighlightAttempt } from "../../services/api";
 import { useSelector } from "react-redux";
 
@@ -9,7 +11,7 @@ const PREP_TIME = 3;
 
 import axios from "axios";
 
- function AttemptHistory({ question, userId }) {
+function AttemptHistory({ question, userId }) {
   const [mode, setMode] = useState("my"); // my | community
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -18,37 +20,37 @@ import axios from "axios";
     fetchAttempts();
   }, [mode]);
 
- const fetchAttempts = async () => {
-  try {
-    setLoading(true);
+  const fetchAttempts = async () => {
+    try {
+      setLoading(true);
 
-    if (mode === "my") {
-      setAttempts(question?.lastAttempts || []);
-    } else {
-      const res = await axios.get(
-        `/api/choose-single-answer/${question._id}/community`
-      );
+      if (mode === "my") {
+        setAttempts(question?.lastAttempts || []);
+      } else {
+        const res = await axios.get(
+          `/api/choose-single-answer/${question._id}/community`
+        );
 
-      const formattedAttempts = res.data.data.flatMap((item) =>
-        item.attempts.map((attempt) => ({
-          ...attempt,
-          user: item.user,
-          userId: item.userId,
-        }))
-      );
-      formattedAttempts.sort(
-  (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-);
+        const formattedAttempts = res.data.data.flatMap((item) =>
+          item.attempts.map((attempt) => ({
+            ...attempt,
+            user: item.user,
+            userId: item.userId,
+          }))
+        );
+        formattedAttempts.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
 
 
-      setAttempts(formattedAttempts);
+        setAttempts(formattedAttempts);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   const handleViewPrevious = (attempt) => {
@@ -71,21 +73,19 @@ import axios from "axios";
           <div className="flex bg-slate-100 rounded-xl p-1 text-xs font-bold">
             <button
               onClick={() => setMode("my")}
-              className={`px-4 py-1.5 rounded-lg flex items-center gap-1 ${
-                mode === "my"
+              className={`px-4 py-1.5 rounded-lg flex items-center gap-1 ${mode === "my"
                   ? "bg-white shadow text-blue-600"
                   : "text-slate-500"
-              }`}
+                }`}
             >
               <User size={14} /> My
             </button>
             <button
               onClick={() => setMode("community")}
-              className={`px-4 py-1.5 rounded-lg flex items-center gap-1 ${
-                mode === "community"
+              className={`px-4 py-1.5 rounded-lg flex items-center gap-1 ${mode === "community"
                   ? "bg-white shadow text-indigo-600"
                   : "text-slate-500"
-              }`}
+                }`}
             >
               <Users size={14} /> Community
             </button>
@@ -111,8 +111,8 @@ import axios from "axios";
                   </div>
 
                   <div>
-                    
-                     <p className="font-bold text-slate-800">
+
+                    <p className="font-bold text-slate-800">
                       {mode === "community"
                         ? attempt.user?.name || "Anonymous"
                         : "Krishna Kant"}
@@ -133,7 +133,7 @@ import axios from "axios";
                   onClick={() => handleViewPrevious(attempt)}
                   className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold px-6 py-2 rounded-xl flex items-center gap-2 shadow-sm transition"
                 >
-                  Score {attempt.isCorrect?"1":"0"}/1
+                  Score {attempt.isCorrect ? "1" : "0"}/1
                   <RotateCcw size={16} />
                 </button>
 
@@ -176,8 +176,8 @@ export default function ChooseSingleAnswer({ question, setActiveSpeechQuestion, 
   const [result, setResult] = useState(null);
   const [audioDuration, setAudioDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-const [isPlaying, setIsPlaying] = useState(false);
-const [audioFinished, setAudioFinished] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioFinished, setAudioFinished] = useState(false);
 
   const audioRef = useRef(null);
   const progressRef = useRef(null);
@@ -203,35 +203,35 @@ const [audioFinished, setAudioFinished] = useState(false);
   const handleStartPrep = () => setStatus("countdown");
 
   const handleAudioStart = () => {
-  setStatus("playing");
-  setAudioFinished(false);
-  if (audioRef.current) {
-    audioRef.current.currentTime = 0;
-    audioRef.current.play().catch(() => {});
-    setIsPlaying(true);
-  }
-};
+    setStatus("playing");
+    setAudioFinished(false);
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => { });
+      setIsPlaying(true);
+    }
+  };
 
-const togglePlayPause = () => {
-  if (!audioRef.current || audioFinished) return;
+  const togglePlayPause = () => {
+    if (!audioRef.current || audioFinished) return;
 
-  if (isPlaying) {
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().catch(() => { });
+      setIsPlaying(true);
+    }
+  };
+  const handleSkipAudio = () => {
+    if (!audioRef.current) return;
+
     audioRef.current.pause();
+    audioRef.current.currentTime = audioDuration;
     setIsPlaying(false);
-  } else {
-    audioRef.current.play().catch(() => {});
-    setIsPlaying(true);
-  }
-};
-const handleSkipAudio = () => {
-  if (!audioRef.current) return;
-
-  audioRef.current.pause();
-  audioRef.current.currentTime = audioDuration;
-  setIsPlaying(false);
-  setAudioFinished(true);
-  setStatus("finished");
-};
+    setAudioFinished(true);
+    setStatus("finished");
+  };
 
 
   /* ---------------- VIEW PREVIOUS RESULT ---------------- */
@@ -306,58 +306,58 @@ const handleSkipAudio = () => {
           ) : (
             <div className="bg-white rounded-[2.5rem] border shadow-sm relative overflow-hidden flex flex-col min-h-[600px]">
               {/* AUDIO CONTROL BAR */}
-             <div className="px-10 py-8 bg-slate-50/80 border-b flex items-center gap-6">
+              <div className="px-10 py-8 bg-slate-50/80 border-b flex items-center gap-6">
 
-  {/* PLAY / PAUSE */}
-  <button
-    onClick={togglePlayPause}
-    disabled={audioFinished}
-    className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 
+                {/* PLAY / PAUSE */}
+                <button
+                  onClick={togglePlayPause}
+                  disabled={audioFinished}
+                  className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 
                text-white flex items-center justify-center shadow-md"
-  >
-    {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
-  </button>
+                >
+                  {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
+                </button>
 
-  {/* PROGRESS BAR */}
-  <div className="flex-1 flex flex-col gap-2">
-    <div
-      ref={progressRef}
-      onClick={(e) => {
-        if (!audioRef.current) return;
-        const rect = progressRef.current.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        audioRef.current.currentTime = percent * audioDuration;
-      }}
-      className="h-2 bg-slate-200 rounded-full overflow-hidden cursor-pointer"
-    >
-      <div
-        className="h-full bg-blue-500 transition-all"
-        style={{
-          width: audioDuration
-            ? `${(currentTime / audioDuration) * 100}%`
-            : "0%",
-        }}
-      />
-    </div>
+                {/* PROGRESS BAR */}
+                <div className="flex-1 flex flex-col gap-2">
+                  <div
+                    ref={progressRef}
+                    onClick={(e) => {
+                      if (!audioRef.current) return;
+                      const rect = progressRef.current.getBoundingClientRect();
+                      const percent = (e.clientX - rect.left) / rect.width;
+                      audioRef.current.currentTime = percent * audioDuration;
+                    }}
+                    className="h-2 bg-slate-200 rounded-full overflow-hidden cursor-pointer"
+                  >
+                    <div
+                      className="h-full bg-blue-500 transition-all"
+                      style={{
+                        width: audioDuration
+                          ? `${(currentTime / audioDuration) * 100}%`
+                          : "0%",
+                      }}
+                    />
+                  </div>
 
-    <div className="flex justify-between text-xs font-bold text-slate-400">
-      <span>{formatTime(currentTime)}</span>
-      <span>{formatTime(audioDuration)}</span>
-    </div>
-  </div>
+                  <div className="flex justify-between text-xs font-bold text-slate-400">
+                    <span>{formatTime(currentTime)}</span>
+                    <span>{formatTime(audioDuration)}</span>
+                  </div>
+                </div>
 
-  {/* SKIP BUTTON */}
-  {!audioFinished && (
-    <button
-      onClick={handleSkipAudio}
-      className="text-sm font-bold text-blue-600 hover:text-blue-800"
-    >
-      Skip Audio
-    </button>
-  )}
+                {/* SKIP BUTTON */}
+                {!audioFinished && (
+                  <button
+                    onClick={handleSkipAudio}
+                    className="text-sm font-bold text-blue-600 hover:text-blue-800"
+                  >
+                    Skip Audio
+                  </button>
+                )}
 
-  <Volume2 size={20} className="text-slate-400" />
-</div>
+                <Volume2 size={20} className="text-slate-400" />
+              </div>
 
 
               {/* OVERLAY FOR START */}
@@ -417,65 +417,65 @@ const handleSkipAudio = () => {
         {/* LEFT SIDE: Translate, Answer, Redo */}
         <div className="flex items-center gap-4">
           {/* Translate (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Languages size={18} />
             </div>
-            <span className="text-xs font-medium">Translate</span>
+            <span className="text-xs font-bold">Translate</span>
           </button>
 
           {/* Answer (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default text-opacity-50">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default text-opacity-50">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Eye size={18} />
             </div>
-            <span className="text-xs font-medium">Answer</span>
+            <span className="text-xs font-bold">Answer</span>
           </button>
 
           {/* Redo */}
-          <button onClick={() => { setSelectedOption(null); setStatus("countdown"); setPrepTimer(PREP_TIME); }} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={() => { setSelectedOption(null); setStatus("countdown"); setPrepTimer(PREP_TIME); }} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <RefreshCw size={18} />
             </div>
-            <span className="text-xs font-medium">Redo</span>
+            <span className="text-xs font-bold">Redo</span>
           </button>
         </div>
 
         {/* RIGHT SIDE: Prev, Next */}
         <div className="flex items-center gap-4">
-          <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronLeft size={20} />
             </div>
-            <span className="text-xs font-medium">Previous</span>
+            <span className="text-xs font-bold">Previous</span>
           </button>
 
-          <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronRight size={20} />
             </div>
-            <span className="text-xs font-medium">Next</span>
+            <span className="text-xs font-bold">Next</span>
           </button>
         </div>
       </div>
 
       {/*  */}
-          <AttemptHistory question={question} userId={user._id}/>
+      <AttemptHistory question={question} userId={user._id} />
       {/* AUDIO ELEMENT */}
       <audio
-  ref={audioRef}
-  src={question.audioUrl}
-  onLoadedMetadata={() => setAudioDuration(audioRef.current.duration)}
-  onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
-  onPlay={() => setIsPlaying(true)}
-  onPause={() => setIsPlaying(false)}
-  onEnded={() => {
-    setIsPlaying(false);
-    setAudioFinished(true);
-    setStatus("finished");
-  }}
-  className="hidden"
-/>
+        ref={audioRef}
+        src={question.audioUrl}
+        onLoadedMetadata={() => setAudioDuration(audioRef.current.duration)}
+        onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => {
+          setIsPlaying(false);
+          setAudioFinished(true);
+          setStatus("finished");
+        }}
+        className="hidden"
+      />
 
 
       {/* RESULT MODAL */}

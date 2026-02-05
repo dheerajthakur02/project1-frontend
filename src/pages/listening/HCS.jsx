@@ -31,7 +31,7 @@ import axios from "axios";
 
 const PREP_TIME = 3;
 
-const AttemptHistory = ({ question, attempts, setResult, setStatus,onSelectAttempt  }) => {
+const AttemptHistory = ({ question, attempts, setResult, setStatus, onSelectAttempt }) => {
   const [activeTab, setActiveTab] = useState("my");
   const [communityAttempts, setCommunityAttempts] = useState([]);
   const [loadingCommunity, setLoadingCommunity] = useState(false);
@@ -40,9 +40,9 @@ const AttemptHistory = ({ question, attempts, setResult, setStatus,onSelectAttem
     try {
       setLoadingCommunity(true);
       const res = await axios.get(`api/hcs/${question._id}/community`);
-    
-        setCommunityAttempts(res?.data?.data);
-      
+
+      setCommunityAttempts(res?.data?.data);
+
     } catch (err) {
       console.error("Community fetch error:", err);
     } finally {
@@ -134,12 +134,12 @@ const AttemptHistory = ({ question, attempts, setResult, setStatus,onSelectAttem
                 <div className="text-sm font-semibold text-slate-700">
                   {attempt.createdAt
                     ? new Date(attempt.createdAt).toLocaleString("en-US", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
                     : "Just now"}
                 </div>
               </div>
@@ -151,15 +151,14 @@ const AttemptHistory = ({ question, attempts, setResult, setStatus,onSelectAttem
                 </span>
                 <div className="flex items-baseline gap-1">
                   <span
-                    className={`text-xl font-bold ${
-                      attempt.score === attempt.maxScore
+                    className={`text-xl font-bold ${attempt.score === attempt.maxScore
                         ? "text-green-600"
                         : attempt.score > attempt.maxScore / 2
-                        ? "text-blue-600"
-                        : "text-red-500"
-                    }`}
+                          ? "text-blue-600"
+                          : "text-red-500"
+                      }`}
                   >
-                    {attempt.isCorrect ? "1":"0"}
+                    {attempt.isCorrect ? "1" : "0"}
                   </span>
                   <span className="text-sm text-slate-400 font-medium">
                     / 1
@@ -170,11 +169,10 @@ const AttemptHistory = ({ question, attempts, setResult, setStatus,onSelectAttem
               {/* STATUS */}
               <div>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    attempt.score === attempt.maxScore
+                  className={`px-3 py-1 rounded-full text-xs font-bold ${attempt.score === attempt.maxScore
                       ? "bg-green-100 text-green-700"
                       : "bg-slate-100 text-slate-600"
-                  }`}
+                    }`}
                 >
                   {attempt.score === attempt.maxScore
                     ? "Perfect"
@@ -290,14 +288,14 @@ export default function HCS({ question, setActiveSpeechQuestion, nextButton, pre
 
       <div className="max-w-7xl mx-auto space-y-6">
 
-          <div>
-        <h1>
+        <div>
+          <h1>
             Highlight Correct Summary
-        </h1>
-        <p>
-          You will hear a recording. Click on the paragraph that best relates to the recording.
-        </p>
-      </div>
+          </h1>
+          <p>
+            You will hear a recording. Click on the paragraph that best relates to the recording.
+          </p>
+        </div>
 
         {/* HEADER */}
         <div className="flex justify-between items-center">
@@ -403,49 +401,49 @@ export default function HCS({ question, setActiveSpeechQuestion, nextButton, pre
           {/* LEFT SIDE: Translate, Answer, Redo */}
           <div className="flex items-center gap-4">
             {/* Translate (Static) */}
-            <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default">
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+            <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default">
+              <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                 <Languages size={18} />
               </div>
-              <span className="text-xs font-medium">Translate</span>
+              <span className="text-xs font-bold">Translate</span>
             </button>
 
             {/* Answer (Static) */}
-            <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default text-opacity-50">
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+            <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default text-opacity-50">
+              <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                 <Eye size={18} />
               </div>
-              <span className="text-xs font-medium">Answer</span>
+              <span className="text-xs font-bold">Answer</span>
             </button>
 
             {/* Redo */}
-            <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+            <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+              <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                 <RefreshCw size={18} />
               </div>
-              <span className="text-xs font-medium">Redo</span>
+              <span className="text-xs font-bold">Redo</span>
             </button>
           </div>
 
           {/* RIGHT SIDE: Prev, Next */}
           <div className="flex items-center gap-4">
-            <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+            <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+              <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                 <ChevronLeft size={20} />
               </div>
-              <span className="text-xs font-medium">Previous</span>
+              <span className="text-xs font-bold">Previous</span>
             </button>
 
-            <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+            <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+              <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                 <ChevronRight size={20} />
               </div>
-              <span className="text-xs font-medium">Next</span>
+              <span className="text-xs font-bold">Next</span>
             </button>
           </div>
         </div>
       </div>
-<AttemptHistory question={question} attempts={question?.lastAttempts} />
+      <AttemptHistory question={question} attempts={question?.lastAttempts} />
       {/* AUDIO */}
       <audio
         ref={audioRef}

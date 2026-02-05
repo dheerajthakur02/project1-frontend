@@ -81,8 +81,8 @@ const AttemptHistory = ({ questionId, currentAttemptId, onSelectAttempt }) => {
           <button
             onClick={() => setActiveTab("my")}
             className={`px-4 py-1.5 text-sm font-bold rounded-lg transition ${activeTab === "my"
-                ? "bg-white shadow text-purple-600"
-                : "text-slate-500"
+              ? "bg-white shadow text-purple-600"
+              : "text-slate-500"
               }`}
           >
             My
@@ -91,8 +91,8 @@ const AttemptHistory = ({ questionId, currentAttemptId, onSelectAttempt }) => {
           <button
             onClick={() => setActiveTab("community")}
             className={`px-4 py-1.5 text-sm font-bold rounded-lg transition ${activeTab === "community"
-                ? "bg-white shadow text-purple-600"
-                : "text-slate-500"
+              ? "bg-white shadow text-purple-600"
+              : "text-slate-500"
               }`}
           >
             Community
@@ -183,10 +183,10 @@ const AttemptCard = ({ attempt, onClick }) => {
         <div className="flex items-baseline gap-1">
           <span
             className={`text-xl font-bold ${isPerfect
-                ? "text-green-600"
-                : attempt.score > 0
-                  ? "text-blue-600"
-                  : "text-slate-500"
+              ? "text-green-600"
+              : attempt.score > 0
+                ? "text-blue-600"
+                : "text-slate-500"
               }`}
           >
             {attempt.score}
@@ -201,8 +201,8 @@ const AttemptCard = ({ attempt, onClick }) => {
       <div>
         <span
           className={`px-3 py-1 rounded-full text-xs font-bold ${isPerfect
-              ? "bg-green-100 text-green-700"
-              : "bg-slate-100 text-slate-600"
+            ? "bg-green-100 text-green-700"
+            : "bg-slate-100 text-slate-600"
             }`}
         >
           {isPerfect ? "Perfect" : "Completed"}
@@ -458,44 +458,44 @@ const ReadingMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, next
         {/* LEFT SIDE: Translate, Answer, Redo */}
         <div className="flex items-center gap-4">
           {/* Translate (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Languages size={18} />
             </div>
-            <span className="text-xs font-medium">Translate</span>
+            <span className="text-xs font-bold">Translate</span>
           </button>
 
           {/* Answer (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Eye size={18} />
             </div>
-            <span className="text-xs font-medium">Answer</span>
+            <span className="text-xs font-bold">Answer</span>
           </button>
 
           {/* Redo */}
-          <button onClick={handleRedo} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={handleRedo} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <RefreshCw size={18} />
             </div>
-            <span className="text-xs font-medium">Redo</span>
+            <span className="text-xs font-bold">Redo</span>
           </button>
         </div>
 
         {/* RIGHT SIDE: Prev, Next */}
         <div className="flex items-center gap-4">
-          <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronLeft size={20} />
             </div>
-            <span className="text-xs font-medium">Previous</span>
+            <span className="text-xs font-bold">Previous</span>
           </button>
 
-          <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronRight size={20} />
             </div>
-            <span className="text-xs font-medium">Next</span>
+            <span className="text-xs font-bold">Next</span>
           </button>
         </div>
       </div>

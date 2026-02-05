@@ -6,167 +6,165 @@ import axios from 'axios';
 
 
 
-const AttemptHistory = ({question, attempts, onSelectAttempt }) => {
-  const [activeTab, setActiveTab] = useState("my");
-  const [communityAttempts, setCommunityAttempts] = useState([]);
-  const [loadingCommunity, setLoadingCommunity] = useState(false);
+const AttemptHistory = ({ question, attempts, onSelectAttempt }) => {
+    const [activeTab, setActiveTab] = useState("my");
+    const [communityAttempts, setCommunityAttempts] = useState([]);
+    const [loadingCommunity, setLoadingCommunity] = useState(false);
 
-  const fetchCommunityAttempts = async () => {
-    try {
-      setLoadingCommunity(true);
-      const res = await axios.get(`api/listening-fib/${question._id}/community`);
-    
-        setCommunityAttempts(res?.data?.data);
-      
-    } catch (err) {
-      console.error("Community fetch error:", err);
-    } finally {
-      setLoadingCommunity(false);
-    }
-  };
+    const fetchCommunityAttempts = async () => {
+        try {
+            setLoadingCommunity(true);
+            const res = await axios.get(`api/listening-fib/${question._id}/community`);
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    if (tab === "community" && communityAttempts.length === 0) {
-      fetchCommunityAttempts();
-    }
-  };
+            setCommunityAttempts(res?.data?.data);
 
-  const dataToRender = activeTab === "my" ? attempts : communityAttempts;
+        } catch (err) {
+            console.error("Community fetch error:", err);
+        } finally {
+            setLoadingCommunity(false);
+        }
+    };
 
-  return (
-    <div className="mt-12 font-sans">
-      {/* HEADER + TABS */}
-      <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
-        <div className="flex items-center gap-2">
-          <BarChart2 className="text-purple-600" size={20} />
-          <h3 className="font-bold text-slate-800">
-            {activeTab === "my" ? "Your Attempts" : "Community Attempts"}
-          </h3>
-        </div>
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        if (tab === "community" && communityAttempts.length === 0) {
+            fetchCommunityAttempts();
+        }
+    };
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleTabChange("my")}
-            className={`px-4 py-1.5 rounded-lg text-sm font-bold transition
+    const dataToRender = activeTab === "my" ? attempts : communityAttempts;
+
+    return (
+        <div className="mt-12 font-sans">
+            {/* HEADER + TABS */}
+            <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
+                <div className="flex items-center gap-2">
+                    <BarChart2 className="text-purple-600" size={20} />
+                    <h3 className="font-bold text-slate-800">
+                        {activeTab === "my" ? "Your Attempts" : "Community Attempts"}
+                    </h3>
+                </div>
+
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => handleTabChange("my")}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition
               ${activeTab === "my"
-                ? "bg-purple-600 text-white"
-                : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
-          >
-            My Attempts
-          </button>
+                                ? "bg-purple-600 text-white"
+                                : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
+                    >
+                        My Attempts
+                    </button>
 
-          <button
-            onClick={() => handleTabChange("community")}
-            className={`px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center gap-1
+                    <button
+                        onClick={() => handleTabChange("community")}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center gap-1
               ${activeTab === "community"
-                ? "bg-purple-600 text-white"
-                : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
-          >
-            <Users size={14} />
-            Community
-          </button>
-        </div>
-      </div>
-
-      {/* EMPTY STATE */}
-      {!dataToRender || dataToRender.length === 0 ? (
-        <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border">
-            <Info size={20} className="text-slate-300" />
-          </div>
-          <p className="text-sm font-medium">
-            {loadingCommunity
-              ? "Loading community attempts..."
-              : "No attempts found"}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {dataToRender.map((attempt, idx) => (
-            <div
-              key={attempt._id || idx}
-              onClick={() => onSelectAttempt?.(attempt)}
-              className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center gap-6 hover:shadow-md transition-shadow group cursor-pointer"
-            >
-              {/* USER (Community only) */}
-              {activeTab === "community" && (
-                <div className="min-w-[150px]">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                    User
-                  </span>
-                  <div className="text-sm font-semibold text-slate-700">
-                    {attempt.user?.name || "Anonymous"}
-                  </div>
+                                ? "bg-purple-600 text-white"
+                                : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
+                    >
+                        <Users size={14} />
+                        Community
+                    </button>
                 </div>
-              )}
-
-              {/* DATE */}
-              <div className="min-w-[150px]">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  Date
-                </span>
-                <div className="text-sm font-semibold text-slate-700">
-                  {attempt.createdAt
-                    ? new Date(attempt.createdAt).toLocaleString("en-US", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "Just now"}
-                </div>
-              </div>
-
-              {/* SCORE */}
-              <div className="flex-1">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  Score
-                </span>
-                <div className="flex items-baseline gap-1">
-                  <span
-                    className={`text-xl font-bold ${
-                      attempt.score === attempt.maxScore
-                        ? "text-green-600"
-                        : attempt.score > attempt.maxScore / 2
-                        ? "text-blue-600"
-                        : "text-red-500"
-                    }`}
-                  >
-                    {attempt.score}
-                  </span>
-                  <span className="text-sm text-slate-400 font-medium">
-                    / {attempt.maxScore}
-                  </span>
-                </div>
-              </div>
-
-              {/* STATUS */}
-              <div>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    attempt.score === attempt.maxScore
-                      ? "bg-green-100 text-green-700"
-                      : "bg-slate-100 text-slate-600"
-                  }`}
-                >
-                  {attempt.score === attempt.maxScore
-                    ? "Perfect"
-                    : "Completed"}
-                </span>
-              </div>
-
-              {/* ACTION */}
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity text-purple-600 font-bold text-sm">
-                View Result →
-              </div>
             </div>
-          ))}
+
+            {/* EMPTY STATE */}
+            {!dataToRender || dataToRender.length === 0 ? (
+                <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border">
+                        <Info size={20} className="text-slate-300" />
+                    </div>
+                    <p className="text-sm font-medium">
+                        {loadingCommunity
+                            ? "Loading community attempts..."
+                            : "No attempts found"}
+                    </p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {dataToRender.map((attempt, idx) => (
+                        <div
+                            key={attempt._id || idx}
+                            onClick={() => onSelectAttempt?.(attempt)}
+                            className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center gap-6 hover:shadow-md transition-shadow group cursor-pointer"
+                        >
+                            {/* USER (Community only) */}
+                            {activeTab === "community" && (
+                                <div className="min-w-[150px]">
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                                        User
+                                    </span>
+                                    <div className="text-sm font-semibold text-slate-700">
+                                        {attempt.user?.name || "Anonymous"}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* DATE */}
+                            <div className="min-w-[150px]">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                                    Date
+                                </span>
+                                <div className="text-sm font-semibold text-slate-700">
+                                    {attempt.createdAt
+                                        ? new Date(attempt.createdAt).toLocaleString("en-US", {
+                                            day: "numeric",
+                                            month: "short",
+                                            year: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        })
+                                        : "Just now"}
+                                </div>
+                            </div>
+
+                            {/* SCORE */}
+                            <div className="flex-1">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                                    Score
+                                </span>
+                                <div className="flex items-baseline gap-1">
+                                    <span
+                                        className={`text-xl font-bold ${attempt.score === attempt.maxScore
+                                                ? "text-green-600"
+                                                : attempt.score > attempt.maxScore / 2
+                                                    ? "text-blue-600"
+                                                    : "text-red-500"
+                                            }`}
+                                    >
+                                        {attempt.score}
+                                    </span>
+                                    <span className="text-sm text-slate-400 font-medium">
+                                        / {attempt.maxScore}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* STATUS */}
+                            <div>
+                                <span
+                                    className={`px-3 py-1 rounded-full text-xs font-bold ${attempt.score === attempt.maxScore
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-slate-100 text-slate-600"
+                                        }`}
+                                >
+                                    {attempt.score === attempt.maxScore
+                                        ? "Perfect"
+                                        : "Completed"}
+                                </span>
+                            </div>
+
+                            {/* ACTION */}
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity text-purple-600 font-bold text-sm">
+                                View Result →
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 
@@ -178,8 +176,8 @@ export default function ListeningFIB({ question, setActiveSpeechQuestion, nextBu
     const [isPlaying, setIsPlaying] = useState(false);
     const [userAnswers, setUserAnswers] = useState({});
     const [status, setStatus] = useState('idle'); // idle, playing, submitting, result
-const [audioFinished, setAudioFinished] = useState(false);
-const [audioProgress, setAudioProgress] = useState(0); // 0 → 100
+    const [audioFinished, setAudioFinished] = useState(false);
+    const [audioProgress, setAudioProgress] = useState(0); // 0 → 100
 
     // Prep Timer State
     const [prepStatus, setPrepStatus] = useState("countdown");
@@ -204,12 +202,12 @@ const [audioProgress, setAudioProgress] = useState(0); // 0 → 100
             // Auto-start audio if desired? Or just remove overlay.
             // ListeningFIB usually has manual play button? Line 350 has button.
             // If we want auto-play:
-           if (audioRef.current) {
-    audioRef.current.currentTime = 0;
-    audioRef.current.play().catch(() => {});
-    setIsPlaying(true);
-    setAudioFinished(false);
-}
+            if (audioRef.current) {
+                audioRef.current.currentTime = 0;
+                audioRef.current.play().catch(() => { });
+                setIsPlaying(true);
+                setAudioFinished(false);
+            }
 
         }
     }, [prepStatus, prepTimer]);
@@ -262,39 +260,39 @@ const [audioProgress, setAudioProgress] = useState(0); // 0 → 100
             setViewAttempt(null);
 
             setAudioProgress(0);
-setAudioFinished(false);
+            setAudioFinished(false);
 
         }
     }, [question]);
 
-   const toggleAudio = () => {
-    if (!audioRef.current || audioFinished) return;
+    const toggleAudio = () => {
+        if (!audioRef.current || audioFinished) return;
 
-    if (isPlaying) {
+        if (isPlaying) {
+            audioRef.current.pause();
+            setIsPlaying(false);
+        } else {
+            audioRef.current.play().catch(() => { });
+            setIsPlaying(true);
+        }
+    };
+
+    const handleSkipAudio = () => {
+        if (!audioRef.current) return;
+
         audioRef.current.pause();
+        audioRef.current.currentTime = audioRef.current.duration;
         setIsPlaying(false);
-    } else {
-        audioRef.current.play().catch(() => {});
-        setIsPlaying(true);
-    }
-};
-
-const handleSkipAudio = () => {
-    if (!audioRef.current) return;
-
-    audioRef.current.pause();
-    audioRef.current.currentTime = audioRef.current.duration;
-    setIsPlaying(false);
-    setAudioFinished(true);
-    setAudioProgress(100);
-};
+        setAudioFinished(true);
+        setAudioProgress(100);
+    };
 
 
 
-   const handleAudioEnded = () => {
-    setIsPlaying(false);
-    setAudioFinished(true);
-};
+    const handleAudioEnded = () => {
+        setIsPlaying(false);
+        setAudioFinished(true);
+    };
 
 
     const handleInputChange = (index, value) => {
@@ -342,13 +340,13 @@ const handleSkipAudio = () => {
         setIsResultOpen(false);
         setViewAttempt(null);
         // Reset audio?
-      if (audioRef.current) {
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-}
-setIsPlaying(false);
-setAudioFinished(false);
-setAudioProgress(0);
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+        setIsPlaying(false);
+        setAudioFinished(false);
+        setAudioProgress(0);
 
         setPrepStatus("countdown");
         setPrepTimer(3);
@@ -504,61 +502,61 @@ setAudioProgress(0);
 
                     <div className="p-8 space-y-8">
                         {/* PLAYER */}
-                    <div className="flex items-center gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
-    {/* PLAY / PAUSE */}
-    <button
-        onClick={toggleAudio}
-        disabled={audioFinished}
-        className="w-12 h-12 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-full flex items-center justify-center shadow-md transition-transform active:scale-95"
-    >
-        {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
-    </button>
+                        <div className="flex items-center gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            {/* PLAY / PAUSE */}
+                            <button
+                                onClick={toggleAudio}
+                                disabled={audioFinished}
+                                className="w-12 h-12 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-full flex items-center justify-center shadow-md transition-transform active:scale-95"
+                            >
+                                {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
+                            </button>
 
-    {/* FAKE PROGRESS BAR (same style as your other components) */}
-    <div className="flex-1">
-        <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-           <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-    <div
-        className="h-full bg-blue-500 transition-[width] duration-200"
-        style={{ width: `${audioProgress}%` }}
-    />
-</div>
+                            {/* FAKE PROGRESS BAR (same style as your other components) */}
+                            <div className="flex-1">
+                                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                                    <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-blue-500 transition-[width] duration-200"
+                                            style={{ width: `${audioProgress}%` }}
+                                        />
+                                    </div>
 
-        </div>
-    </div>
+                                </div>
+                            </div>
 
-    {/* AUDIO ELEMENT */}
-    <audio
-    ref={audioRef}
-    src={question.audioUrl}
-    onEnded={handleAudioEnded}
-    onTimeUpdate={() => {
-        if (!audioRef.current) return;
-        const progress =
-            (audioRef.current.currentTime / audioRef.current.duration) * 100;
-        setAudioProgress(progress || 0);
-    }}
-    onPlay={() => setIsPlaying(true)}
-    onPause={() => setIsPlaying(false)}
-    className="hidden"
-/>
+                            {/* AUDIO ELEMENT */}
+                            <audio
+                                ref={audioRef}
+                                src={question.audioUrl}
+                                onEnded={handleAudioEnded}
+                                onTimeUpdate={() => {
+                                    if (!audioRef.current) return;
+                                    const progress =
+                                        (audioRef.current.currentTime / audioRef.current.duration) * 100;
+                                    setAudioProgress(progress || 0);
+                                }}
+                                onPlay={() => setIsPlaying(true)}
+                                onPause={() => setIsPlaying(false)}
+                                className="hidden"
+                            />
 
 
-    <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase">
-        <Volume2 size={16} />
-        Audio
-    </div>
+                            <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase">
+                                <Volume2 size={16} />
+                                Audio
+                            </div>
 
-    {/* SKIP BUTTON */}
-    {!audioFinished && (
-        <button
-            onClick={handleSkipAudio}
-            className="text-sm font-semibold text-blue-600 hover:text-blue-800"
-        >
-            Skip
-        </button>
-    )}
-</div>
+                            {/* SKIP BUTTON */}
+                            {!audioFinished && (
+                                <button
+                                    onClick={handleSkipAudio}
+                                    className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+                                >
+                                    Skip
+                                </button>
+                            )}
+                        </div>
 
 
                         {/* TEXT CONTENT */}
@@ -588,44 +586,44 @@ setAudioProgress(0);
                 {/* LEFT SIDE: Translate, Answer, Redo */}
                 <div className="flex items-center gap-4">
                     {/* Translate (Static) */}
-                    <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <Languages size={18} />
                         </div>
-                        <span className="text-xs font-medium">Translate</span>
+                        <span className="text-xs font-bold">Translate</span>
                     </button>
 
                     {/* Answer (Static) */}
-                    <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default text-opacity-50">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default text-opacity-50">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <Eye size={18} />
                         </div>
-                        <span className="text-xs font-medium">Answer</span>
+                        <span className="text-xs font-bold">Answer</span>
                     </button>
 
                     {/* Redo */}
-                    <button onClick={handleRedo} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={handleRedo} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <RefreshCw size={18} />
                         </div>
-                        <span className="text-xs font-medium">Redo</span>
+                        <span className="text-xs font-bold">Redo</span>
                     </button>
                 </div>
 
                 {/* RIGHT SIDE: Prev, Next */}
                 <div className="flex items-center gap-4">
-                    <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <ChevronLeft size={20} />
                         </div>
-                        <span className="text-xs font-medium">Previous</span>
+                        <span className="text-xs font-bold">Previous</span>
                     </button>
 
-                    <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-                        <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+                    <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
                             <ChevronRight size={20} />
                         </div>
-                        <span className="text-xs font-medium">Next</span>
+                        <span className="text-xs font-bold">Next</span>
                     </button>
                 </div>
             </div>
@@ -633,7 +631,7 @@ setAudioProgress(0);
             {/* History Section */}
             {question && (
                 <AttemptHistory
-                question={question}
+                    question={question}
                     attempts={question.lastAttempts || []} // Pass whatever history we have
                     onSelectAttempt={openAttempt}
                 />

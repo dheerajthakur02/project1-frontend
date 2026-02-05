@@ -33,7 +33,7 @@ const PREP_TIME = 3;
 
 
 
-const AttemptHistory = ({ question,attempts, setResult, setStatus,onSelectAttempt  }) => {
+const AttemptHistory = ({ question, attempts, setResult, setStatus, onSelectAttempt }) => {
 
   const [activeTab, setActiveTab] = useState("my");
   const [communityAttempts, setCommunityAttempts] = useState([]);
@@ -46,9 +46,9 @@ const AttemptHistory = ({ question,attempts, setResult, setStatus,onSelectAttemp
 
 
       const res = await axios.get(`api/select-missing-word/${question._id}/community`);
-    
-        setCommunityAttempts(res?.data?.data);
-     
+
+      setCommunityAttempts(res?.data?.data);
+
 
     } catch (err) {
       console.error("Community fetch error:", err);
@@ -457,50 +457,50 @@ export default function SelectMissingWord({
       <div className="flex items-center justify-between pb-6 mt-6">
         <div className="flex items-center gap-4">
           {/* Translate (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Languages size={18} />
             </div>
-            <span className="text-xs font-medium">Translate</span>
+            <span className="text-xs font-bold">Translate</span>
           </button>
 
           {/* Answer (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default text-opacity-50">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default text-opacity-50">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Eye size={18} />
             </div>
-            <span className="text-xs font-medium">Answer</span>
+            <span className="text-xs font-bold">Answer</span>
           </button>
 
           {/* Redo */}
-          <button onClick={handleRedo} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={handleRedo} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <RefreshCw size={18} />
             </div>
-            <span className="text-xs font-medium">Redo</span>
+            <span className="text-xs font-bold">Redo</span>
           </button>
         </div>
 
         <div className="flex items-center gap-4">
-          <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronLeft size={20} />
             </div>
-            <span className="text-xs font-medium">Previous</span>
+            <span className="text-xs font-bold">Previous</span>
           </button>
 
-          <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronRight size={20} />
             </div>
-            <span className="text-xs font-medium">Next</span>
+            <span className="text-xs font-bold">Next</span>
           </button>
         </div>
       </div>
 
-     
 
-      <AttemptHistory question={question} attempts={question?.lastAttempts} setResult={setResult} setStatus={setStatus}/>
+
+      <AttemptHistory question={question} attempts={question?.lastAttempts} setResult={setResult} setStatus={setStatus} />
 
 
       {/* RESULT */}

@@ -311,46 +311,46 @@ const WriteEssay = ({ question, setActiveSpeechQuestion, nextButton, previousBut
           <button
             onClick={handleTranslate}
             disabled={loadingTranslation}
-            className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50"
+            className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors disabled:opacity-50"
           >
-            <div className={`w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm ${loadingTranslation ? "animate-pulse" : ""}`}>
+            <div className={`w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm ${loadingTranslation ? "animate-pulse" : ""}`}>
               <Languages size={18} />
             </div>
-            <span className="text-xs font-medium">{loadingTranslation ? "..." : "Translate"}</span>
+            <span className="text-xs font-bold">{loadingTranslation ? "..." : "Translate"}</span>
           </button>
 
           {/* Answer (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Eye size={18} />
             </div>
-            <span className="text-xs font-medium">Answer</span>
+            <span className="text-xs font-bold">Answer</span>
           </button>
 
           {/* Redo */}
-          <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={resetSession} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <RefreshCw size={18} />
             </div>
-            <span className="text-xs font-medium">Redo</span>
+            <span className="text-xs font-bold">Redo</span>
           </button>
         </div>
 
 
         {/* RIGHT SIDE: Prev, Next */}
         <div className="flex items-center gap-4">
-          <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={previousButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronLeft size={20} />
             </div>
-            <span className="text-xs font-medium">Previous</span>
+            <span className="text-xs font-bold">Previous</span>
           </button>
 
-          <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button onClick={nextButton} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronRight size={20} />
             </div>
-            <span className="text-xs font-medium">Next</span>
+            <span className="text-xs font-bold">Next</span>
           </button>
         </div>
       </div>

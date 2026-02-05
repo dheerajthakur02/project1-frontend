@@ -29,43 +29,43 @@ import axios from "axios";
 
 
 
- function WFDAttemptHistory({ question }) {
+function WFDAttemptHistory({ question }) {
   const [mode, setMode] = useState("my"); // my | community
-  const [community, setCommunity ] = useState([])
+  const [community, setCommunity] = useState([])
 
   const attempts =
     mode === "my"
       ? question?.lastAttempts || []
       : community;
 
-      const fetchCommunityAttempts = async () => {
+  const fetchCommunityAttempts = async () => {
     try {
-  
+
       const res = await axios.get(`api/write-from-dictation/${question._id}/community`);
-      
+
       console.log(res?.data?.data)
-        setCommunity(res?.data?.data);
-      
+      setCommunity(res?.data?.data);
+
     } catch (err) {
       console.error("Community fetch error:", err);
-    } 
-    
+    }
+
   };
 
   const handleTabChange = (tab) => {
     setMode(tab);
-    
-      fetchCommunityAttempts();
+
+    fetchCommunityAttempts();
   };
 
-//   if (!attempts.length) {
-//     return (
-//       <div className="bg-white rounded-2xl border p-6 text-center text-slate-400">
-//         <History className="mx-auto mb-2" />
-//         No attempts yet
-//       </div>
-//     );
-//   }
+  //   if (!attempts.length) {
+  //     return (
+  //       <div className="bg-white rounded-2xl border p-6 text-center text-slate-400">
+  //         <History className="mx-auto mb-2" />
+  //         No attempts yet
+  //       </div>
+  //     );
+  //   }
 
   return (
     <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-4">
@@ -81,21 +81,19 @@ import axios from "axios";
         <div className="flex bg-slate-100 rounded-lg p-1 text-xs font-bold">
           <button
             onClick={() => handleTabChange("my")}
-            className={`px-3 py-1 rounded-md flex items-center gap-1 ${
-              mode === "my"
+            className={`px-3 py-1 rounded-md flex items-center gap-1 ${mode === "my"
                 ? "bg-white shadow text-blue-600"
                 : "text-slate-500"
-            }`}
+              }`}
           >
             <User size={14} /> My
           </button>
           <button
             onClick={() => handleTabChange("community")}
-            className={`px-3 py-1 rounded-md flex items-center gap-1 ${
-              mode === "community"
+            className={`px-3 py-1 rounded-md flex items-center gap-1 ${mode === "community"
                 ? "bg-white shadow text-purple-600"
                 : "text-slate-500"
-            }`}
+              }`}
           >
             <Users size={14} /> Community
           </button>
@@ -236,14 +234,14 @@ export default function WriteFromDictation({
       audioRef.current
         .play()
         .then(() => setIsPlaying(true))
-        .catch(() => {});
+        .catch(() => { });
     }, 300);
   };
 
   const togglePlayPause = () => {
     if (!audioRef.current || audioFinished) return;
     if (isPlaying) audioRef.current.pause();
-    else audioRef.current.play().catch(() => {});
+    else audioRef.current.play().catch(() => { });
   };
 
   const handleSkipAudio = () => {
@@ -392,28 +390,28 @@ export default function WriteFromDictation({
       <div className="flex items-center justify-between pb-6 mt-6">
         {/* LEFT SIDE */}
         <div className="flex items-center gap-4">
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Languages size={18} />
             </div>
-            <span className="text-xs font-medium">Translate</span>
+            <span className="text-xs font-bold">Translate</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-default text-opacity-50">
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default text-opacity-50">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Eye size={18} />
             </div>
-            <span className="text-xs font-medium">Answer</span>
+            <span className="text-xs font-bold">Answer</span>
           </button>
 
           <button
             onClick={resetSession}
-            className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors"
+            className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors"
           >
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <RefreshCw size={18} />
             </div>
-            <span className="text-xs font-medium">Redo</span>
+            <span className="text-xs font-bold">Redo</span>
           </button>
         </div>
 
@@ -421,22 +419,22 @@ export default function WriteFromDictation({
         <div className="flex items-center gap-4">
           <button
             onClick={previousButton}
-            className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors"
+            className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors"
           >
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronLeft size={20} />
             </div>
-            <span className="text-xs font-medium">Previous</span>
+            <span className="text-xs font-bold">Previous</span>
           </button>
 
           <button
             onClick={nextButton}
-            className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors"
+            className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors"
           >
-            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-white shadow-sm">
+            <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <ChevronRight size={20} />
             </div>
-            <span className="text-xs font-medium">Next</span>
+            <span className="text-xs font-bold">Next</span>
           </button>
         </div>
       </div>
@@ -465,156 +463,156 @@ export default function WriteFromDictation({
 
 // Custom Result Modal for WFD
 const WFDResultModal = ({ result, onClose, onRedo, onNext, question }) => {
-    if (!result) return null;
+  if (!result) return null;
 
-    const {
-        totalScore,
-        scores, // { listening, writing }
-        wordAnalysis, // [{ word, status }]
-    } = result;
+  const {
+    totalScore,
+    scores, // { listening, writing }
+    wordAnalysis, // [{ word, status }]
+  } = result;
 
-    // Derive Missing/Extra/Correct counts
-    const correctCount = wordAnalysis.filter(w => w.status === 'correct').length;
-    const extraCount = wordAnalysis.filter(w => w.status === 'extra').length; // User wrote it but it wasn't matched
-    const missingCount = wordAnalysis.filter(w => w.status === 'missing').length; // In origin but not matched
+  // Derive Missing/Extra/Correct counts
+  const correctCount = wordAnalysis.filter(w => w.status === 'correct').length;
+  const extraCount = wordAnalysis.filter(w => w.status === 'extra').length; // User wrote it but it wasn't matched
+  const missingCount = wordAnalysis.filter(w => w.status === 'missing').length; // In origin but not matched
 
-    // Reconstruct the user's sentence for display (filtering out 'missing' which are backend-added for analysis reference)
-    // Actually, my backend logic for 'wordAnalysis' is: it maps USER words to statuses, AND appends MISSING words at the end relative to original.
-    // So for "My Answer" display, I should show words that are NOT 'missing'.
-    // For "Missing Words" display, I show only 'missing'.
+  // Reconstruct the user's sentence for display (filtering out 'missing' which are backend-added for analysis reference)
+  // Actually, my backend logic for 'wordAnalysis' is: it maps USER words to statuses, AND appends MISSING words at the end relative to original.
+  // So for "My Answer" display, I should show words that are NOT 'missing'.
+  // For "Missing Words" display, I show only 'missing'.
 
-    const userWords = wordAnalysis.filter(w => w.status !== 'missing');
-    const missingWords = wordAnalysis.filter(w => w.status === 'missing');
+  const userWords = wordAnalysis.filter(w => w.status !== 'missing');
+  const missingWords = wordAnalysis.filter(w => w.status === 'missing');
 
-    return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
 
-                {/* HEADER */}
-                <div className="sticky top-0 z-10 bg-white flex justify-between items-center p-6 border-b">
-                    <h2 className="font-bold text-xl flex items-center gap-2">
-                        Result - Write From Dictation
-                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-md">AI+ Evaluation</span>
-                    </h2>
-                    <div className="flex gap-2">
-                        <button onClick={onRedo} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 font-bold hover:bg-slate-200">Redo</button>
-                        <button onClick={onNext} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700">Next Question</button>
-                        <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full"><X size={24} /></button>
-                    </div>
-                </div>
-
-                {/* BODY */}
-                <div className="p-8 grid grid-cols-1 md:grid-cols-12 gap-8 max-h-[80vh] overflow-y-auto">
-
-                    {/* LEFT: Score Circle */}
-                    <div className="col-span-12 md:col-span-4 flex flex-col items-center justify-center bg-white border rounded-3xl p-6 shadow-sm">
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Your Score</h3>
-                        <div className="relative w-48 h-24 mb-6">
-                            {/* Semi-Circle SVG or just simple Circle */}
-                            <svg className="w-full h-full" viewBox="0 0 200 100">
-                                <path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#f1f5f9" strokeWidth="12" strokeLinecap="round" />
-                                <path
-                                    d="M 10 100 A 90 90 0 0 1 190 100"
-                                    fill="none"
-                                    stroke="url(#grad1)"
-                                    strokeWidth="12"
-                                    strokeLinecap="round"
-                                    strokeDasharray="283"
-                                    strokeDashoffset={283 - (283 * (totalScore / 10))} // Scale to 10
-                                />
-                                <defs>
-                                    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stopColor="#8b5cf6" />
-                                        <stop offset="100%" stopColor="#d946ef" />
-                                    </linearGradient>
-                                </defs>
-                            </svg>
-                            <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
-                                <span className="text-4xl font-black text-slate-800">{totalScore}</span>
-                                <span className="text-sm text-slate-400 font-bold">/ 10</span>
-                            </div>
-                        </div>
-
-                        {/* Sub-Scores */}
-                        <div className="w-full space-y-3">
-                            <div className="flex justify-between items-center bg-pink-50 p-3 rounded-lg border border-pink-100">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-                                    <span className="text-sm font-bold text-slate-700">Listening</span>
-                                </div>
-                                <span className="font-black text-slate-800">{scores.listening.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between items-center bg-yellow-50 p-3 rounded-lg border border-yellow-100">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                                    <span className="text-sm font-bold text-slate-700">Writing</span>
-                                </div>
-                                <span className="font-black text-slate-800">{scores.writing.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* RIGHT: Analysis */}
-                    <div className="col-span-12 md:col-span-8 space-y-6">
-
-                        {/* My Answer Section */}
-                        <div>
-                            <div className="flex justify-between items-end mb-2">
-                                <h4 className="font-bold text-slate-700">My Answer</h4>
-                                <button className="text-[10px] flex items-center gap-1 text-slate-400 bg-slate-100 px-2 py-1 rounded hover:bg-slate-200">
-                                    <Info size={12} /> Click on word for definition
-                                </button>
-                            </div>
-                            <div className="bg-slate-50 border p-4 rounded-xl leading-relaxed text-lg">
-                                {userWords.map((w, i) => (
-                                    <span
-                                        key={i}
-                                        className={`mr-1 inline-block px-1 rounded-md cursor-pointer ${w.status === 'correct' ? 'text-slate-800' : 'text-purple-600 bg-purple-100 font-medium'
-                                            }`}
-                                        title={w.status === 'correct' ? 'Good Word' : 'Extra Word'}
-                                    >
-                                        {w.word}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Missing Words Section */}
-                        {missingCount > 0 && (
-                            <div className="bg-red-50 border border-red-100 p-4 rounded-xl">
-                                <h4 className="font-bold text-red-800 text-sm mb-2">Missing Words:</h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {missingWords.map((w, i) => (
-                                        <span key={i} className="text-red-600 bg-white border border-red-100 px-2 py-1 rounded text-sm font-medium">
-                                            {w.word}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Legend / Stats */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
-                            <StatBadge count={correctCount} label="Good Words" color="bg-slate-800" text="text-white" />
-                            <StatBadge count={extraCount} label="Extra Words" color="bg-purple-100" text="text-purple-700" />
-                            <StatBadge count={missingCount} label="Missing Words" color="bg-red-100" text="text-red-600" />
-                            {/* Placeholder for position errors if we implement strict sequence checking later */}
-                            <StatBadge count={0} label="Incorrect Position" color="bg-blue-100" text="text-blue-600" />
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
+        {/* HEADER */}
+        <div className="sticky top-0 z-10 bg-white flex justify-between items-center p-6 border-b">
+          <h2 className="font-bold text-xl flex items-center gap-2">
+            Result - Write From Dictation
+            <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-md">AI+ Evaluation</span>
+          </h2>
+          <div className="flex gap-2">
+            <button onClick={onRedo} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 font-bold hover:bg-slate-200">Redo</button>
+            <button onClick={onNext} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700">Next Question</button>
+            <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full"><X size={24} /></button>
+          </div>
         </div>
-    );
+
+        {/* BODY */}
+        <div className="p-8 grid grid-cols-1 md:grid-cols-12 gap-8 max-h-[80vh] overflow-y-auto">
+
+          {/* LEFT: Score Circle */}
+          <div className="col-span-12 md:col-span-4 flex flex-col items-center justify-center bg-white border rounded-3xl p-6 shadow-sm">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Your Score</h3>
+            <div className="relative w-48 h-24 mb-6">
+              {/* Semi-Circle SVG or just simple Circle */}
+              <svg className="w-full h-full" viewBox="0 0 200 100">
+                <path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#f1f5f9" strokeWidth="12" strokeLinecap="round" />
+                <path
+                  d="M 10 100 A 90 90 0 0 1 190 100"
+                  fill="none"
+                  stroke="url(#grad1)"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray="283"
+                  strokeDashoffset={283 - (283 * (totalScore / 10))} // Scale to 10
+                />
+                <defs>
+                  <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#8b5cf6" />
+                    <stop offset="100%" stopColor="#d946ef" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
+                <span className="text-4xl font-black text-slate-800">{totalScore}</span>
+                <span className="text-sm text-slate-400 font-bold">/ 10</span>
+              </div>
+            </div>
+
+            {/* Sub-Scores */}
+            <div className="w-full space-y-3">
+              <div className="flex justify-between items-center bg-pink-50 p-3 rounded-lg border border-pink-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+                  <span className="text-sm font-bold text-slate-700">Listening</span>
+                </div>
+                <span className="font-black text-slate-800">{scores.listening.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center bg-yellow-50 p-3 rounded-lg border border-yellow-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                  <span className="text-sm font-bold text-slate-700">Writing</span>
+                </div>
+                <span className="font-black text-slate-800">{scores.writing.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: Analysis */}
+          <div className="col-span-12 md:col-span-8 space-y-6">
+
+            {/* My Answer Section */}
+            <div>
+              <div className="flex justify-between items-end mb-2">
+                <h4 className="font-bold text-slate-700">My Answer</h4>
+                <button className="text-[10px] flex items-center gap-1 text-slate-400 bg-slate-100 px-2 py-1 rounded hover:bg-slate-200">
+                  <Info size={12} /> Click on word for definition
+                </button>
+              </div>
+              <div className="bg-slate-50 border p-4 rounded-xl leading-relaxed text-lg">
+                {userWords.map((w, i) => (
+                  <span
+                    key={i}
+                    className={`mr-1 inline-block px-1 rounded-md cursor-pointer ${w.status === 'correct' ? 'text-slate-800' : 'text-purple-600 bg-purple-100 font-medium'
+                      }`}
+                    title={w.status === 'correct' ? 'Good Word' : 'Extra Word'}
+                  >
+                    {w.word}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Missing Words Section */}
+            {missingCount > 0 && (
+              <div className="bg-red-50 border border-red-100 p-4 rounded-xl">
+                <h4 className="font-bold text-red-800 text-sm mb-2">Missing Words:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {missingWords.map((w, i) => (
+                    <span key={i} className="text-red-600 bg-white border border-red-100 px-2 py-1 rounded text-sm font-medium">
+                      {w.word}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Legend / Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
+              <StatBadge count={correctCount} label="Good Words" color="bg-slate-800" text="text-white" />
+              <StatBadge count={extraCount} label="Extra Words" color="bg-purple-100" text="text-purple-700" />
+              <StatBadge count={missingCount} label="Missing Words" color="bg-red-100" text="text-red-600" />
+              {/* Placeholder for position errors if we implement strict sequence checking later */}
+              <StatBadge count={0} label="Incorrect Position" color="bg-blue-100" text="text-blue-600" />
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
 };
 
 const StatBadge = ({ count, label, color, text }) => (
-    <div className="flex items-center gap-3 bg-white border p-3 rounded-xl shadow-sm">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${color} ${text}`}>
-            {count}
-        </div>
-        <span className="text-xs font-bold text-slate-500 leading-tight">{label}</span>
+  <div className="flex items-center gap-3 bg-white border p-3 rounded-xl shadow-sm">
+    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${color} ${text}`}>
+      {count}
     </div>
+    <span className="text-xs font-bold text-slate-500 leading-tight">{label}</span>
+  </div>
 );

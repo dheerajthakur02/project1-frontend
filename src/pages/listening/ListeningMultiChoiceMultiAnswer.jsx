@@ -7,7 +7,7 @@ import axios from 'axios';
 
 
 const AttemptHistory = ({ question, attempts, onSelectAttempt }) => {
-    console.log(attempts)
+   
     const [activeTab, setActiveTab] = useState("my");
     const [communityAttempts, setCommunityAttempts] = useState([]);
     const [loadingCommunity, setLoadingCommunity] = useState(false);
@@ -17,7 +17,6 @@ const AttemptHistory = ({ question, attempts, onSelectAttempt }) => {
             setLoadingCommunity(true);
             const res = await axios.get(`api/listening-multi-choice-multi-answer/${question._id}/community`);
 
-            console.log(res?.data?.data)
             setCommunityAttempts(res?.data?.data);
 
         } catch (err) {
@@ -126,12 +125,12 @@ const AttemptHistory = ({ question, attempts, onSelectAttempt }) => {
                                 </span>
                                 <div className="flex items-baseline gap-1">
                                     <span
-                                        className={`text-xl font-bold ${attempt.totalScore === attempt.maxScore
+                                        className={`text-xl font-bold ${attempt.score === attempt.maxScore
                                                 ? "text-green-600"
                                                 : "text-blue-600"
                                             }`}
                                     >
-                                        {attempt.totalScore}
+                                        {attempt.score}
                                     </span>
                                     <span className="text-sm text-slate-400 font-medium">
                                         / {attempt.maxScore}

@@ -27,9 +27,6 @@ import {
   X
 } from "lucide-react";
 import axios from "axios";
-// import { useSelector } from "react-redux";
-// import { submitSelectMissingWordAttempt } from "../../services/api";
-// import HCSResultModal from "./HCSResultModal";
 
 const PREP_TIME = 3;
 
@@ -48,9 +45,10 @@ const AttemptHistory = ({ question,attempts, setResult, setStatus,onSelectAttemp
 
 
 
-      const res = await axios.get(`api/listening-fib/${question._id}/community`);
+      const res = await axios.get(`api/select-missing-word/${question._id}/community`);
     
         setCommunityAttempts(res?.data?.data);
+     
 
     } catch (err) {
       console.error("Community fetch error:", err);
@@ -72,12 +70,12 @@ const AttemptHistory = ({ question,attempts, setResult, setStatus,onSelectAttemp
     <div className="mt-12 font-sans">
       {/* HEADER + TABS */}
       <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <BarChart2 className="text-purple-600" size={20} />
           <h3 className="font-bold text-slate-800">
             {activeTab === "my" ? "Your Attempts" : "Community Attempts"}
           </h3>
-        </div>
+        </div> */}
 
         <div className="flex gap-2">
           <button
@@ -500,7 +498,7 @@ export default function SelectMissingWord({
         </div>
       </div>
 
-      <AttemptHistory attempts={question?.lastAttempts} setResult={setResult} setStatus={setStatus} />
+     
 
       <AttemptHistory question={question} attempts={question?.lastAttempts} setResult={setResult} setStatus={setStatus}/>
 

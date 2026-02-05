@@ -8,6 +8,7 @@ const ManageRepeatSentence = () => {
     const [loading, setLoading] = useState(true);
     const [title, setTitle] = useState('');
     const [transcript, setTranscript] = useState('');
+    const [isPrediction, setIsPrediction] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -49,6 +50,7 @@ const ManageRepeatSentence = () => {
         formData.append('title', title);
         if (transcript) formData.append('transcript', transcript);
         formData.append('audio', selectedFile);
+        formData.append('isPrediction', isPrediction);
         formData.append('prepareTime', 3); // Default
         formData.append('answerTime', 15); // Default
 
@@ -59,6 +61,7 @@ const ManageRepeatSentence = () => {
             });
             setTitle('');
             setTranscript('');
+            setIsPrediction(false);
             setSelectedFile(null);
             // Reset file input manually if needed
             document.getElementById('audio-upload').value = null;
@@ -143,6 +146,8 @@ const ManageRepeatSentence = () => {
                                     </div>
                                 </div>
                             </div>
+
+
 
                             <button
                                 type="submit"

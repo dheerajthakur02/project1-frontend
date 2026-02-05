@@ -9,6 +9,7 @@ const ManageDescribeImage = () => {
     const [title, setTitle] = useState('');
     const [keywords, setKeywords] = useState('');
     const [modelAnswer, setModelAnswer] = useState('');
+    const [isPrediction, setIsPrediction] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -47,6 +48,7 @@ const ManageDescribeImage = () => {
         formData.append('difficulty', 'Medium');
         formData.append('keywords', keywords);
         formData.append('modelAnswer', modelAnswer);
+        formData.append('isPrediction', isPrediction);
 
         try {
             await axios.post('http://localhost:5000/api/image/questions', formData, {
@@ -56,6 +58,7 @@ const ManageDescribeImage = () => {
             setTitle('');
             setKeywords('');
             setModelAnswer('');
+            setIsPrediction(false);
             setSelectedFile(null);
             document.getElementById('image-upload').value = null;
 
@@ -158,6 +161,8 @@ const ManageDescribeImage = () => {
                                 </div>
                             </div>
 
+
+
                             <button
                                 type="submit"
                                 disabled={submitting}
@@ -189,6 +194,9 @@ const ManageDescribeImage = () => {
                                     <div>
                                         <h3 className="font-bold text-slate-800 text-lg">{q.title}</h3>
                                         <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase mt-1 inline-block">{q.difficulty}</span>
+                                        {q.isPrediction && (
+                                            <span className="ml-2 text-xs font-bold text-white bg-purple-500 px-2 py-0.5 rounded uppercase inline-block">Prediction</span>
+                                        )}
                                         {q.keywords && q.keywords.length > 0 && (
                                             <p className="text-xs text-slate-500 mt-2 line-clamp-1">
                                                 <span className="font-bold">Keywords:</span> {q.keywords.join(', ')}

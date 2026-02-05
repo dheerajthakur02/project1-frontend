@@ -17,6 +17,7 @@ const initialForm = {
   prepareTime: 3,
   answerTime: 10,
   difficulty: "Easy",
+  isPrediction: false,
   audio: null,
 };
 
@@ -62,10 +63,10 @@ const ManageShortAnswer = () => {
 
   /* ---------------- HANDLERS ---------------- */
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value, files, type, checked } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: files ? files[0] : value,
+      [name]: files ? files[0] : type === "checkbox" ? checked : value,
     }));
   };
 
@@ -83,6 +84,7 @@ const ManageShortAnswer = () => {
       prepareTime: q.prepareTime,
       answerTime: q.answerTime,
       difficulty: q.difficulty,
+      isPrediction: q.isPrediction || false,
       audio: null,
     });
     setEditingId(q._id);
@@ -223,6 +225,7 @@ const ManageShortAnswer = () => {
                         <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getDifficultyColor(q.difficulty)}`}>
                           {q.difficulty}
                         </span>
+
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
@@ -307,6 +310,8 @@ const ManageShortAnswer = () => {
                       <option>Hard</option>
                     </select>
                   </div>
+
+
 
                   <div className="relative group">
                     <input type="file" name="audio" accept="audio/*" onChange={handleChange} id="audio-q" hidden />

@@ -20,6 +20,7 @@ const initialForm = {
   difficulty: "easy",
   answerTime: 600, // 10 minutes (Standard PTE time)
   modelAnswer: "",
+  isPrediction: false,
 };
 
 const ManageSummarizeText = () => {
@@ -65,12 +66,12 @@ const ManageSummarizeText = () => {
 
   /* ---------------- FORM HANDLERS ---------------- */
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setForm((prev) => ({
       ...prev,
       [name]: (name === "maxWords" || name === "answerTime")
         ? Number(value)
-        : value,
+        : type === "checkbox" ? checked : value,
     }));
   };
 
@@ -88,6 +89,7 @@ const ManageSummarizeText = () => {
       difficulty: q.difficulty,
       answerTime: q.answerTime,
       modelAnswer: q.modelAnswer || "",
+      isPrediction: q.isPrediction || false,
     });
     setEditingId(q._id);
     setOpenModal(true);
@@ -223,6 +225,7 @@ const ManageSummarizeText = () => {
                         <span className={`px-3 py-1 rounded-full text-xs font-bold border uppercase ${getDifficultyColor(q.difficulty)}`}>
                           {q.difficulty}
                         </span>
+
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
@@ -309,6 +312,8 @@ const ManageSummarizeText = () => {
                       <option value="hard">Hard</option>
                     </select>
                   </div>
+
+
 
                   <button
                     disabled={submitLoading}

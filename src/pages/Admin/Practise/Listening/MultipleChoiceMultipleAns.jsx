@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  Plus, Edit, Trash2, Search, Eye, Headphones, X, PlusCircle,
   CheckCircle2, Loader2, Music, AlertCircle, PlayCircle,
-  Layers, FileText, ListChecks
+  Layers, FileText, ListChecks, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -32,7 +31,8 @@ const ManageListeningMCMA = () => {
     correctOptions: [],
     difficulty: "Medium",
     transcript: "",
-    audio: null
+    audio: null,
+    isPrediction: false
   };
   const [form, setForm] = useState(initialForm);
 
@@ -77,6 +77,7 @@ const ManageListeningMCMA = () => {
     fd.append("question", form.question);
     fd.append("transcript", form.transcript);
     fd.append("difficulty", form.difficulty);
+    fd.append("isPrediction", form.isPrediction);
 
     // Stringify arrays for the controller (Multer requirement)
     fd.append("options", JSON.stringify(finalOptions));
@@ -119,7 +120,8 @@ const ManageListeningMCMA = () => {
       correctOptions: q.correctOptions || [],
       difficulty: q.difficulty || "Medium",
       transcript: q.transcript || "",
-      audio: null
+      audio: null,
+      isPrediction: q.isPrediction || false
     });
     setIsModalOpen(true);
   };
@@ -204,7 +206,14 @@ const ManageListeningMCMA = () => {
                     <ListChecks size={24} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 text-lg">{q.title}</h3>
+                    <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                      {q.title}
+                      {q.isPrediction && (
+                        <span className="bg-amber-100 text-amber-700 text-[10px] font-black px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <Sparkles size={10} /> Prediction
+                        </span>
+                      )}
+                    </h3>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">MCMA Question • {q.correctOptions?.length} Correct</p>
                   </div>
                 </div>
@@ -260,6 +269,19 @@ const ManageListeningMCMA = () => {
                         <div>
                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Audio</label>
                           <input type="file" onChange={e => setForm({ ...form, audio: e.target.files[0] })} accept="audio/*" className="w-full mt-2 p-3 bg-indigo-50 border border-indigo-100 rounded-2xl text-[10px] font-bold" />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <input
+                          type="checkbox"
+                          checked={form.isPrediction}
+                          onChange={(e) => setForm({ ...form, isPrediction: e.target.checked })}
+                          className="w-5 h-5 accent-indigo-600 cursor-pointer"
+                        />
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={16} className="text-indigo-500" />
+                          <span className="text-sm font-bold text-slate-700">Mark as Prediction Question</span>
                         </div>
                       </div>
                       <div>
@@ -343,8 +365,8 @@ const ManageListeningMCMA = () => {
                         <div
                           key={i}
                           className={`p-5 rounded-3xl border flex items-center justify-between ${viewData.correctOptions.includes(opt)
-                              ? 'bg-emerald-50 border-emerald-200 text-emerald-900 ring-2 ring-emerald-500/20'
-                              : 'bg-slate-50 border-slate-100 text-slate-500 opacity-60'
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-900 ring-2 ring-emerald-500/20'
+                            : 'bg-slate-50 border-slate-100 text-slate-500 opacity-60'
                             }`}
                         >
                           <span className="font-bold text-sm">{opt}</span>

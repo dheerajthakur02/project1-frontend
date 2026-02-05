@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   Plus, Edit, Trash2, Search, Eye, Headphones, X, PlusCircle,
   CheckCircle2, Loader2, Music, AlertCircle, PlayCircle,
-  VolumeX, ListFilter, AudioLines, FileText
+  VolumeX, ListFilter, AudioLines, FileText, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -35,7 +35,10 @@ const ManageSelectMissingWord = () => {
     ],
     difficulty: "Medium",
     audio: null,
-    transcript: ""
+    difficulty: "Medium",
+    audio: null,
+    transcript: "",
+    isPrediction: false
   };
   const [form, setForm] = useState(initialForm);
 
@@ -75,7 +78,7 @@ const ManageSelectMissingWord = () => {
     // Filter out empty options and stringify
     const filteredOptions = form.options.filter(opt => opt.text.trim() !== "");
     fd.append("options", JSON.stringify(filteredOptions));
-
+    fd.append("isPrediction", form.isPrediction);
     if (form.audio) fd.append("audio", form.audio);
 
     try {
@@ -110,7 +113,10 @@ const ManageSelectMissingWord = () => {
       options: q.options.map(o => ({ text: o.text, isCorrect: o.isCorrect })),
       difficulty: q.difficulty || "Medium",
       audio: null,
-      transcript: q.transcript || ""
+      difficulty: q.difficulty || "Medium",
+      audio: null,
+      transcript: q.transcript || "",
+      isPrediction: q.isPrediction || false
     });
     setIsModalOpen(true);
   };
@@ -187,7 +193,14 @@ const ManageSelectMissingWord = () => {
                     <VolumeX size={24} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 text-lg">{q.title || "Untitled Question"}</h3>
+                    <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                      {q.title || "Untitled Question"}
+                      {q.isPrediction && (
+                        <span className="bg-amber-100 text-amber-700 text-[10px] font-black px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <Sparkles size={10} /> Prediction
+                        </span>
+                      )}
+                    </h3>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
                       SMW Module • {q.options?.length || 0} Options
                     </p>
@@ -236,7 +249,19 @@ const ManageSelectMissingWord = () => {
                           <option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option>
                         </select>
                       </div>
-                      <div>
+                      <div className="col-span-1 lg:col-span-2 flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <input
+                          type="checkbox"
+                          checked={form.isPrediction}
+                          onChange={(e) => setForm({ ...form, isPrediction: e.target.checked })}
+                          className="w-5 h-5 accent-indigo-600 cursor-pointer"
+                        />
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={16} className="text-indigo-500" />
+                          <span className="text-sm font-bold text-slate-700">Mark as Prediction Question</span>
+                        </div>
+                      </div>
+                      <div className="col-span-1 lg:col-span-2">
                         <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Upload Audio (With Beep at End)</label>
                         <div className="mt-2 relative">
                           <input type="file" onChange={e => setForm({ ...form, audio: e.target.files[0] })} accept="audio/*" className="hidden" id="audio-smw" />

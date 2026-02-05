@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import { 
-  Plus, Edit, Trash2, X, Search, 
-  FileText, Clock, BarChart3, 
-  AlertCircle, Loader2, Eye, 
+import {
+  Plus, Edit, Trash2, X, Search,
+  FileText, Clock, BarChart3,
+  AlertCircle, Loader2, Eye,
   Type, AlignLeft, Info
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +19,7 @@ const initialForm = {
   maxWords: 300,
   difficulty: "medium",
   answerTime: 1200, // 20 minutes in seconds (PTE Standard)
+  isPrediction: false,
 };
 
 const ManageWriteEssay = () => {
@@ -56,7 +57,7 @@ const ManageWriteEssay = () => {
 
   /* ---------------- SEARCH & FILTER ---------------- */
   const filteredQuestions = useMemo(() => {
-    return questions.filter(q => 
+    return questions.filter(q =>
       q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       q.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -64,12 +65,12 @@ const ManageWriteEssay = () => {
 
   /* ---------------- FORM HANDLERS ---------------- */
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: (name === "minWords" || name === "maxWords" || name === "answerTime") 
-        ? Number(value) 
-        : value,
+      [name]: (name === "minWords" || name === "maxWords" || name === "answerTime")
+        ? Number(value)
+        : type === "checkbox" ? checked : value,
     }));
   };
 
@@ -87,6 +88,7 @@ const ManageWriteEssay = () => {
       maxWords: q.maxWords,
       difficulty: q.difficulty,
       answerTime: q.answerTime,
+      isPrediction: q.isPrediction || false,
     });
     setEditingId(q._id);
     setOpenModal(true);
@@ -139,7 +141,7 @@ const ManageWriteEssay = () => {
   return (
     <AdminLayout>
       <div className="p-8 bg-[#f8fafc] min-h-screen">
-        
+
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
@@ -159,7 +161,7 @@ const ManageWriteEssay = () => {
         {/* SEARCH BAR */}
         <div className="relative mb-6">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-          <input 
+          <input
             type="text"
             placeholder="Search essay titles or prompt text..."
             value={searchTerm}
@@ -212,10 +214,10 @@ const ManageWriteEssay = () => {
                       <td className="px-6 py-4">
                         <div className="flex flex-col items-center gap-1">
                           <span className="flex items-center gap-1 text-xs text-slate-500">
-                            <Type size={12}/> {q.minWords}-{q.maxWords} words
+                            <Type size={12} /> {q.minWords}-{q.maxWords} words
                           </span>
                           <span className="flex items-center gap-1 text-xs font-medium text-indigo-600">
-                            <Clock size={12}/> {Math.floor(q.answerTime / 60)} mins
+                            <Clock size={12} /> {Math.floor(q.answerTime / 60)} mins
                           </span>
                         </div>
                       </td>
@@ -223,12 +225,13 @@ const ManageWriteEssay = () => {
                         <span className={`px-3 py-1 rounded-full text-xs font-bold border uppercase ${getDifficultyColor(q.difficulty)}`}>
                           {q.difficulty}
                         </span>
+
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
-                          <ActionButton onClick={() => handleView(q)} icon={<Eye size={18}/>} color="text-slate-400 hover:text-indigo-600" />
-                          <ActionButton onClick={() => openEditModal(q)} icon={<Edit size={18}/>} color="text-slate-400 hover:text-emerald-600" />
-                          <ActionButton onClick={() => handleDelete(q._id)} icon={<Trash2 size={18}/>} color="text-slate-400 hover:text-rose-600" />
+                          <ActionButton onClick={() => handleView(q)} icon={<Eye size={18} />} color="text-slate-400 hover:text-indigo-600" />
+                          <ActionButton onClick={() => openEditModal(q)} icon={<Edit size={18} />} color="text-slate-400 hover:text-emerald-600" />
+                          <ActionButton onClick={() => handleDelete(q._id)} icon={<Trash2 size={18} />} color="text-slate-400 hover:text-rose-600" />
                         </div>
                       </td>
                     </motion.tr>
@@ -243,18 +246,18 @@ const ManageWriteEssay = () => {
         <AnimatePresence>
           {openModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={() => setOpenModal(false)}
                 className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
               />
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
                 className="bg-white w-full max-w-xl rounded-2xl shadow-2xl relative overflow-hidden"
               >
                 <div className="px-6 py-4 border-b flex justify-between items-center bg-slate-50">
                   <h2 className="text-xl font-bold text-slate-800">{editingId ? "Edit Essay" : "New Essay Prompt"}</h2>
-                  <button onClick={() => setOpenModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20}/></button>
+                  <button onClick={() => setOpenModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20} /></button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -303,11 +306,13 @@ const ManageWriteEssay = () => {
                     </select>
                   </div>
 
+
+
                   <button
                     disabled={submitLoading}
                     className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                   >
-                    {submitLoading ? <Loader2 className="animate-spin"/> : editingId ? "Save Changes" : "Publish Prompt"}
+                    {submitLoading ? <Loader2 className="animate-spin" /> : editingId ? "Save Changes" : "Publish Prompt"}
                   </button>
                 </form>
               </motion.div>
@@ -319,17 +324,17 @@ const ManageWriteEssay = () => {
         <AnimatePresence>
           {viewModal && viewData && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={() => setViewModal(false)}
                 className="absolute inset-0 bg-slate-900/70 backdrop-blur-md"
               />
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
                 className="bg-slate-900 text-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl relative"
               >
-                <button onClick={() => setViewModal(false)} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors z-10"><X/></button>
-                
+                <button onClick={() => setViewModal(false)} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors z-10"><X /></button>
+
                 <div className="p-8 space-y-6">
                   <div className="space-y-2">
                     <span className="text-indigo-400 text-xs font-bold tracking-[0.2em] uppercase">Essay Preview</span>
@@ -353,7 +358,7 @@ const ManageWriteEssay = () => {
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest">
-                      <AlignLeft size={16}/> Prompt Instructions
+                      <AlignLeft size={16} /> Prompt Instructions
                     </div>
                     <div className="bg-white/5 p-6 rounded-2xl border border-white/10 leading-relaxed text-slate-300 text-lg font-medium">
                       {viewData.description}

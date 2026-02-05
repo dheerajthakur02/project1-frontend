@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import { 
-  Plus, Edit, Trash2, X, Eye, Upload, 
-  Search, Headphones, Clock, BarChart, 
-  FileAudio, AlertCircle, Loader2 
+import {
+  Plus, Edit, Trash2, X, Eye, Upload,
+  Search, Headphones, Clock, BarChart,
+  FileAudio, AlertCircle, Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AdminLayout from "../../../components/Admin/AdminLayout";
@@ -15,6 +15,7 @@ const initialForm = {
   prepareTime: 10,
   answerTime: 40,
   difficulty: "Medium",
+  isPrediction: false,
   audio: null,
 };
 
@@ -53,17 +54,17 @@ const ManageRetellLecture = () => {
 
   /* ---------------- FILTERING ---------------- */
   const filteredQuestions = useMemo(() => {
-    return questions.filter(q => 
+    return questions.filter(q =>
       q.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [questions, searchTerm]);
 
   /* ---------------- FORM HANDLERS ---------------- */
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value, files, type, checked } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: files ? files[0] : value,
+      [name]: files ? files[0] : type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -79,6 +80,7 @@ const ManageRetellLecture = () => {
       prepareTime: q.prepareTime,
       answerTime: q.answerTime,
       difficulty: q.difficulty,
+      isPrediction: q.isPrediction || false,
       audio: null,
     });
     setEditingId(q._id);
@@ -141,7 +143,7 @@ const ManageRetellLecture = () => {
   return (
     <AdminLayout>
       <div className="p-8 bg-[#f8fafc] min-h-screen">
-        
+
         {/* HEADER SECTION */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
@@ -162,7 +164,7 @@ const ManageRetellLecture = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="md:col-span-3 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
+            <input
               type="text"
               placeholder="Search by title..."
               value={searchTerm}
@@ -207,9 +209,9 @@ const ManageRetellLecture = () => {
                   </tr>
                 ) : (
                   filteredQuestions.map((q) => (
-                    <motion.tr 
+                    <motion.tr
                       layout
-                      key={q._id} 
+                      key={q._id}
                       className="hover:bg-indigo-50/30 transition-colors group"
                     >
                       <td className="px-6 py-4">
@@ -222,20 +224,23 @@ const ManageRetellLecture = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col items-center text-xs space-y-1">
-                          <span className="flex items-center gap-1 text-slate-500"><Clock size={12}/> Prep: {q.prepareTime}s</span>
-                          <span className="flex items-center gap-1 text-indigo-600 font-medium"><BarChart size={12}/> Resp: {q.answerTime}s</span>
+                          <span className="flex items-center gap-1 text-slate-500"><Clock size={12} /> Prep: {q.prepareTime}s</span>
+                          <span className="flex items-center gap-1 text-indigo-600 font-medium"><BarChart size={12} /> Resp: {q.answerTime}s</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getDifficultyColor(q.difficulty)}`}>
                           {q.difficulty}
                         </span>
+                        {q.isPrediction && (
+                          <span className="block mt-1 text-[10px] font-bold text-white bg-purple-500 px-2 py-0.5 rounded uppercase">Prediction</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
-                          <ActionButton onClick={() => handleView(q._id)} icon={<Eye size={18}/>} color="text-slate-400 hover:text-indigo-600" />
-                          <ActionButton onClick={() => openEditModal(q)} icon={<Edit size={18}/>} color="text-slate-400 hover:text-emerald-600" />
-                          <ActionButton onClick={() => handleDelete(q._id)} icon={<Trash2 size={18}/>} color="text-slate-400 hover:text-rose-600" />
+                          <ActionButton onClick={() => handleView(q._id)} icon={<Eye size={18} />} color="text-slate-400 hover:text-indigo-600" />
+                          <ActionButton onClick={() => openEditModal(q)} icon={<Edit size={18} />} color="text-slate-400 hover:text-emerald-600" />
+                          <ActionButton onClick={() => handleDelete(q._id)} icon={<Trash2 size={18} />} color="text-slate-400 hover:text-rose-600" />
                         </div>
                       </td>
                     </motion.tr>
@@ -250,12 +255,12 @@ const ManageRetellLecture = () => {
         <AnimatePresence>
           {openModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={() => setOpenModal(false)}
                 className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
               />
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -263,7 +268,7 @@ const ManageRetellLecture = () => {
               >
                 <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                   <h2 className="text-xl font-bold text-slate-800">{editingId ? "Edit Lecture" : "Add New Lecture"}</h2>
-                  <button onClick={() => setOpenModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20}/></button>
+                  <button onClick={() => setOpenModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20} /></button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-5">
@@ -306,9 +311,11 @@ const ManageRetellLecture = () => {
                     </select>
                   </div>
 
+
+
                   <div className="relative group">
                     <input type="file" name="audio" onChange={handleChange} id="audio-upload" hidden />
-                    <label 
+                    <label
                       htmlFor="audio-upload"
                       className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-6 hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition-all"
                     >
@@ -339,18 +346,18 @@ const ManageRetellLecture = () => {
         <AnimatePresence>
           {viewModal && viewData && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={() => setViewModal(false)}
                 className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
               />
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 className="bg-slate-900 text-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl relative"
               >
-                <button 
+                <button
                   onClick={() => setViewModal(false)}
                   className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors z-10"
                 >
@@ -376,10 +383,10 @@ const ManageRetellLecture = () => {
 
                   {viewData.audioUrl && (
                     <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                       <p className="text-xs text-slate-400 mb-3 flex items-center gap-2"><FileAudio size={14}/> Audio Source</p>
-                       <audio controls className="w-full accent-indigo-500">
-                         <source src={viewData.audioUrl} />
-                       </audio>
+                      <p className="text-xs text-slate-400 mb-3 flex items-center gap-2"><FileAudio size={14} /> Audio Source</p>
+                      <audio controls className="w-full accent-indigo-500">
+                        <source src={viewData.audioUrl} />
+                      </audio>
                     </div>
                   )}
 
@@ -403,8 +410,8 @@ const ManageRetellLecture = () => {
 
 /* Sub-component for clean action buttons */
 const ActionButton = ({ onClick, icon, color }) => (
-  <button 
-    onClick={onClick} 
+  <button
+    onClick={onClick}
     className={`p-2 rounded-lg bg-slate-50 hover:bg-white hover:shadow-md transition-all ${color}`}
   >
     {icon}

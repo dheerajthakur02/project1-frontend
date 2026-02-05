@@ -10,6 +10,7 @@ const ManageReadAloud = () => {
     const [formData, setFormData] = useState({
         name: '',
         text: '',
+        text: '',
         difficulty: 'medium'
     });
     const [submitting, setSubmitting] = useState(false);
@@ -40,7 +41,7 @@ const ManageReadAloud = () => {
         setSubmitting(true);
         try {
             await axios.post('http://localhost:5000/api/read-aloud', formData, { withCredentials: true });
-            setFormData({ name: '', text: '', difficulty: 'medium' });
+            setFormData({ name: '', text: '', difficulty: 'medium', isPrediction: false });
             fetchQuestions();
             alert('Question added successfully');
         } catch (error) {
@@ -148,6 +149,7 @@ const ManageReadAloud = () => {
                                         <h3 className="font-bold text-slate-800">{q.name}</h3>
                                         <div className="flex gap-2 mt-1">
                                             <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase">{q.difficulty}</span>
+
                                             <span className="text-xs text-slate-400 font-mono bg-slate-100 px-2 py-0.5 rounded">{q.id}</span>
                                         </div>
                                     </div>

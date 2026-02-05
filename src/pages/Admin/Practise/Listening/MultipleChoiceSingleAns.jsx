@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  Plus, Edit, Trash2, Search, Eye, Headphones, X, PlusCircle,
-  CheckCircle2, Loader2, Music, AlertCircle, PlayCircle, MoreVertical, FileText
+  CheckCircle2, Loader2, Music, AlertCircle, PlayCircle, MoreVertical, FileText, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -33,7 +32,8 @@ const ManageListeningMCSA = () => {
       { text: "", isCorrect: false }
     ],
     difficulty: "Medium",
-    audio: null
+    audio: null,
+    isPrediction: false
   };
   const [form, setForm] = useState(initialForm);
 
@@ -71,6 +71,7 @@ const ManageListeningMCSA = () => {
     fd.append("transcript", form.transcript);
     fd.append("options", JSON.stringify(form.options));
     fd.append("difficulty", form.difficulty);
+    fd.append("isPrediction", form.isPrediction);
     if (form.audio) fd.append("audio", form.audio);
 
     try {
@@ -105,7 +106,8 @@ const ManageListeningMCSA = () => {
       transcript: q.transcript || "",
       options: q.options.map(o => ({ text: o.text, isCorrect: o.isCorrect })),
       difficulty: q.difficulty || "Medium",
-      audio: null // Reset file input
+      audio: null, // Reset file input
+      isPrediction: q.isPrediction || false
     });
     setIsModalOpen(true);
   };
@@ -182,7 +184,14 @@ const ManageListeningMCSA = () => {
                     <Headphones size={24} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 text-lg">{q.title}</h3>
+                    <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                      {q.title}
+                      {q.isPrediction && (
+                        <span className="bg-amber-100 text-amber-700 text-[10px] font-black px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <Sparkles size={10} /> Prediction
+                        </span>
+                      )}
+                    </h3>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">MCSA Question</p>
                   </div>
                 </div>
@@ -241,6 +250,19 @@ const ManageListeningMCSA = () => {
                           <option value="Medium">Medium</option>
                           <option value="Hard">Hard</option>
                         </select>
+                      </div>
+
+                      <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <input
+                          type="checkbox"
+                          checked={form.isPrediction}
+                          onChange={(e) => setForm({ ...form, isPrediction: e.target.checked })}
+                          className="w-5 h-5 accent-indigo-600 cursor-pointer"
+                        />
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={16} className="text-indigo-500" />
+                          <span className="text-sm font-bold text-slate-700">Mark as Prediction Question</span>
+                        </div>
                       </div>
                       <div>
                         <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Upload Audio</label>

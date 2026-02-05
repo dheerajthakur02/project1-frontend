@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   Plus, Edit, Trash2, Search, Eye, Headphones, X, PlusCircle,
   CheckCircle2, Loader2, Music, AlertCircle, PlayCircle,
-  Type, MousePointer2, Highlighter, FileText
+  Type, MousePointer2, Highlighter, FileText, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -31,7 +31,10 @@ const ManageHIW = () => {
     mistakes: [], // Array of { index, word }
     difficulty: "Medium",
     audio: null,
-    transcript: ""
+    difficulty: "Medium",
+    audio: null,
+    transcript: "",
+    isPrediction: false
   };
   const [form, setForm] = useState(initialForm);
 
@@ -67,6 +70,7 @@ const ManageHIW = () => {
     fd.append("difficulty", form.difficulty);
     fd.append("transcript", form.transcript);
     fd.append("mistakes", JSON.stringify(form.mistakes));
+    fd.append("isPrediction", form.isPrediction);
     if (form.audio) fd.append("audio", form.audio);
 
     try {
@@ -178,7 +182,14 @@ const ManageHIW = () => {
                     <Highlighter size={24} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 text-lg">{q.title}</h3>
+                    <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                      {q.title}
+                      {q.isPrediction && (
+                        <span className="bg-amber-100 text-amber-700 text-[10px] font-black px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <Sparkles size={10} /> Prediction
+                        </span>
+                      )}
+                    </h3>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
                       {q.mistakes?.length || 0} Mistakes Marked • {q.attemptCount || 0} Attempts
                     </p>
@@ -194,7 +205,7 @@ const ManageHIW = () => {
                   <button onClick={() => { setViewData(q); setIsViewModalOpen(true); }} className="p-3 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"><Eye size={20} /></button>
                   <button onClick={() => {
                     setEditingId(q._id);
-                    setForm({ ...q, audio: null, mistakes: q.mistakes || [], transcript: q.transcript || "" });
+                    setForm({ ...q, audio: null, mistakes: q.mistakes || [], transcript: q.transcript || "", isPrediction: q.isPrediction || false });
                     setIsModalOpen(true);
                   }} className="p-3 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"><Edit size={20} /></button>
                   <button onClick={() => handleDelete(q._id)} className="p-3 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={20} /></button>
@@ -232,6 +243,18 @@ const ManageHIW = () => {
                         <select value={form.difficulty} onChange={e => setForm({ ...form, difficulty: e.target.value })} className="w-full mt-2 p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-slate-700">
                           <option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option>
                         </select>
+                      </div>
+                      <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <input
+                          type="checkbox"
+                          checked={form.isPrediction}
+                          onChange={(e) => setForm({ ...form, isPrediction: e.target.checked })}
+                          className="w-5 h-5 accent-indigo-600 cursor-pointer"
+                        />
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={16} className="text-indigo-500" />
+                          <span className="text-sm font-bold text-slate-700">Mark as Prediction Question</span>
+                        </div>
                       </div>
                       <div>
                         <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Audio Upload</label>

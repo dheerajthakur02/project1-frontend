@@ -18,21 +18,38 @@ import axios from "axios";
     fetchAttempts();
   }, [mode]);
 
-  const fetchAttempts = async () => {
-    try {
-      setLoading(true);
-      if(mode === "my"){
-        setAttempts(question?.lastAttempts)
-      }else{
-          const res = await axios.get("/api/choose-single-answer/community")
-          setAttempts(res?.data?.data)
-      }  
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+ const fetchAttempts = async () => {
+  try {
+    setLoading(true);
+
+    if (mode === "my") {
+      setAttempts(question?.lastAttempts || []);
+    } else {
+      const res = await axios.get(
+        `/api/choose-single-answer/${question._id}/community`
+      );
+
+      const formattedAttempts = res.data.data.flatMap((item) =>
+        item.attempts.map((attempt) => ({
+          ...attempt,
+          user: item.user,
+          userId: item.userId,
+        }))
+      );
+      formattedAttempts.sort(
+  (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+);
+
+
+      setAttempts(formattedAttempts);
     }
-  };
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleViewPrevious = (attempt) => {
     console.log("View attempt:", attempt);
@@ -94,11 +111,13 @@ import axios from "axios";
                   </div>
 
                   <div>
-                    <p className="font-bold text-slate-800">
+                    
+                     <p className="font-bold text-slate-800">
                       {mode === "community"
-                        ? attempt?.user?.name || "Anonymous"
+                        ? attempt.user?.name || "Anonymous"
                         : "Krishna Kant"}
                     </p>
+
                     <p className="text-xs text-slate-400">
                       {new Date(attempt.createdAt).toLocaleDateString()}{" "}
                       {new Date(attempt.createdAt).toLocaleTimeString([], {

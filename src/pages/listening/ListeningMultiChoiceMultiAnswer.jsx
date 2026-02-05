@@ -1,13 +1,36 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, CheckCircle, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Hash, BarChart2, Info, X, Play, Pause, Volume2, Languages, Eye, Users } from 'lucide-react';
-import { submitListeningMCQMultipleAttempt, getListeningMCQMultipleQuestions } from '../../services/api'; // We will create these next
+import { ArrowLeft, CheckCircle, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Hash, BarChart2, Info, X, Play, Pause, Volume2, Languages, Eye, Users, FileText } from 'lucide-react';
+import { submitListeningMCQMultipleAttempt, getListeningMCQMultipleQuestions } from '../../services/api';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 
 
+const Toast = ({ show, onClose, title, children }) => {
+    if (!show) return null;
+
+    return (
+        <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className="bg-white text-slate-900 rounded-2xl shadow-2xl p-6 max-w-lg w-[90vw] relative border border-slate-200">
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors"
+                >
+                    <X size={18} />
+                </button>
+                <div className="mb-2 flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{title}</span>
+                </div>
+                <div className="max-h-60 overflow-y-auto pr-2 custom-scrollbar text-sm leading-relaxed text-slate-700">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 const AttemptHistory = ({ question, attempts, onSelectAttempt }) => {
-   
+
     const [activeTab, setActiveTab] = useState("my");
     const [communityAttempts, setCommunityAttempts] = useState([]);
     const [loadingCommunity, setLoadingCommunity] = useState(false);
@@ -126,8 +149,8 @@ const AttemptHistory = ({ question, attempts, onSelectAttempt }) => {
                                 <div className="flex items-baseline gap-1">
                                     <span
                                         className={`text-xl font-bold ${attempt.score === attempt.maxScore
-                                                ? "text-green-600"
-                                                : "text-blue-600"
+                                            ? "text-green-600"
+                                            : "text-blue-600"
                                             }`}
                                     >
                                         {attempt.score}
@@ -142,8 +165,8 @@ const AttemptHistory = ({ question, attempts, onSelectAttempt }) => {
                             <div>
                                 <span
                                     className={`px-3 py-1 rounded-full text-xs font-bold ${attempt.totalScore === attempt.maxScore
-                                            ? "bg-green-100 text-green-700"
-                                            : "bg-slate-100 text-slate-600"
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-slate-100 text-slate-600"
                                         }`}
                                 >
                                     {attempt.totalScore === attempt.maxScore
@@ -191,6 +214,10 @@ const ListeningMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, ne
     const [status, setStatus] = useState("idle");
 
     const [audioFinished, setAudioFinished] = useState(false);
+
+    // Transcribe & Answer States
+    const [showTranscript, setShowTranscript] = useState(false);
+    const [showAnswer, setShowAnswer] = useState(false);
 
 
     // Timer Effect
@@ -252,6 +279,9 @@ const ListeningMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, ne
             setAudioProgress(0);
             setAudioFinished(false);
 
+            setShowTranscript(false);
+            setShowAnswer(false);
+
 
             setHistory(question.lastAttempts || []);
         }
@@ -271,6 +301,8 @@ const ListeningMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, ne
         setPrepTimer(3);
         setAudioProgress(0);
         setAudioFinished(false);
+        setShowTranscript(false);
+        setShowAnswer(false);
 
     }
 
@@ -492,19 +524,25 @@ const ListeningMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, ne
 
             {/* Footer Nav */}
             <div className="flex items-center justify-between pb-6 mt-6">
-                {/* LEFT SIDE: Translate, Answer, Redo */}
+                {/* LEFT SIDE: Transcribe, Answer, Redo */}
                 <div className="flex items-center gap-4">
-                    {/* Translate (Static) */}
-                    <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default">
-                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
-                            <Languages size={18} />
+                    {/* Transcribe */}
+                    <button
+                        onClick={() => { setShowTranscript(!showTranscript); setShowAnswer(false); }}
+                        className={`flex flex-col items-center gap-1 transition-colors ${showTranscript ? "text-blue-600" : "text-slate-600 hover:text-slate-800"}`}
+                    >
+                        <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center shadow-sm ${showTranscript ? "border-blue-500 bg-blue-50" : "border-slate-300 bg-white"}`}>
+                            <FileText size={18} />
                         </div>
-                        <span className="text-xs font-bold">Translate</span>
+                        <span className="text-xs font-bold">Transcribe</span>
                     </button>
 
-                    {/* Answer (Static) */}
-                    <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default text-opacity-50">
-                        <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
+                    {/* Answer */}
+                    <button
+                        onClick={() => { setShowAnswer(!showAnswer); setShowTranscript(false); }}
+                        className={`flex flex-col items-center gap-1 transition-colors ${showAnswer ? "text-emerald-600" : "text-slate-600 hover:text-slate-800"}`}
+                    >
+                        <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center shadow-sm ${showAnswer ? "border-emerald-500 bg-emerald-50" : "border-slate-300 bg-white"}`}>
                             <Eye size={18} />
                         </div>
                         <span className="text-xs font-bold">Answer</span>
@@ -665,6 +703,33 @@ const ListeningMultiChoiceMultiAnswer = ({ question, setActiveSpeechQuestion, ne
                     </div>
                 </>
             )}
+
+            {/* --- TOASTS --- */}
+            <Toast
+                show={showTranscript}
+                onClose={() => setShowTranscript(false)}
+                title="Audio Transcript"
+            >
+                <div className="text-slate-700 leading-relaxed space-y-2">
+                    {question?.transcript || "No transcript available."}
+                </div>
+            </Toast>
+
+            <Toast
+                show={showAnswer}
+                onClose={() => setShowAnswer(false)}
+                title="Correct Answer"
+            >
+                <div className="space-y-3">
+                    <p className="text-slate-500 text-xs uppercase font-bold">The correct options are:</p>
+                    {question?.correctOptions?.map((opt, i) => (
+                        <div key={i} className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-800 font-medium text-sm">
+                            <CheckCircle size={16} className="text-emerald-500 flex-shrink-0" />
+                            {opt}
+                        </div>
+                    ))}
+                </div>
+            </Toast>
 
         </div>
     );

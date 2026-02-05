@@ -6,7 +6,7 @@ import axios from 'axios';
 
 
 
-const AttemptHistory = ({ attempts, onSelectAttempt }) => {
+const AttemptHistory = ({question, attempts, onSelectAttempt }) => {
   const [activeTab, setActiveTab] = useState("my");
   const [communityAttempts, setCommunityAttempts] = useState([]);
   const [loadingCommunity, setLoadingCommunity] = useState(false);
@@ -14,7 +14,7 @@ const AttemptHistory = ({ attempts, onSelectAttempt }) => {
   const fetchCommunityAttempts = async () => {
     try {
       setLoadingCommunity(true);
-      const res = await axios.get("api/listening-fib/community");
+      const res = await axios.get(`api/listening-fib/${question._id}/community`);
     
         setCommunityAttempts(res?.data?.data);
       
@@ -633,6 +633,7 @@ setAudioProgress(0);
             {/* History Section */}
             {question && (
                 <AttemptHistory
+                question={question}
                     attempts={question.lastAttempts || []} // Pass whatever history we have
                     onSelectAttempt={openAttempt}
                 />

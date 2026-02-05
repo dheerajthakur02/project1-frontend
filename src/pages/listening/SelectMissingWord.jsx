@@ -33,7 +33,11 @@ import axios from "axios";
 
 const PREP_TIME = 3;
 
-const AttemptHistory = ({ attempts, setResult, setStatus, onSelectAttempt }) => {
+
+
+
+const AttemptHistory = ({ question,attempts, setResult, setStatus,onSelectAttempt  }) => {
+
   const [activeTab, setActiveTab] = useState("my");
   const [communityAttempts, setCommunityAttempts] = useState([]);
   const [loadingCommunity, setLoadingCommunity] = useState(false);
@@ -41,9 +45,12 @@ const AttemptHistory = ({ attempts, setResult, setStatus, onSelectAttempt }) => 
   const fetchCommunityAttempts = async () => {
     try {
       setLoadingCommunity(true);
-      const res = await axios.get("api/listening-fib/community");
 
-      setCommunityAttempts(res?.data?.data);
+
+
+      const res = await axios.get(`api/listening-fib/${question._id}/community`);
+    
+        setCommunityAttempts(res?.data?.data);
 
     } catch (err) {
       console.error("Community fetch error:", err);
@@ -447,6 +454,7 @@ export default function SelectMissingWord({
         className="hidden"
       />
 
+
       {/* ================= FOOTER CONTROLS ================= */}
       <div className="flex items-center justify-between pb-6 mt-6">
         <div className="flex items-center gap-4">
@@ -493,6 +501,9 @@ export default function SelectMissingWord({
       </div>
 
       <AttemptHistory attempts={question?.lastAttempts} setResult={setResult} setStatus={setStatus} />
+
+      <AttemptHistory question={question} attempts={question?.lastAttempts} setResult={setResult} setStatus={setStatus}/>
+
 
       {/* RESULT */}
       {status === "result" && result && (

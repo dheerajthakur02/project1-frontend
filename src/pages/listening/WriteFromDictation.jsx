@@ -41,7 +41,7 @@ import axios from "axios";
       const fetchCommunityAttempts = async () => {
     try {
   
-      const res = await axios.get("api/write-from-dictation/community");
+      const res = await axios.get(`api/write-from-dictation/${question._id}/community`);
       
       console.log(res?.data?.data)
         setCommunity(res?.data?.data);

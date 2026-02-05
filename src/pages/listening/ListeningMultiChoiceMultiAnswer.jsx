@@ -6,7 +6,7 @@ import axios from 'axios';
 
 
 
-const AttemptHistory = ({ attempts, onSelectAttempt }) => {
+const AttemptHistory = ({question, attempts, onSelectAttempt }) => {
     console.log(attempts)
   const [activeTab, setActiveTab] = useState("my");
   const [communityAttempts, setCommunityAttempts] = useState([]);
@@ -15,7 +15,7 @@ const AttemptHistory = ({ attempts, onSelectAttempt }) => {
   const fetchCommunityAttempts = async () => {
     try {
       setLoadingCommunity(true);
-      const res = await axios.get("api/listening-multi-choice-multi-answer/community");
+      const res = await axios.get(`api/listening-multi-choice-multi-answer/${question._id}/community`);
       
       console.log(res?.data?.data)
         setCommunityAttempts(res?.data?.data);
@@ -543,6 +543,7 @@ setAudioFinished(false);
             {/* History Section */}
             {question && (
                 <AttemptHistory
+                question={question}
                     attempts={history}
                     onSelectAttempt={openAttempt}
                 />

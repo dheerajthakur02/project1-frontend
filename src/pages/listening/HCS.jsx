@@ -31,7 +31,7 @@ import axios from "axios";
 
 const PREP_TIME = 3;
 
-const AttemptHistory = ({ attempts, setResult, setStatus,onSelectAttempt  }) => {
+const AttemptHistory = ({ question, attempts, setResult, setStatus,onSelectAttempt  }) => {
   const [activeTab, setActiveTab] = useState("my");
   const [communityAttempts, setCommunityAttempts] = useState([]);
   const [loadingCommunity, setLoadingCommunity] = useState(false);
@@ -39,7 +39,7 @@ const AttemptHistory = ({ attempts, setResult, setStatus,onSelectAttempt  }) => 
   const fetchCommunityAttempts = async () => {
     try {
       setLoadingCommunity(true);
-      const res = await axios.get("api/hcs/community");
+      const res = await axios.get(`api/hcs/${question._id}/community`);
     
         setCommunityAttempts(res?.data?.data);
       
@@ -445,7 +445,7 @@ export default function HCS({ question, setActiveSpeechQuestion, nextButton, pre
           </div>
         </div>
       </div>
-<AttemptHistory attempts={question?.lastAttempts} />
+<AttemptHistory question={question} attempts={question?.lastAttempts} />
       {/* AUDIO */}
       <audio
         ref={audioRef}

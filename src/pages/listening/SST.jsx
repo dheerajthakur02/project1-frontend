@@ -111,7 +111,7 @@ const [loadingCommunity, setLoadingCommunity] = useState(false);
 const fetchCommunityAttempts = async () => {
   try {
     setLoadingCommunity(true);
-    const res = await axios.get("/api/sst/community")
+    const res = await axios.get(`/api/sst/${question._id}/community`)
     console.log(res?.data?.data)
   const data = res?.data?.data
     if (data) {

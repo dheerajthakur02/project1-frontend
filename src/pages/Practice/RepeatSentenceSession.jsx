@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import {
-    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye, Languages
+    ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye, FileText, X
 } from 'lucide-react';
 import { submitRepeatAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
@@ -24,6 +24,7 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
 
     // Flash Answer State
     const [showFlashAnswer, setShowFlashAnswer] = useState(false);
+    const [showTranscript, setShowTranscript] = useState(false);
 
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
@@ -213,6 +214,10 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
         setTimeout(() => {
             setShowFlashAnswer(false);
         }, 4000); // Show for 4 seconds
+    };
+
+    const handleTranscribe = () => {
+        setShowTranscript(true);
     };
 
     const progressPercent = ((maxTime - timeLeft) / maxTime) * 100;
@@ -459,12 +464,15 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
             <div className="flex items-center justify-between pb-10">
                 {/* LEFT SIDE: Translate, Answer, Redo */}
                 <div className="flex items-center gap-4">
-                    {/* Translate (Static) */}
-                    <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                    {/* Transcribe */}
+                    <button
+                        onClick={handleTranscribe}
+                        className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors"
+                    >
                         <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
-                            <Languages size={18} />
+                            <FileText size={18} />
                         </div>
-                        <span className="text-xs font-bold">Translate</span>
+                        <span className="text-xs font-bold">Transcribe</span>
                     </button>
 
                     {/* Answer (Flash) */}
@@ -516,6 +524,27 @@ const RepeatSentenceSession = ({ question, setActiveSpeechQuestion, nextButton, 
                     <p className="font-medium text-sm leading-relaxed">
                         {question.transcript || "No transcript available."}
                     </p>
+                </div>
+            )}
+
+            {/* Transcribe Toast */}
+            {showTranscript && (
+                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
+                    <div className="bg-white text-slate-800 border border-slate-200 px-6 py-4 rounded-xl shadow-2xl max-w-2xl flex items-start gap-4">
+                        <FileText className="shrink-0 mt-1 text-blue-600" size={20} />
+                        <div className="space-y-1">
+                            <h4 className="font-bold text-sm text-blue-700">Audio Transcript</h4>
+                            <p className="text-sm leading-relaxed text-slate-700 max-h-40 overflow-y-auto pr-2">
+                                {question.transcript || "No transcript available."}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShowTranscript(false)}
+                            className="hover:bg-slate-100 p-1 rounded-full transition-colors"
+                        >
+                            <X size={16} className="text-slate-500" />
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

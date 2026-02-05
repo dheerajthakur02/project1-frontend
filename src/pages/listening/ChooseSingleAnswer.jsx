@@ -96,7 +96,7 @@ import axios from "axios";
                   <div>
                     <p className="font-bold text-slate-800">
                       {mode === "community"
-                        ? attempt?.user.name || "Anonymous"
+                        ? attempt?.user?.name || "Anonymous"
                         : "Krishna Kant"}
                     </p>
                     <p className="text-xs text-slate-400">
@@ -114,7 +114,7 @@ import axios from "axios";
                   onClick={() => handleViewPrevious(attempt)}
                   className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold px-6 py-2 rounded-xl flex items-center gap-2 shadow-sm transition"
                 >
-                  Score {attempt.totalScore}/10
+                  Score {attempt.isCorrect?"1":"0"}/1
                   <RotateCcw size={16} />
                 </button>
 

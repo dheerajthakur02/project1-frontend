@@ -207,7 +207,7 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion, nextButton, p
                 </button>
 
                 <p className="text-xs text-slate-400 text-center">
-                  {MIN_WORDS}–{MAX_WORDS} words
+                  50–70 words
                 </p>
               </div>
             </div>

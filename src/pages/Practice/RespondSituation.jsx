@@ -4,7 +4,7 @@ import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognitio
 import {
     ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Play, Square, Mic, Info, BarChart2, CheckCircle, Volume2, PlayCircle, History, Eye, SkipForward,
     Target, Languages,
-    Pause
+    Pause, FileText
 } from 'lucide-react';
 import { submitRespondSituationAttempt, submitSummarizeGroupAttempt } from '../../services/api';
 import ImageAttemptHistory from './ImageAttemptHistory';
@@ -23,6 +23,7 @@ const RespondSituation = ({ question, setActiveSpeechQuestion, nextButton, previ
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
     const [showFlashAnswer, setShowFlashAnswer] = useState(false); // Answer Flash State
+    const [showTranscript, setShowTranscript] = useState(false); // Transcript Flash State
 
     const mediaRecorderRef = useRef(null);
     const audioChunks = useRef([]);
@@ -490,12 +491,18 @@ const RespondSituation = ({ question, setActiveSpeechQuestion, nextButton, previ
             <div className="flex items-center justify-between pb-10">
                 {/* LEFT SIDE: Translate, Answer, Redo */}
                 <div className="flex items-center gap-4">
-                    {/* Translate (Static) */}
-                    <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+                    {/* Transcribe (Working) */}
+                    <button
+                        onClick={() => {
+                            setShowTranscript(true);
+                            setTimeout(() => setShowTranscript(false), 6000);
+                        }}
+                        className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors"
+                    >
                         <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
-                            <Languages size={18} />
+                            <FileText size={18} />
                         </div>
-                        <span className="text-xs font-bold">Translate</span>
+                        <span className="text-xs font-bold">Transcribe</span>
                     </button>
 
                     {/* Answer (Working) */}
@@ -544,8 +551,19 @@ const RespondSituation = ({ question, setActiveSpeechQuestion, nextButton, previ
             {/* Flash Message Overlay for Answer */}
             {showFlashAnswer && (
                 <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-2xl text-center border border-slate-700">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Correct Answer</p>
                     <p className="font-medium text-lg leading-relaxed">
-                        {question.answer || question.transcript || "No answer available."}
+                        {question.answer || "No answer available."}
+                    </p>
+                </div>
+            )}
+
+            {/* Flash Message Overlay for Transcript */}
+            {showTranscript && (
+                <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-2xl text-center border border-slate-700">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Audio Transcript</p>
+                    <p className="font-medium text-lg leading-relaxed">
+                        {question.transcript || "No transcript available."}
                     </p>
                 </div>
             )}

@@ -421,12 +421,10 @@ function Practice() {
         ],
         Reading: [
             { id: 'Fill in the Blanks (Dropdown)', isAi: true, onClick: fetchReadingFIBDropdown },
-            { id: 'Multiple Choice, Choose Multiple Answer', isAi: true, onClick: fetchReadingMultiChoiceMultiAnswer },
-            { id: 'Multiple Choice, Choose Single Answer', isAi: true, onClick: fetchReadingMultiChoiceSingleAnswer },
             { id: 'Fill in the Blanks (Drag and Drop)', isAi: true, onClick: fetchReadingFIBDragDrop },
-            { id: 'Re-order Paragraph', isAi: true, onClick: fetchReadingReorder }
-
-
+            { id: 'Re-order Paragraph', isAi: true, onClick: fetchReadingReorder },
+            { id: 'Multiple Choice, Choose Single Answer', isAi: true, onClick: fetchReadingMultiChoiceSingleAnswer },
+            { id: 'Multiple Choice, Choose Multiple Answer', isAi: true, onClick: fetchReadingMultiChoiceMultiAnswer }
         ],
 
         Listening: [

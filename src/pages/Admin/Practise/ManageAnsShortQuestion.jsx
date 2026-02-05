@@ -15,7 +15,6 @@ const initialForm = {
   answer: "",
   transcript: "",
   prepareTime: 3,
-  prepareTime: 3,
   answerTime: 10,
   difficulty: "Easy",
   audio: null,

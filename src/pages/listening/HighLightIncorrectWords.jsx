@@ -465,15 +465,6 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
         </div>
       )}
 
-      {/* ================= HISTORY SECTION ================= */}
-
-      <AttemptHistoryHIW
-        questionId={question}
-        currentAttemptId={result?._id}
-        onSelectAttempt={handleSelectAttempt}
-      />
-
-
       {/* ================= FOOTER CONTROLS ================= */}
       <div className="flex items-center justify-between pb-6 mt-6">
         <div className="flex items-center gap-4">
@@ -518,6 +509,17 @@ export default function HighlightIncorrectWords({ question, setActiveSpeechQuest
           </button>
         </div>
       </div>
+
+      {/* ================= HISTORY SECTION ================= */}
+
+      <AttemptHistoryHIW
+        questionId={question}
+        currentAttemptId={result?._id}
+        onSelectAttempt={handleSelectAttempt}
+      />
+
+
+
 
       {/* ================= AUDIO ELEMENT ================= */}
       <audio

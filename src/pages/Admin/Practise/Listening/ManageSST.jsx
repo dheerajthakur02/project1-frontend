@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { 
-  Plus, Edit, Trash2, Search, Eye, Clock, Headphones, 
-  Filter, Loader2, Sparkles, CheckCircle2, X, PlusCircle, 
+import {
+  Plus, Edit, Trash2, Search, Eye, Clock, Headphones,
+  Filter, Loader2, Sparkles, CheckCircle2, X, PlusCircle,
   AudioLines, FileText, MessageSquare, Tag
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,7 +20,7 @@ const ManageSST = () => {
   const [viewData, setViewData] = useState(null);
   const [submitLoading, setSubmitLoading] = useState(false);
 
-  const initialForm = { title: "", difficulty: "Medium", keywords: "", answer: "", audio: null };
+  const initialForm = { title: "", difficulty: "Medium", keywords: "", answer: "", transcript: "", audio: null };
   const [form, setForm] = useState(initialForm);
 
   const fetchQuestions = async () => {
@@ -65,7 +65,7 @@ const ManageSST = () => {
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Summarize Spoken Text</h2>
             <p className="text-slate-500 font-medium">Manage listening-to-writing summary tasks</p>
           </div>
-          <motion.button 
+          <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
             onClick={() => { setEditingId(null); setForm(initialForm); setIsModalOpen(true); }}
             className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-100"
@@ -77,7 +77,7 @@ const ManageSST = () => {
         {/* SEARCH */}
         <div className="relative group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500" size={20} />
-          <input 
+          <input
             type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by title..."
             className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all"
@@ -87,13 +87,13 @@ const ManageSST = () => {
         {/* LIST */}
         <div className="space-y-4">
           {loading ? (
-             <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto text-indigo-500" size={40}/></div>
+            <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto text-indigo-500" size={40} /></div>
           ) : (
             filteredQuestions.map((q) => (
               <motion.div key={q._id} whileHover={{ y: -4 }} className="grid grid-cols-1 md:grid-cols-12 items-center bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:border-indigo-200 transition-all group">
                 <div className="col-span-6 flex items-center gap-5">
                   <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                    <Headphones size={20}/>
+                    <Headphones size={20} />
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-800">{q.title}</h3>
@@ -101,12 +101,12 @@ const ManageSST = () => {
                   </div>
                 </div>
                 <div className="col-span-3 text-center">
-                   <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase ${q.difficulty === 'Hard' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>{q.difficulty}</span>
+                  <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase ${q.difficulty === 'Hard' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>{q.difficulty}</span>
                 </div>
                 <div className="col-span-3 flex justify-end gap-2">
-                    <button onClick={() => { setViewData(q); setIsViewModalOpen(true); }} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"><Eye size={18}/></button>
-                    <button onClick={() => { setEditingId(q._id); setForm({...q, keywords: q.keywords?.join(", "), audio: null}); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"><Edit size={18}/></button>
-                    <button onClick={async () => { if(window.confirm("Delete?")) { await axios.delete(`/api/sst/${q._id}`); fetchQuestions(); } }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"><Trash2 size={18}/></button>
+                  <button onClick={() => { setViewData(q); setIsViewModalOpen(true); }} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"><Eye size={18} /></button>
+                  <button onClick={() => { setEditingId(q._id); setForm({ ...q, keywords: q.keywords?.join(", "), audio: null, transcript: q.transcript || "" }); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"><Edit size={18} /></button>
+                  <button onClick={async () => { if (window.confirm("Delete?")) { await axios.delete(`/api/sst/${q._id}`); fetchQuestions(); } }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"><Trash2 size={18} /></button>
                 </div>
               </motion.div>
             ))
@@ -126,12 +126,13 @@ const ManageSST = () => {
                 <form onSubmit={handleSave} className="p-8 overflow-y-auto space-y-6">
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <input placeholder="Question Title" value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:bg-white" required />
-                      <textarea placeholder="Reference Answer / Summary" rows={6} value={form.answer} onChange={e => setForm({...form, answer: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:bg-white resize-none" required />
-                      <input placeholder="Keywords (comma separated)" value={form.keywords} onChange={e => setForm({...form, keywords: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:bg-white" />
+                      <input placeholder="Question Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:bg-white" required />
+                      <textarea placeholder="Reference Answer / Summary" rows={4} value={form.answer} onChange={e => setForm({ ...form, answer: e.target.value })} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:bg-white resize-none" required />
+                      <textarea placeholder="Transcript (Required)" rows={4} value={form.transcript} onChange={e => setForm({ ...form, transcript: e.target.value })} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:bg-white resize-none" required />
+                      <input placeholder="Keywords (comma separated)" value={form.keywords} onChange={e => setForm({ ...form, keywords: e.target.value })} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:bg-white" />
                     </div>
                     <div className="space-y-4">
-                      <select value={form.difficulty} onChange={e => setForm({...form, difficulty: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                      <select value={form.difficulty} onChange={e => setForm({ ...form, difficulty: e.target.value })} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
                         <option value="Easy">Easy</option>
                         <option value="Medium">Medium</option>
                         <option value="Hard">Hard</option>
@@ -139,12 +140,12 @@ const ManageSST = () => {
                       <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-3xl p-10 hover:bg-indigo-50 cursor-pointer transition-all">
                         <AudioLines className="text-indigo-400 mb-2" size={32} />
                         <span className="text-xs font-bold text-slate-500">{form.audio ? form.audio.name : "Upload SST Audio"}</span>
-                        <input type="file" hidden onChange={e => setForm({...form, audio: e.target.files[0]})} accept="audio/*" />
+                        <input type="file" hidden onChange={e => setForm({ ...form, audio: e.target.files[0] })} accept="audio/*" />
                       </label>
                     </div>
                   </div>
                   <button disabled={submitLoading} className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl">
-                    {submitLoading ? <Loader2 className="animate-spin mx-auto"/> : "Save SST Question"}
+                    {submitLoading ? <Loader2 className="animate-spin mx-auto" /> : "Save SST Question"}
                   </button>
                 </form>
               </motion.div>
@@ -164,17 +165,17 @@ const ManageSST = () => {
                       <span className="bg-indigo-100 text-indigo-700 text-[10px] font-black px-3 py-1 rounded-full uppercase">SST Preview</span>
                       <h2 className="text-3xl font-black text-slate-900">{viewData.title}</h2>
                     </div>
-                    <button onClick={() => setIsViewModalOpen(false)} className="p-3 bg-slate-100 rounded-full"><X/></button>
+                    <button onClick={() => setIsViewModalOpen(false)} className="p-3 bg-slate-100 rounded-full"><X /></button>
                   </div>
                   <div className="bg-slate-900 rounded-3xl p-6">
-                    <audio controls className="w-full"><source src={viewData.audioUrl}/></audio>
+                    <audio controls className="w-full"><source src={viewData.audioUrl} /></audio>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-indigo-600 font-black text-xs uppercase tracking-widest"><FileText size={16}/> Transcript</div>
+                    <div className="flex items-center gap-2 text-indigo-600 font-black text-xs uppercase tracking-widest"><FileText size={16} /> Transcript</div>
                     <div className="p-6 bg-slate-50 rounded-2xl text-slate-600 italic text-sm border">{viewData.transcript}</div>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-emerald-600 font-black text-xs uppercase tracking-widest"><MessageSquare size={16}/> Model Answer</div>
+                    <div className="flex items-center gap-2 text-emerald-600 font-black text-xs uppercase tracking-widest"><MessageSquare size={16} /> Model Answer</div>
                     <div className="p-6 bg-emerald-50 rounded-2xl text-emerald-900 text-sm border border-emerald-100">{viewData.answer}</div>
                   </div>
                   <div className="flex flex-wrap gap-2">

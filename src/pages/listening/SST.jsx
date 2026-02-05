@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Clock, Volume2, RotateCcw, ChevronRight, X, ChevronLeft, RefreshCw, CheckCircle, Shuffle, History, Share2, Trash2, Languages, Eye } from "lucide-react";
+import { ArrowLeft, Clock, Volume2, RotateCcw, ChevronRight, X, ChevronLeft, RefreshCw, CheckCircle, Shuffle, History, Share2, Trash2, FileText, Eye } from "lucide-react";
 import { useSelector } from "react-redux";
 
 import { submitSummarizeSpokenAttempt, submitSummarizeWrittenAttempt } from "../../services/api";
@@ -24,6 +24,11 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
   const [answer, setAnswer] = useState("");
   const [status, setStatus] = useState("idle");
   const [result, setResult] = useState(null);
+
+  /* ---------------- STATE ---------------- */
+  // New State for Transcribe & Answer
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [showAnswer, setShowAnswer] = useState(false);
 
   /* ---------------- TIMER ---------------- */
   // 3-sec Prep Timer
@@ -233,18 +238,18 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
 
       {/* FOOTER CONTROLS - OUTSIDE CARD */}
       <div className="flex items-center justify-between pb-6 mt-6">
-        {/* LEFT SIDE: Translate, Answer, Redo */}
+        {/* LEFT SIDE: Transcribe, Answer, Redo */}
         <div className="flex items-center gap-4">
-          {/* Translate (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default">
+          {/* Transcribe (Working) */}
+          <button onClick={() => setShowTranscript(true)} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
             <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
-              <Languages size={18} />
+              <FileText size={18} />
             </div>
-            <span className="text-xs font-bold">Translate</span>
+            <span className="text-xs font-bold">Transcribe</span>
           </button>
 
-          {/* Answer (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors cursor-default text-opacity-50">
+          {/* Answer (Working) */}
+          <button onClick={() => setShowAnswer(true)} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
             <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Eye size={18} />
             </div>
@@ -279,14 +284,45 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
       </div>
 
 
-      {status === "result" && result && (
-        <ResultModal
-          result={result}
-          question={question}
-          onClose={() => setStatus("idle")}
-          onRedo={() => { setStatus("idle"); setStarted(false); setAnswer(""); setTimeLeft(MAX_TIME); setPrepStatus("countdown"); setPrepTimer(3); }}
-        />
-      )}
+
+
+      {/* Answer Toast */}
+      {
+        showAnswer && (
+          <Toast
+            show={showAnswer}
+            onClose={() => setShowAnswer(false)}
+            title="Reference Answer / Summary"
+          >
+            <p>{question?.answer || "No reference answer available."}</p>
+          </Toast>
+        )
+      }
+
+      {/* Transcript Toast */}
+      {
+        showTranscript && (
+          <Toast
+            show={showTranscript}
+            onClose={() => setShowTranscript(false)}
+            title="Audio Transcript"
+          >
+            <p>{question?.transcript || "No transcript available."}</p>
+          </Toast>
+        )
+      }
+
+
+      {
+        status === "result" && result && (
+          <ResultModal
+            result={result}
+            question={question}
+            onClose={() => setStatus("idle")}
+            onRedo={() => { setStatus("idle"); setStarted(false); setAnswer(""); setTimeLeft(MAX_TIME); setPrepStatus("countdown"); setPrepTimer(3); }}
+          />
+        )
+      }
 
 
       <div>
@@ -386,8 +422,6 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
           </div>
         </div>
       </div>
-
-
     </div>
   );
 }
@@ -630,5 +664,29 @@ const ControlBtn = ({ icon, label, onClick, className = "" }) => {
       {icon}
       <span className="font-bold">{label}</span>
     </button>
+  );
+
+};
+
+const Toast = ({ show, onClose, title, children }) => {
+  if (!show) return null;
+
+  return (
+    <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div className="bg-white text-slate-900 rounded-2xl shadow-2xl p-6 max-w-lg w-[90vw] relative border border-slate-200">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors"
+        >
+          <X size={18} />
+        </button>
+        <div className="mb-2 flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{title}</span>
+        </div>
+        <div className="max-h-60 overflow-y-auto pr-2 custom-scrollbar text-sm leading-relaxed text-slate-700">
+          {children}
+        </div>
+      </div>
+    </div>
   );
 };

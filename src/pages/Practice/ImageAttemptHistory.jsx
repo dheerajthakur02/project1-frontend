@@ -26,6 +26,7 @@ const ImageAttemptHistory = ({ question, onSelectAttempt, module }) => {
       const res = await axios.get(
         `/api/${module}/community/${question._id}`
       );
+      console.log(res?.data?.data)
       setCommunityAttempts(res?.data?.data || []);
     } catch (err) {
       console.error("Error fetching community attempts", err);

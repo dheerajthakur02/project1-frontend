@@ -233,14 +233,19 @@ const WriteEssay = ({ question, setActiveSpeechQuestion, nextButton, previousBut
 
         {/* Result Modal */}
         {status === "result" && result && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-3xl w-[900px] p-8 space-y-6">
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-3xl w-[900px] max-h-[90vh] overflow-y-auto p-8 space-y-6">
 
               <div className="flex justify-between items-center">
                 <h2 className="font-bold text-lg">
                   {question.title} <span className="ml-2 text-purple-600 font-bold">AI+</span>
                 </h2>
-                <button onClick={() => { setStatus("prep"); setStarted(true); setTimeLeft(3); setAnswer(""); setResult(null); setIsLocked(false); }}>✕</button>
+                <button
+                  onClick={() => { setStatus("prep"); setStarted(true); setTimeLeft(3); setAnswer(""); setResult(null); setIsLocked(false); }}
+                  className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+                >
+                  <X size={20} />
+                </button>
               </div>
 
               <div className="grid grid-cols-12 gap-6">
@@ -280,6 +285,16 @@ const WriteEssay = ({ question, setActiveSpeechQuestion, nextButton, previousBut
                   <span>Structure: {result.structureIssues}</span>
                   <span>Style: {result.styleIssues}</span>
                 </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="flex justify-end pt-4 border-t">
+                <button
+                  onClick={() => { setStatus("prep"); setStarted(true); setTimeLeft(3); setAnswer(""); setResult(null); setIsLocked(false); }}
+                  className="px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition-colors"
+                >
+                  Close
+                </button>
               </div>
 
             </div>

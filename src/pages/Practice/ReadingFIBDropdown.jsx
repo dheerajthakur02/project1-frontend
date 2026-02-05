@@ -309,6 +309,62 @@ const ReadingFIBDropdown = ({ question, setActiveSpeechQuestion, nextButton, pre
   const filledBlanks = Object.values(userAnswers).filter(a => a !== "").length;
   const isSubmitDisabled = filledBlanks === 0;
 
+
+  // Translation State
+  const [translation, setTranslation] = useState("");
+  const [loadingTranslation, setLoadingTranslation] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+
+  // Answer Flash State
+  const [showFlashAnswer, setShowFlashAnswer] = useState(false);
+
+  const handleTranslate = async () => {
+    if (!question) {
+      console.log("No question found for translation");
+      return;
+    }
+    console.log("Starting translation...");
+    setLoadingTranslation(true);
+    setShowToast(true);
+
+    try {
+      // Construct full text with blanks as spaces/placeholders for translation
+      let fullText = "";
+      textSegments.forEach((segment, i) => {
+        fullText += segment;
+        if (i < textSegments.length - 1) {
+          // User requested "blank should considered as space"
+          fullText += " _______ ";
+        }
+      });
+
+      console.log("Text to translate:", fullText);
+
+      const res = await axios.get(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
+          fullText.substring(0, 1000)
+        )}&langpair=en|hi`
+      );
+
+      console.log("Translation API Response:", res.data);
+
+      if (res.data && res.data.responseData) {
+        setTranslation(res.data.responseData.translatedText);
+      }
+    } catch (err) {
+      console.error("Translation failed", err);
+      setTranslation("Translation failed. Please try again.");
+    } finally {
+      setLoadingTranslation(false);
+    }
+  };
+
+  const handleShowAnswer = () => {
+    if (!question || !question.blanks) return;
+    setShowFlashAnswer(true);
+    setTimeout(() => setShowFlashAnswer(false), 8000); // Hide after 8 seconds
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
 
@@ -338,6 +394,38 @@ const ReadingFIBDropdown = ({ question, setActiveSpeechQuestion, nextButton, pre
           </div>
         </div>
       </div>
+
+      {/* Answer Toast */}
+      {showFlashAnswer && (
+        <Toast
+          show={showFlashAnswer}
+          onClose={() => setShowFlashAnswer(false)}
+          title="Correct Answers"
+        >
+          <div className="flex flex-wrap justify-center gap-4">
+            {question?.blanks?.map((blank, index) => (
+              <div key={index} className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                <span className="text-slate-500 font-bold text-xs">{blank.index}:</span>
+                <span className="font-semibold text-lg text-green-600">{blank.correctAnswer}</span>
+              </div>
+            ))}
+          </div>
+        </Toast>
+      )}
+
+      {/* Translation Toast */}
+      {showToast && (
+        <Toast
+          show={showToast}
+          onClose={() => setShowToast(false)}
+          title="Hindi Translation"
+          loading={loadingTranslation}
+        >
+          <p className="text-sm leading-relaxed text-slate-700">
+            {loadingTranslation ? "Translating..." : translation}
+          </p>
+        </Toast>
+      )}
 
       {/* Question Card */}
       {status === "prep" ? (
@@ -415,16 +503,16 @@ const ReadingFIBDropdown = ({ question, setActiveSpeechQuestion, nextButton, pre
       <div className="flex items-center justify-between pb-10">
         {/* LEFT SIDE: Translate, Answer, Redo */}
         <div className="flex items-center gap-4">
-          {/* Translate (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+          {/* Translate (Working) */}
+          <button onClick={handleTranslate} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
             <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Languages size={18} />
             </div>
             <span className="text-xs font-bold">Translate</span>
           </button>
 
-          {/* Answer (Static) */}
-          <button className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
+          {/* Answer (Working) */}
+          <button onClick={handleShowAnswer} className="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-800 transition-colors">
             <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white shadow-sm">
               <Eye size={18} />
             </div>
@@ -590,6 +678,32 @@ const ReadingFIBDropdown = ({ question, setActiveSpeechQuestion, nextButton, pre
         </>
       )}
 
+    </div>
+  );
+};
+
+
+// Toast Component
+const Toast = ({ show, onClose, title, children, loading }) => {
+  if (!show) return null;
+
+  return (
+    <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div className="bg-white text-slate-900 rounded-2xl shadow-2xl p-6 max-w-lg w-[90vw] relative border border-slate-200">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors"
+        >
+          <X size={18} />
+        </button>
+        <div className="mb-2 flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{title}</span>
+          {loading && <RefreshCw size={14} className="animate-spin text-slate-500" />}
+        </div>
+        <div className="max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+          {children}
+        </div>
+      </div>
     </div>
   );
 };

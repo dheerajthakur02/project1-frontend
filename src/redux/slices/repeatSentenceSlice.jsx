@@ -1,14 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import api from '../../services/api';
 
 // Fetching from your specific endpoint
 export const fetchRepeatSentences = createAsyncThunk(
   'repeatSentence/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/repeat-sentence/all');
+      const response = await api.get('/repeat-sentence/all');
       // Assuming your API returns { success: true, data: [...] }
-      return response.data.data; 
+      return response.data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Failed to fetch questions');
     }

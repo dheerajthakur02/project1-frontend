@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import AdminLayout from '../../components/Admin/AdminLayout';
 import { Trash2, Video, Plus, ExternalLink, Loader } from 'lucide-react';
 
@@ -17,7 +17,7 @@ const ManageVideos = () => {
     // Fetch Videos
     const fetchVideos = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/videos/list');
+            const { data } = await api.get('/videos/list');
             if (data.success) {
                 setVideos(data.data);
             }
@@ -50,10 +50,10 @@ const ManageVideos = () => {
             }
 
             console.log("Submitting video to: /api/videos/add");
-            await axios.post('http://localhost:5000/api/videos/add', {
+            await api.post('/videos/add', {
                 ...formData,
                 thumbnail
-            }, { withCredentials: true });
+            });
 
             setFormData({ title: '', description: '', videoUrl: '', category: 'Speaking' });
             fetchVideos(); // Refresh list
@@ -70,7 +70,7 @@ const ManageVideos = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this video?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/videos/${id}`, { withCredentials: true });
+            await api.delete(`/videos/${id}`);
             setVideos(videos.filter(v => v._id !== id));
         } catch (error) {
             console.error("Failed to delete video", error);

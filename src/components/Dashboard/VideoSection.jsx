@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Play, ExternalLink } from 'lucide-react';
-import axios from 'axios';
+import api from '../../services/api';
 
 // Helper to extract YouTube Thumbnail
 const getYouTubeThumbnail = (url) => {
@@ -84,7 +84,7 @@ const VideoSection = () => {
         const fetchVideos = async () => {
             try {
                 // Try fetching from API
-                const { data } = await axios.get('http://localhost:5000/api/videos/list');
+                const { data } = await api.get('/videos/list');
                 if (data.success) {
                     setVideos(data.data);
                 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import PracticedHistory from '../../components/Dashboard/PracticedHistory';
 import AverageMockScore from '../../components/Dashboard/AverageMockScore';
@@ -67,7 +67,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/dashboard/data', { withCredentials: true });
+                const { data } = await api.get('/dashboard/data');
                 if (data.success) {
                     setDashboardData(data.data);
                 }

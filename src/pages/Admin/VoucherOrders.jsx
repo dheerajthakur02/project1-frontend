@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/Admin/AdminLayout';
-import axios from 'axios';
+import api from '../../services/api';
 import { CheckCircle, XCircle, Clock, Calendar, User, Mail, Phone, CreditCard, Ticket, X } from 'lucide-react';
 
 const VoucherOrders = () => {
@@ -14,7 +14,7 @@ const VoucherOrders = () => {
 
     const fetchOrders = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/voucher/all-orders', { withCredentials: true });
+            const { data } = await api.get('/voucher/all-orders');
             if (data.success) {
                 setOrders(data.data);
             }

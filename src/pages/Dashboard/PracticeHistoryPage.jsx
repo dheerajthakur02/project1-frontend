@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import PracticedHistory from '../../components/Dashboard/PracticedHistory';
 import { ArrowLeft } from 'lucide-react';
@@ -14,7 +14,7 @@ const PracticeHistoryPage = () => {
         const fetchHistory = async () => {
             try {
                 // Reusing dashboard data endpoint since it aggregates everything we need
-                const { data } = await axios.get('http://localhost:5000/api/dashboard/data', { withCredentials: true });
+                const { data } = await api.get('/dashboard/data');
                 if (data.success) {
                     setHistory(data.data.history);
                 }

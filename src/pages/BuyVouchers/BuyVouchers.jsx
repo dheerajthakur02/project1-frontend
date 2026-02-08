@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import { Shield, CheckCircle, Ticket, X, Calendar, User, Mail, Phone, Clock, CreditCard } from 'lucide-react'; // Using Ticket as icon for voucher
-import axios from 'axios';
+import api from '../../services/api';
 import { useSelector } from 'react-redux';
 
 const BuyVouchers = () => {
@@ -30,7 +30,7 @@ const BuyVouchers = () => {
         setHistoryLoading(true);
         try {
             console.log("Fetching history...");
-            const { data } = await axios.get('http://localhost:5000/api/voucher/history', { withCredentials: true });
+            const { data } = await api.get('/voucher/history');
             console.log("History response:", data);
             if (data.success) {
                 setHistory(data.data);
@@ -64,9 +64,9 @@ const BuyVouchers = () => {
 
         try {
             // 1. Create Order
-            const { data } = await axios.post('http://localhost:5000/api/voucher/create-order', {
+            const { data } = await api.post('/voucher/create-order', {
                 quantity
-            }, { withCredentials: true });
+            });
 
             if (!data.success) throw new Error(data.message);
 
@@ -80,11 +80,11 @@ const BuyVouchers = () => {
                 order_id: data.order.id,
                 handler: async function (response) {
                     try {
-                        const verifyRes = await axios.post('http://localhost:5000/api/voucher/verify-payment', {
+                        const verifyRes = await api.post('/voucher/verify-payment', {
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature
-                        }, { withCredentials: true });
+                        });
 
                         if (verifyRes.data.success) {
                             alert("Voucher purchased successfully!");

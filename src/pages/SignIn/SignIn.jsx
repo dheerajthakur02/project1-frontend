@@ -1,4 +1,5 @@
 import React from "react";
+import api from "../../services/api";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../redux/slices/authSlice"; // ✅ adjust path if needed
@@ -51,26 +52,13 @@ const SignIn = () => {
     setError("");
 
     try {
-      const response = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await api.post("/auth/signin", formData);
+      const data = response.data;
+      // if (!response.ok) body is typically thrown by axio interceoptor or we check response.status? 
+      // Actually axios throws on non-2xx by default.
 
-      // ✅ safer than reading text then parsing manually
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.message || "Login failed");
-      }
-
-      /**
-       * ✅ Expected backend response shape:
-       * { user: { name: "..." , ... }, token: "..." }
-       * If your response shape is different, update these two lines accordingly.
-       */
       const user = data.data;
-      const token = null; // Token is httpOnly cookie
+      const token = null;
 
       // ✅ store in redux
       dispatch(setCredentials({ user, token }));
@@ -81,7 +69,7 @@ const SignIn = () => {
 
       navigate(redirectPath);
     } catch (err) {
-      setError(err?.message || "Something went wrong");
+      setError(err.response?.data?.message || err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }

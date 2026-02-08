@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/Admin/AdminLayout';
-import axios from 'axios';
+import api from '../../services/api';
 import { Trash2, Upload, Plus } from 'lucide-react';
 
 const ManageBanners = () => {
@@ -15,7 +15,7 @@ const ManageBanners = () => {
 
     const fetchBanners = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/banner/list', { withCredentials: true });
+            const { data } = await api.get('/banner/list');
             if (data.success) {
                 setBanners(data.data);
             }
@@ -40,9 +40,8 @@ const ManageBanners = () => {
         formData.append('title', title);
 
         try {
-            await axios.post('http://localhost:5000/api/banner/create', formData, {
+            await api.post('/banner/create', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
-                withCredentials: true
             });
             fetchBanners();
             setSelectedFile(null);
@@ -57,7 +56,7 @@ const ManageBanners = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/banner/${id}`, { withCredentials: true });
+            await api.delete(`/banner/${id}`);
             setBanners(banners.filter(b => b._id !== id));
         } catch (error) {
             console.error("Delete failed", error);

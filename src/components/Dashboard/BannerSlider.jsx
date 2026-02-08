@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, BookOpen, Layout, Loader } from 'lucide-react';
-import axios from 'axios';
+import api from '../../services/api';
 
 const BannerSlider = () => {
     const [banners, setBanners] = useState([]);
@@ -10,7 +10,7 @@ const BannerSlider = () => {
     useEffect(() => {
         const fetchBanners = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/banner/list', { withCredentials: true });
+                const response = await api.get('/banner/list');
                 if (response.data.success) {
                     setBanners(response.data.data);
                 }

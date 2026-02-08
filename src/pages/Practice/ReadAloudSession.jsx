@@ -256,7 +256,7 @@ const ReadAloudSession = () => {
     const fetchQuestion = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`/api/read-aloud/${id}`);
+        const response = await api.get(`/read-aloud/${id}`);
         if (response.data.success) {
           const sectionData = response.data.data;
           // Check if it's a section with questions
@@ -420,7 +420,7 @@ const ReadAloudSession = () => {
       const { payload, resultData } = calculateFrontendScore(finalTranscript, referenceText);
 
       // Submit to backend
-      const res = await axios.post("/api/attempts/save/attempt", payload);
+      const res = await api.post("/attempts/save/attempt", payload);
       const savedAttempt = res.data.data;
 
       // Update UI with the result (either from backend or frontend if not saved)

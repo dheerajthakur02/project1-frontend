@@ -32,9 +32,9 @@ const ManageRLs = () => {
   const fetchRLSections = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/question/ra"); // Backend controller route4
-      console.log(res?.data?.data)
-      setRlSections(res.data.data || []);
+      const { data } = await api.get("/question/ra"); // Backend controller route4
+      console.log(data?.data)
+      setRlSections(data.data || []);
     } catch (err) {
       console.error("Failed to fetch Read Aloud sections:", err);
     } finally {

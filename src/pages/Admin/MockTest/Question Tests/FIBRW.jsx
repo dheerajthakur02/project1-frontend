@@ -4,7 +4,7 @@ import {
     Type // Icon for FIB RW
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -32,8 +32,8 @@ const ManageFIBRWs = () => {
     const fetchFIBSections = async () => {
         setLoading(true);
         try {
-            const res = await axios.get("/api/question/fib"); // Backend route
-            setFibSections(res.data.data || []);
+            const { data } = await api.get("/question/fib"); // Backend route
+            setFibSections(data.data || []);
         } catch (err) {
             console.error("Failed to fetch FIB RW sections:", err);
         } finally {
@@ -44,8 +44,8 @@ const ManageFIBRWs = () => {
     const fetchUnusedQuestions = async () => {
         setUnusedLoading(true);
         try {
-            const res = await axios.get("/api/question/fib/get/unused");
-            setAvailableQuestions(res.data.data || {});
+            const { data } = await api.get("/question/fib/get/unused");
+            setAvailableQuestions(data.data || {});
         } catch (err) {
             console.error("Failed to fetch unused FIB RW questions:", err);
         } finally {
@@ -79,9 +79,9 @@ const ManageFIBRWs = () => {
             };
 
             if (editingId) {
-                await axios.put(`/api/question/fib/${editingId}`, payload);
+                await api.put(`/question/fib/${editingId}`, payload);
             } else {
-                await axios.post("/api/question/fib", payload);
+                await api.post("/question/fib", payload);
             }
             setIsModalOpen(false);
             await fetchFIBSections();
@@ -129,14 +129,14 @@ const ManageFIBRWs = () => {
         setIsModalOpen(true);
         setSubmitLoading(true);
         try {
-            const res = await axios.get(`/api/question/fib/${section._id}`);
+            const res = await api.get(`/api/question/fib/${section._id}`);
             const detailedSection = res.data.data;
             setForm({
                 title: detailedSection.title,
                 fibQuestions: detailedSection.fibQuestions || [],
             });
 
-            const unusedRes = await axios.get("/api/question/fib/get/unused");
+            const unusedRes = await api.get("/api/question/fib/get/unused");
             const fetchedUnusedQuestions = unusedRes.data.data || {};
 
             const filteredAvailableQuestions = {};
@@ -161,7 +161,7 @@ const ManageFIBRWs = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this FIB RW section?")) {
             try {
-                await axios.delete(`/api/question/fib/${id}`);
+                await api.delete(`/api/question/fib/${id}`);
                 fetchFIBSections();
             } catch (err) {
                 console.error("Error deleting FIB RW section:", err);

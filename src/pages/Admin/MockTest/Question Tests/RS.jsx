@@ -4,7 +4,7 @@ import {
   Headphones, Volume2 // Icons for listening/speaking
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout"; // Adjust path as needed
 
@@ -32,8 +32,8 @@ const ManageRepeatSentences = () => {
   const fetchRSSections = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/question/rs"); // API endpoint for RS
-      setRsSections(res.data.data || []);
+      const { data } = await api.get("/question/rs"); // Backend route
+      setRsSections(data.data || []);
     } catch (err) {
       console.error("Failed to fetch Repeat Sentence sections:", err);
     } finally {
@@ -44,8 +44,8 @@ const ManageRepeatSentences = () => {
   const fetchUnusedQuestions = async () => {
     setUnusedLoading(true);
     try {
-      const res = await axios.get("/api/question/rs/get/unused"); // Endpoint for unused RS questions
-      setAvailableQuestions(res.data.data || {});
+      const { data } = await api.get("/question/rs/get/unused"); // Endpoint for unused RS questions
+      setAvailableQuestions(data.data || {});
     } catch (err) {
       console.error("Failed to fetch unused Repeat Sentence questions:", err);
     } finally {
@@ -76,9 +76,9 @@ const ManageRepeatSentences = () => {
       };
 
       if (editingId) {
-        await axios.put(`/api/question/rs/${editingId}`, payload);
+        await api.put(`/question/rs/${editingId}`, payload);
       } else {
-        await axios.post("/api/question/rs", payload);
+        await api.post("/question/rs", payload);
       }
       setIsModalOpen(false);
       await fetchRSSections();
@@ -122,23 +122,23 @@ const ManageRepeatSentences = () => {
     setIsModalOpen(true);
     setSubmitLoading(true);
     try {
-      const res = await axios.get(`/api/question/rs/${section._id}`);
-      const detailedSection = res.data.data;
+      const { data: detailedSectionRes } = await api.get(`/question/rs/${section._id}`);
+      const detailedSection = detailedSectionRes.data;
       setForm({
         title: detailedSection.title,
         repeatSentenceQuestions: detailedSection.repeatSentenceQuestions || [],
       });
 
-      const unusedRes = await axios.get("/api/question/rs/get/unused");
-      const fetchedUnusedQuestions = unusedRes.data.data || {};
+      const { data: unusedResData } = await api.get("/question/rs/get/unused");
+      const fetchedUnusedQuestions = unusedResData.data || {};
 
       const filteredAvailableQuestions = {};
       const typeKey = getAvailableQuestionsKey("repeatSentenceQuestions");
       if (fetchedUnusedQuestions[typeKey]) {
-          const sectionQuestionIds = new Set(detailedSection[typeKey]?.map(q => q._id.toString()));
-          filteredAvailableQuestions[typeKey] = fetchedUnusedQuestions[typeKey].filter(
-              q => !sectionQuestionIds.has(q._id.toString())
-          );
+        const sectionQuestionIds = new Set(detailedSection[typeKey]?.map(q => q._id.toString()));
+        filteredAvailableQuestions[typeKey] = fetchedUnusedQuestions[typeKey].filter(
+          q => !sectionQuestionIds.has(q._id.toString())
+        );
       }
       setAvailableQuestions(filteredAvailableQuestions);
     } catch (err) {
@@ -150,9 +150,9 @@ const ManageRepeatSentences = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this Repeat Sentence section? This cannot be undone.")) {
+    if (window.confirm("Are you sure you want to delete this RS section?")) {
       try {
-        await axios.delete(`/api/question/rs/${id}`);
+        await api.delete(`/question/rs/${id}`);
         fetchRSSections();
       } catch (err) {
         console.error("Error deleting Repeat Sentence section:", err);
@@ -181,7 +181,7 @@ const ManageRepeatSentences = () => {
         </h3>
         <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] border-b pb-2">
           {form[questionType].length === 0 ? (
-             <span className="text-sm text-slate-400 italic">No questions selected.</span>
+            <span className="text-sm text-slate-400 italic">No questions selected.</span>
           ) : (
             form[questionType].map((q) => (
               <span key={q._id || q} className="flex items-center gap-1 px-3 py-1 bg-lime-100 text-lime-700 text-xs font-medium rounded-full"> {/* Lime color */}
@@ -192,7 +192,7 @@ const ManageRepeatSentences = () => {
           )}
         </div>
         {unusedLoading && !editingId ? (
-          <Loader2 className="animate-spin mx-auto text-lime-400" size={24} /> 
+          <Loader2 className="animate-spin mx-auto text-lime-400" size={24} />
         ) : (
           <div className="space-y-2 max-h-48 overflow-y-auto p-2 border rounded-lg bg-white">
             {questionsToDisplay.length === 0 ? (
@@ -300,7 +300,7 @@ const ManageRepeatSentences = () => {
                   />
 
                   {submitLoading ? (
-                     <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-lime-500" size={32}/></div> 
+                    <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-lime-500" size={32} /></div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                       {renderQuestionSelection("repeatSentenceQuestions", Headphones)}

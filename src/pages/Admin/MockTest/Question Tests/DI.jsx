@@ -5,7 +5,7 @@ import {
   Headphones // Assuming Image is used for Describe Image tasks
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout"; // Adjust path as needed
 
@@ -34,8 +34,8 @@ const ManageDescribeImages = () => {
     setLoading(true);
     try {
       // Endpoint to get all existing Describe Image sections
-      const res = await axios.get("/api/question/di"); // New API endpoint for DI
-      setDiSections(res.data.data || []);
+      const { data } = await api.get("/question/di"); // Backend route
+      setDiSections(data.data || []);
     } catch (err) {
       console.error("Failed to fetch Describe Image sections:", err);
       // TODO: Add user-facing error message
@@ -48,8 +48,8 @@ const ManageDescribeImages = () => {
     setUnusedLoading(true);
     try {
       // Endpoint to get all ImageQuestions not currently used in any DI section
-      const res = await axios.get("/api/question/di/get/unused");
-      setAvailableQuestions(res.data.data || {});
+      const { data } = await api.get("/question/di/get/unused");
+      setAvailableQuestions(data.data || {});
     } catch (err) {
       console.error("Failed to fetch unused Describe Image questions:", err);
       // TODO: Add user-facing error message
@@ -86,10 +86,10 @@ const ManageDescribeImages = () => {
 
       if (editingId) {
         // Update existing section
-        await axios.put(`/api/question/di/${editingId}`, payload);
+        await api.put(`/question/di/${editingId}`, payload);
       } else {
         // Create new section
-        await axios.post("/api/question/di", payload); // Assuming this is your create endpoint
+        await api.post("/question/di", payload); // Assuming this is your create endpoint
       }
       setIsModalOpen(false); // Close the modal
       await fetchDISections(); // Refresh the list of sections
@@ -141,8 +141,8 @@ const ManageDescribeImages = () => {
     setSubmitLoading(true); // Set loading to true while fetching section details
     try {
       // Fetch the full section details with populated questions
-      const res = await axios.get(`/api/question/di/${section._id}`);
-      const detailedSection = res.data.data;
+      const { data: resData } = await api.get(`/question/di/${section._id}`);
+      const detailedSection = resData.data;
 
       // Populate the form with existing section data
       setForm({
@@ -151,17 +151,17 @@ const ManageDescribeImages = () => {
       });
 
       // Fetch all unused questions to provide options for adding more
-      const unusedRes = await axios.get("/api/question/di/get/unused");
+      const unusedRes = await api.get("/question/di/get/unused");
       const fetchedUnusedQuestions = unusedRes.data.data || {};
 
       // Filter out questions ALREADY IN THE CURRENT SECTION from the fetched unused list
       const filteredAvailableQuestions = {};
       const typeKey = getAvailableQuestionsKey("describeImageQuestions");
       if (fetchedUnusedQuestions[typeKey]) {
-          const sectionQuestionIds = new Set(detailedSection[typeKey]?.map(q => q._id.toString()));
-          filteredAvailableQuestions[typeKey] = fetchedUnusedQuestions[typeKey].filter(
-              q => !sectionQuestionIds.has(q._id.toString())
-          );
+        const sectionQuestionIds = new Set(detailedSection[typeKey]?.map(q => q._id.toString()));
+        filteredAvailableQuestions[typeKey] = fetchedUnusedQuestions[typeKey].filter(
+          q => !sectionQuestionIds.has(q._id.toString())
+        );
       }
       setAvailableQuestions(filteredAvailableQuestions);
 
@@ -177,7 +177,7 @@ const ManageDescribeImages = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this Describe Image section? This cannot be undone.")) {
       try {
-        await axios.delete(`/api/question/di/${id}`);
+        await api.delete(`/question/di/${id}`);
         fetchDISections(); // Refresh the list after deletion
       } catch (err) {
         console.error("Error deleting Describe Image section:", err);
@@ -207,7 +207,7 @@ const ManageDescribeImages = () => {
         </h3>
         <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] border-b pb-2">
           {form[questionType].length === 0 ? (
-             <span className="text-sm text-slate-400 italic">No questions selected.</span>
+            <span className="text-sm text-slate-400 italic">No questions selected.</span>
           ) : (
             form[questionType].map((q) => (
               <span key={q._id || q} className="flex items-center gap-1 px-3 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-full"> {/* Pink color */}
@@ -327,7 +327,7 @@ const ManageDescribeImages = () => {
                   />
 
                   {submitLoading ? ( // Show loader while saving/fetching for edit
-                     <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-pink-500" size={32}/></div>
+                    <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-pink-500" size={32} /></div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-6"> {/* Only one column for DI questions */}
                       {renderQuestionSelection("describeImageQuestions", Image)}

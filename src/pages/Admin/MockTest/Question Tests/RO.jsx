@@ -4,7 +4,7 @@ import {
     ArrowUpDown // Icon for RO (Reorder)
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -32,8 +32,8 @@ const ManageROs = () => {
     const fetchROSections = async () => {
         setLoading(true);
         try {
-            const res = await axios.get("/api/question/ro"); // Backend route
-            setBRSections(res.data.data || []);
+            const { data } = await api.get("/question/ro"); // Backend route
+            setBRSections(data.data || []);
         } catch (err) {
             console.error("Failed to fetch RO sections:", err);
         } finally {
@@ -44,8 +44,8 @@ const ManageROs = () => {
     const fetchUnusedQuestions = async () => {
         setUnusedLoading(true);
         try {
-            const res = await axios.get("/api/question/ro/get/unused");
-            setAvailableQuestions(res.data.data || {});
+            const { data } = await api.get("/question/ro/get/unused");
+            setAvailableQuestions(data.data || {});
         } catch (err) {
             console.error("Failed to fetch unused RO questions:", err);
         } finally {
@@ -79,9 +79,9 @@ const ManageROs = () => {
             };
 
             if (editingId) {
-                await axios.put(`/api/question/ro/${editingId}`, payload);
+                await api.put(`/question/ro/${editingId}`, payload);
             } else {
-                await axios.post("/api/question/ro", payload);
+                await api.post("/question/ro", payload);
             }
             setIsModalOpen(false);
             await fetchROSections();
@@ -129,14 +129,14 @@ const ManageROs = () => {
         setIsModalOpen(true);
         setSubmitLoading(true);
         try {
-            const res = await axios.get(`/api/question/ro/${section._id}`);
+            const res = await api.get(`/question/ro/${section._id}`);
             const detailedSection = res.data.data;
             setForm({
                 title: detailedSection.title,
                 reorderQuestions: detailedSection.reorderQuestions || [],
             });
 
-            const unusedRes = await axios.get("/api/question/ro/get/unused");
+            const unusedRes = await api.get("/api/question/ro/get/unused");
             const fetchedUnusedQuestions = unusedRes.data.data || {};
 
             const filteredAvailableQuestions = {};
@@ -161,7 +161,7 @@ const ManageROs = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this RO section?")) {
             try {
-                await axios.delete(`/api/question/ro/${id}`);
+                await api.delete(`/question/ro/${id}`);
                 fetchROSections();
             } catch (err) {
                 console.error("Error deleting RO section:", err);

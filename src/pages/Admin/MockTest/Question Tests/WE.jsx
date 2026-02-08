@@ -4,7 +4,7 @@ import {
   PenSquare, FileText // Icons for writing/essay
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout"; // Adjust path as needed
 
@@ -39,8 +39,8 @@ const ManageWriteEssays = () => {
     setLoading(true);
     try {
       // Axios will now use the baseURL: http://localhost:5173/api/question/we
-      const res = await axios.get("/api/question/we");
-      setWeSections(res.data.data || []);
+      const { data } = await api.get("/question/we");
+      setWeSections(data.data || []);
     } catch (err) {
       console.error("Failed to fetch Write Essay sections:", err);
     } finally {
@@ -52,10 +52,10 @@ const ManageWriteEssays = () => {
     setUnusedLoading(true);
     try {
       // Axios will now use the baseURL: http://localhost:5173/api/question/we/get/unused
-      const res = await axios.get("/api/question/we/get/unused");
-      console.log(res?.data?.data)
+      const { data } = await api.get("/question/we/get/unused");
+      console.log(data?.data)
       // The key from the backend is 'writeEssay' as per your controller
-      setAvailableQuestions(res.data.data.writeEssay ? { essay: res.data.data.writeEssay } : {});
+      setAvailableQuestions(data.data.writeEssay ? { essay: data.data.writeEssay } : {});
     } catch (err) {
       console.error("Failed to fetch unused Write Essay questions:", err);
     } finally {
@@ -91,10 +91,10 @@ const ManageWriteEssays = () => {
 
       if (editingId) {
         // Axios will now use the baseURL: http://localhost:5173/api/question/we/:id
-        await axios.put(`/api/question/we/${editingId}`, payload);
+        await api.put(`/question/we/${editingId}`, payload);
       } else {
         // Axios will now use the baseURL: http://localhost:5173/api/question/we
-        await axios.post("/api/question/we", payload);
+        await api.post("/question/we", payload);
       }
       setIsModalOpen(false);
       await fetchWESections();
@@ -172,7 +172,7 @@ const ManageWriteEssays = () => {
     if (window.confirm("Are you sure you want to delete this Write Essay section? This cannot be undone.")) {
       try {
         // Axios will now use the baseURL: http://localhost:5173/api/question/we/:id
-        await axios.delete(`/api/question/we/${id}`);
+        await api.delete(`/question/we/${id}`);
         fetchWESections();
       } catch (err) {
         console.error("Error deleting Write Essay section:", err);

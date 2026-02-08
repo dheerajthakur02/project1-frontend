@@ -4,7 +4,7 @@ import {
     MousePointer2 // Icon for FIB Drag Drop
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -44,8 +44,8 @@ const ManageFIBDragDrops = () => {
     const fetchUnusedQuestions = async () => {
         setUnusedLoading(true);
         try {
-            const res = await axios.get("/api/question/fibd/get/unused");
-            setAvailableQuestions(res.data.data || {});
+            const { data } = await api.get("/question/fibd/get/unused");
+            setAvailableQuestions(data.data || {});
         } catch (err) {
             console.error("Failed to fetch unused FIB Drag Drop questions:", err);
         } finally {
@@ -80,9 +80,9 @@ const ManageFIBDragDrops = () => {
             };
 
             if (editingId) {
-                await axios.put(`/api/question/fibd/${editingId}`, payload);
+                await api.put(`/question/fibd/${editingId}`, payload);
             } else {
-                await axios.post("/api/question/fibd", payload);
+                await api.post("/question/fibd", payload);
             }
             setIsModalOpen(false);
             await fetchFIBDSections();
@@ -130,15 +130,15 @@ const ManageFIBDragDrops = () => {
         setIsModalOpen(true);
         setSubmitLoading(true);
         try {
-            const res = await axios.get(`/api/question/fibd/${section._id}`);
-            const detailedSection = res.data.data;
+            const { data: detailedSectionData } = await api.get(`/question/fibd/${section._id}`);
+            const detailedSection = detailedSectionData.data;
             setForm({
                 title: detailedSection.title,
                 ReadingFIBDragDrops: detailedSection.ReadingFIBDragDrops || [],
             });
 
-            const unusedRes = await axios.get("/api/question/fibd/get/unused");
-            const fetchedUnusedQuestions = unusedRes.data.data || {};
+            const { data: unusedResData } = await api.get("/question/fibd/get/unused");
+            const fetchedUnusedQuestions = unusedResData.data || {};
 
             const filteredAvailableQuestions = {};
             const formQuestionType = "ReadingFIBDragDrops";
@@ -162,7 +162,7 @@ const ManageFIBDragDrops = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this FIB Drag Drop section?")) {
             try {
-                await axios.delete(`/api/question/fibd/${id}`);
+                await api.delete(`/question/fibd/${id}`);
                 fetchFIBDSections();
             } catch (err) {
                 console.error("Error deleting FIB Drag Drop section:", err);

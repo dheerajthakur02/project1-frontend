@@ -4,7 +4,7 @@ import {
     Highlighter // Icon for HIW
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -32,8 +32,8 @@ const ManageHIWs = () => {
     const fetchHIWSections = async () => {
         setLoading(true);
         try {
-            const res = await axios.get("/api/question/hiw"); // Backend route
-            setHIWSections(res.data.data || []);
+            const { data } = await api.get("/question/hiw"); // Backend route
+            setHIWSections(data.data || []);
         } catch (err) {
             console.error("Failed to fetch HIW sections:", err);
         } finally {
@@ -44,8 +44,8 @@ const ManageHIWs = () => {
     const fetchUnusedQuestions = async () => {
         setUnusedLoading(true);
         try {
-            const res = await axios.get("/api/question/hiw/get/unused");
-            setAvailableQuestions(res.data.data || {});
+            const { data } = await api.get("/question/hiw/get/unused");
+            setAvailableQuestions(data.data || {});
         } catch (err) {
             console.error("Failed to fetch unused HIW questions:", err);
         } finally {
@@ -79,9 +79,9 @@ const ManageHIWs = () => {
             };
 
             if (editingId) {
-                await axios.put(`/api/question/hiw/${editingId}`, payload);
+                await api.put(`/question/hiw/${editingId}`, payload);
             } else {
-                await axios.post("/api/question/hiw", payload);
+                await api.post("/question/hiw", payload);
             }
             setIsModalOpen(false);
             await fetchHIWSections();
@@ -161,7 +161,7 @@ const ManageHIWs = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this HIW section?")) {
             try {
-                await axios.delete(`/api/question/hiw/${id}`);
+                await api.delete(`/question/hiw/${id}`);
                 fetchHIWSections();
             } catch (err) {
                 console.error("Error deleting HIW section:", err);

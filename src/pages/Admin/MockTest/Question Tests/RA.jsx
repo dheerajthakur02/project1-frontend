@@ -4,7 +4,7 @@ import {
   Mic, BookText // Icons for Read Aloud
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout"; // Adjust path as needed
 
@@ -46,8 +46,8 @@ const ManageRLs = () => {
     setUnusedLoading(true);
     try {
       // Use the new single endpoint for all unused questions
-      const res = await axios.get("/api/question/ra/get/unused");
-      setAvailableQuestions(res.data.data || {});
+      const { data } = await api.get("/question/ra/get/unused"); // Backend route
+      setAvailableQuestions(data.data || {});
     } catch (err) {
       console.error("Failed to fetch unused Read Aloud questions:", err);
     } finally {
@@ -83,9 +83,9 @@ const ManageRLs = () => {
       };
 
       if (editingId) {
-        await axios.put(`/api/question/ra/${editingId}`, payload); // Backend update route
+        await api.put(`/question/ra/${editingId}`, payload); // Backend update route
       } else {
-        await axios.post("/api/question/ra", payload); // Backend create route
+        await api.post("/question/ra", payload); // Backend create route
       }
       setIsModalOpen(false);
       await fetchRLSections();
@@ -129,14 +129,14 @@ const ManageRLs = () => {
     setIsModalOpen(true);
     setSubmitLoading(true);
     try {
-      const res = await axios.get(`/api/question/ra/${section._id}`); // Backend get by ID route
+      const res = await api.get(`/question/ra/${section._id}`); // Backend get by ID route
       const detailedSection = res.data.data;
       setForm({
         title: detailedSection.title,
         readAloudQuestions: detailedSection.readAloudQuestions || [], // Matches backend populated field
       });
 
-      const unusedRes = await axios.get("/api/question/ra/get/unused"); // New single endpoint
+      const unusedRes = await api.get("/question/ra/get/unused"); // New single endpoint
       const fetchedUnusedQuestions = unusedRes.data.data || {};
 
       const filteredAvailableQuestions = {};
@@ -144,10 +144,10 @@ const ManageRLs = () => {
       const availableKey = getAvailableQuestionsKey(formQuestionType);
 
       if (fetchedUnusedQuestions[availableKey]) {
-          const sectionQuestionIds = new Set(detailedSection[formQuestionType]?.map(q => q._id.toString()));
-          filteredAvailableQuestions[availableKey] = fetchedUnusedQuestions[availableKey].filter(
-              q => !sectionQuestionIds.has(q._id.toString())
-          );
+        const sectionQuestionIds = new Set(detailedSection[formQuestionType]?.map(q => q._id.toString()));
+        filteredAvailableQuestions[availableKey] = fetchedUnusedQuestions[availableKey].filter(
+          q => !sectionQuestionIds.has(q._id.toString())
+        );
       }
       setAvailableQuestions(filteredAvailableQuestions);
     } catch (err) {
@@ -161,7 +161,7 @@ const ManageRLs = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this Read Aloud section? This cannot be undone.")) {
       try {
-        await axios.delete(`/api/question/ra/${id}`); // Backend delete route
+        await api.delete(`/question/ra/${id}`); // Backend delete route
         fetchRLSections();
       } catch (err) {
         console.error("Error deleting Read Aloud section:", err);
@@ -190,7 +190,7 @@ const ManageRLs = () => {
         </h3>
         <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] border-b pb-2">
           {form[questionType].length === 0 ? (
-             <span className="text-sm text-slate-400 italic">No questions selected.</span>
+            <span className="text-sm text-slate-400 italic">No questions selected.</span>
           ) : (
             form[questionType].map((q) => (
               <span key={q._id || q} className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full"> {/* Blue color */}
@@ -309,7 +309,7 @@ const ManageRLs = () => {
                   />
 
                   {submitLoading ? (
-                     <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-blue-500" size={32}/></div>
+                    <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-blue-500" size={32} /></div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                       {renderQuestionSelection("readAloudQuestions", Mic)} {/* Using Mic for Read Aloud */}

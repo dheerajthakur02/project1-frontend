@@ -1,3 +1,4 @@
+```javascript
 import React from "react";
 import api from "../../services/api";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -52,13 +53,12 @@ const SignIn = () => {
     setError("");
 
     try {
-      const response = await api.post("/auth/signin", formData);
-      const data = response.data;
+      const { data } = await api.post("/auth/signin", formData);
       // if (!response.ok) body is typically thrown by axio interceoptor or we check response.status? 
       // Actually axios throws on non-2xx by default.
 
-      const user = data.data;
-      const token = null;
+      const user = data.data.user; // Assuming data.data contains { user, token }
+      const token = data.data.token; // Assuming data.data contains { user, token }
 
       // ✅ store in redux
       dispatch(setCredentials({ user, token }));
@@ -172,7 +172,7 @@ const SignIn = () => {
           <div className="mt-8 text-center text-slate-500">
             Don't have an account?{" "}
             <Link
-              to={`/select-product${location.search}`}
+              to={`/ select - product${ location.search } `}
               className="font-semibold text-primary-600 hover:text-primary-700 hover:underline"
             >
               Sign up

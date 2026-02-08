@@ -4,7 +4,7 @@ import {
     Headphones // Icon for SST (Listening)
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -32,8 +32,8 @@ const ManageSSTs = () => {
     const fetchSSTGroups = async () => {
         setLoading(true);
         try {
-            const res = await axios.get("/api/question/sst-group"); // Backend route
-            setSSTGroups(res.data.data || []);
+            const { data } = await api.get("/question/sst-group"); // Backend route
+            setSSTGroups(data.data || []);
         } catch (err) {
             console.error("Failed to fetch SST groups:", err);
         } finally {
@@ -44,8 +44,8 @@ const ManageSSTs = () => {
     const fetchUnusedQuestions = async () => {
         setUnusedLoading(true);
         try {
-            const res = await axios.get("/api/question/sst-group/get/unused");
-            setAvailableQuestions(res.data.data || {});
+            const { data } = await api.get("/question/sst-group/get/unused");
+            setAvailableQuestions(data.data || {});
         } catch (err) {
             console.error("Failed to fetch unused SST questions:", err);
         } finally {
@@ -79,9 +79,9 @@ const ManageSSTs = () => {
             };
 
             if (editingId) {
-                await axios.put(`/api/question/sst-group/${editingId}`, payload);
+                await api.put(`/question/sst-group/${editingId}`, payload);
             } else {
-                await axios.post("/api/question/sst-group", payload);
+                await api.post("/question/sst-group", payload);
             }
             setIsModalOpen(false);
             await fetchSSTGroups();
@@ -161,7 +161,7 @@ const ManageSSTs = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this SST group?")) {
             try {
-                await axios.delete(`/api/question/sst-group/${id}`);
+                await api.delete(`/question/sst-group/${id}`);
                 fetchSSTGroups();
             } catch (err) {
                 console.error("Error deleting SST group:", err);

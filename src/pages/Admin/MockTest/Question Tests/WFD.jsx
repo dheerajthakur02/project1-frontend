@@ -4,7 +4,7 @@ import {
     Mic // Icon for WFD (Listening/Writing)
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -32,8 +32,8 @@ const ManageWFDs = () => {
     const fetchWFDSections = async () => {
         setLoading(true);
         try {
-            const res = await axios.get("/api/question/wfd"); // Backend route
-            setWFDSections(res.data.data || []);
+            const { data } = await api.get("/question/wfd"); // Backend route
+            setWFDSections(data.data || []);
         } catch (err) {
             console.error("Failed to fetch WFD sections:", err);
         } finally {
@@ -44,8 +44,8 @@ const ManageWFDs = () => {
     const fetchUnusedQuestions = async () => {
         setUnusedLoading(true);
         try {
-            const res = await axios.get("/api/question/wfd/get/unused");
-            setAvailableQuestions(res.data.data || {});
+            const { data } = await api.get("/question/wfd/get/unused");
+            setAvailableQuestions(data.data || {});
         } catch (err) {
             console.error("Failed to fetch unused WFD questions:", err);
         } finally {
@@ -79,9 +79,9 @@ const ManageWFDs = () => {
             };
 
             if (editingId) {
-                await axios.put(`/api/question/wfd/${editingId}`, payload);
+                await api.put(`/question/wfd/${editingId}`, payload);
             } else {
-                await axios.post("/api/question/wfd", payload);
+                await api.post("/question/wfd/create", payload);
             }
             setIsModalOpen(false);
             await fetchWFDSections();
@@ -161,7 +161,7 @@ const ManageWFDs = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this WFD section?")) {
             try {
-                await axios.delete(`/api/question/wfd/${id}`);
+                await api.delete(`/question/wfd/${id}`);
                 fetchWFDSections();
             } catch (err) {
                 console.error("Error deleting WFD section:", err);

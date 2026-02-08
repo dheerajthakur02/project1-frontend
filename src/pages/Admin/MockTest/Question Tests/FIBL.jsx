@@ -4,7 +4,7 @@ import {
     Headphones // Icon for Listening
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -32,8 +32,8 @@ const ManageFIBLs = () => {
     const fetchFIBLSections = async () => {
         setLoading(true);
         try {
-            const res = await axios.get("/api/question/fibl"); // Backend route
-            setFIBLSections(res.data.data || []);
+            const { data } = await api.get("/question/fibl"); // Backend route
+            setFIBLSections(data.data || []);
         } catch (err) {
             console.error("Failed to fetch FIBL sections:", err);
         } finally {
@@ -44,8 +44,8 @@ const ManageFIBLs = () => {
     const fetchUnusedQuestions = async () => {
         setUnusedLoading(true);
         try {
-            const res = await axios.get("/api/question/fibl/get/unused");
-            setAvailableQuestions(res.data.data || {});
+            const { data } = await api.get("/question/fibl/get/unused");
+            setAvailableQuestions(data.data || {});
         } catch (err) {
             console.error("Failed to fetch unused FIBL questions:", err);
         } finally {
@@ -79,9 +79,9 @@ const ManageFIBLs = () => {
             };
 
             if (editingId) {
-                await axios.put(`/api/question/fibl/${editingId}`, payload);
+                await api.put(`/question/fibl/${editingId}`, payload);
             } else {
-                await axios.post("/api/question/fibl", payload);
+                await api.post("/question/fibl", payload);
             }
             setIsModalOpen(false);
             await fetchFIBLSections();
@@ -161,7 +161,7 @@ const ManageFIBLs = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this FIBL section?")) {
             try {
-                await axios.delete(`/api/question/fibl/${id}`);
+                await api.delete(`/question/fibl/${id}`);
                 fetchFIBLSections();
             } catch (err) {
                 console.error("Error deleting FIBL section:", err);

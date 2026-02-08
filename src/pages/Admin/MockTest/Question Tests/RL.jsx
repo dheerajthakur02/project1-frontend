@@ -4,7 +4,7 @@ import {
   Ear, GraduationCap, Volume2 // Icons for Retell Lecture
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout"; // Adjust path as needed
 
@@ -47,7 +47,7 @@ const ManageRLTFs = () => {
     setUnusedLoading(true);
     try {
       // API endpoint for fetching unused Retell Lecture questions - matches backend route
-      const res = await axios.get("/api/question/rl/get/unused");
+      const res = await api.get("/question/rl/get/unused");
       setAvailableQuestions(res.data.data || {});
     } catch (err) {
       console.error("Failed to fetch unused Retell Lecture questions:", err);
@@ -86,10 +86,10 @@ const ManageRLTFs = () => {
 
       if (editingId) {
         // API endpoint for updating a Retell Lecture section - matches backend route
-        await axios.put(`/api/question/rl/${editingId}`, payload);
+        await api.put(`/question/rl/${editingId}`, payload);
       } else {
         // API endpoint for creating a new Retell Lecture section - matches backend route
-        await axios.post("/api/question/rl", payload);
+        await api.post("/question/rl", payload);
       }
       setIsModalOpen(false);
       await fetchRLTFSections();
@@ -134,7 +134,7 @@ const ManageRLTFs = () => {
     setSubmitLoading(true);
     try {
       // Fetch detailed section data including populated questions - matches backend route
-      const res = await axios.get(`/api/question/rl/${section._id}`);
+      const res = await api.get(`/question/rl/${section._id}`);
       const detailedSection = res.data.data;
       setForm({
         title: detailedSection.title,
@@ -143,7 +143,7 @@ const ManageRLTFs = () => {
       });
 
       // Fetch unused questions and filter out those already in the section - matches backend route
-      const unusedRes = await axios.get("/api/question/rl/get/unused");
+      const unusedRes = await api.get("/question/rl/get/unused");
       const fetchedUnusedQuestions = unusedRes.data.data || {};
 
       const filteredAvailableQuestions = {};
@@ -152,10 +152,10 @@ const ManageRLTFs = () => {
       const availableKey = getAvailableQuestionsKey(formQuestionType);
 
       if (fetchedUnusedQuestions[availableKey]) {
-          const sectionQuestionIds = new Set(detailedSection[formQuestionType]?.map(q => q._id.toString()));
-          filteredAvailableQuestions[availableKey] = fetchedUnusedQuestions[availableKey].filter(
-              q => !sectionQuestionIds.has(q._id.toString())
-          );
+        const sectionQuestionIds = new Set(detailedSection[formQuestionType]?.map(q => q._id.toString()));
+        filteredAvailableQuestions[availableKey] = fetchedUnusedQuestions[availableKey].filter(
+          q => !sectionQuestionIds.has(q._id.toString())
+        );
       }
       setAvailableQuestions(filteredAvailableQuestions);
     } catch (err) {
@@ -170,7 +170,7 @@ const ManageRLTFs = () => {
     if (window.confirm("Are you sure you want to delete this Retell Lecture section? This cannot be undone.")) {
       try {
         // API endpoint for deleting a Retell Lecture section - matches backend route
-        await axios.delete(`/api/question/rl/${id}`);
+        await api.delete(`/question/rl/${id}`);
         fetchRLTFSections();
       } catch (err) {
         console.error("Error deleting Retell Lecture section:", err);
@@ -200,7 +200,7 @@ const ManageRLTFs = () => {
         </h3>
         <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] border-b pb-2">
           {form[questionType].length === 0 ? (
-             <span className="text-sm text-slate-400 italic">No questions selected.</span>
+            <span className="text-sm text-slate-400 italic">No questions selected.</span>
           ) : (
             form[questionType].map((q) => (
               <span key={q._id || q} className="flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full"> {/* Emerald color */}
@@ -320,7 +320,7 @@ const ManageRLTFs = () => {
                   />
 
                   {submitLoading ? (
-                     <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-emerald-500" size={32}/></div>
+                    <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-emerald-500" size={32} /></div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                       {/* IMPORTANT: Pass 'reTellQuestions' as the questionType */}
@@ -371,8 +371,8 @@ const ManageRLTFs = () => {
                               )}
                               {q.text && ( // Optional: if you store a transcript or summary
                                 <div className="mt-2 text-sm text-slate-600 border-t pt-2">
-                                    <p className="font-medium">Transcript/Summary:</p>
-                                    <p className="text-slate-500">{q.text}</p>
+                                  <p className="font-medium">Transcript/Summary:</p>
+                                  <p className="text-slate-500">{q.text}</p>
                                 </div>
                               )}
                             </div>

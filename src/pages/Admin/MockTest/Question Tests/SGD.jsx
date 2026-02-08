@@ -4,7 +4,7 @@ import {
   MessageSquare, Users // Icons for discussion/group
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout"; // Adjust path as needed
 
@@ -32,8 +32,8 @@ const ManageSummarizeGroupDiscussions = () => {
   const fetchSGDSections = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("api/question/sgd"); // API endpoint for SGD
-      setSgdSections(res.data.data || []);
+      const { data } = await api.get("/question/sgd"); // Backend route
+      setSgdSections(data.data || []);
     } catch (err) {
       console.error("Failed to fetch Summarize Group Discussion sections:", err);
     } finally {
@@ -44,8 +44,8 @@ const ManageSummarizeGroupDiscussions = () => {
   const fetchUnusedQuestions = async () => {
     setUnusedLoading(true);
     try {
-      const res = await axios.get("api/question/sgd/get/unused"); // Endpoint for unused SGD questions
-      setAvailableQuestions(res.data.data || {});
+      const { data } = await api.get("/question/sgd/get/unused"); // Endpoint for unused SGD questions
+      setAvailableQuestions(data.data || {});
     } catch (err) {
       console.error("Failed to fetch unused Summarize Group Discussion questions:", err);
     } finally {
@@ -76,9 +76,9 @@ const ManageSummarizeGroupDiscussions = () => {
       };
 
       if (editingId) {
-        await axios.put(`api/question/sgd/${editingId}`, payload);
+        await api.put(`/question/sgd/${editingId}`, payload);
       } else {
-        await axios.post("api/question/sgd", payload);
+        await api.post("/question/sgd", payload);
       }
       setIsModalOpen(false);
       await fetchSGDSections();
@@ -122,23 +122,23 @@ const ManageSummarizeGroupDiscussions = () => {
     setIsModalOpen(true);
     setSubmitLoading(true);
     try {
-      const res = await axios.get(`api/question/sgd/${section._id}`);
-      const detailedSection = res.data.data;
+      const { data: detailedSectionRes } = await api.get(`/question/sgd/${section._id}`);
+      const detailedSection = detailedSectionRes.data;
       setForm({
         title: detailedSection.title,
         summarizeGroupDiscussionQuestions: detailedSection.summarizeGroupDiscussionQuestions || [],
       });
 
-      const unusedRes = await axios.get("api/question/sgd/get/unused");
-      const fetchedUnusedQuestions = unusedRes.data.data || {};
+      const { data: unusedResData } = await api.get("/question/sgd/get/unused");
+      const fetchedUnusedQuestions = unusedResData.data || {};
 
       const filteredAvailableQuestions = {};
       const typeKey = getAvailableQuestionsKey("summarizeGroupDiscussionQuestions");
       if (fetchedUnusedQuestions[typeKey]) {
-          const sectionQuestionIds = new Set(detailedSection[typeKey]?.map(q => q._id.toString()));
-          filteredAvailableQuestions[typeKey] = fetchedUnusedQuestions[typeKey].filter(
-              q => !sectionQuestionIds.has(q._id.toString())
-          );
+        const sectionQuestionIds = new Set(detailedSection[typeKey]?.map(q => q._id.toString()));
+        filteredAvailableQuestions[typeKey] = fetchedUnusedQuestions[typeKey].filter(
+          q => !sectionQuestionIds.has(q._id.toString())
+        );
       }
       setAvailableQuestions(filteredAvailableQuestions);
     } catch (err) {
@@ -150,9 +150,9 @@ const ManageSummarizeGroupDiscussions = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this Summarize Group Discussion section? This cannot be undone.")) {
+    if (window.confirm("Are you sure you want to delete this SGD section?")) {
       try {
-        await axios.delete(`api/question/sgd/${id}`);
+        await api.delete(`/question/sgd/${id}`);
         fetchSGDSections();
       } catch (err) {
         console.error("Error deleting Summarize Group Discussion section:", err);
@@ -181,7 +181,7 @@ const ManageSummarizeGroupDiscussions = () => {
         </h3>
         <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] border-b pb-2">
           {form[questionType].length === 0 ? (
-             <span className="text-sm text-slate-400 italic">No questions selected.</span>
+            <span className="text-sm text-slate-400 italic">No questions selected.</span>
           ) : (
             form[questionType].map((q) => (
               <span key={q._id || q} className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full"> {/* Orange color */}
@@ -300,7 +300,7 @@ const ManageSummarizeGroupDiscussions = () => {
                   />
 
                   {submitLoading ? (
-                     <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-orange-500" size={32}/></div>
+                    <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-orange-500" size={32} /></div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                       {renderQuestionSelection("summarizeGroupDiscussionQuestions", MessageSquare)}

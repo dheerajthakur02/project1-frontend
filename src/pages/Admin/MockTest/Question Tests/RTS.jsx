@@ -4,7 +4,7 @@ import {
   Mic, Volume2, MessageCircleQuestion // Icons for speaking/respond to situation
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout"; // Adjust path as needed
 
@@ -32,8 +32,8 @@ const ManageRTSs = () => {
   const fetchRTSSections = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/question/rts"); // API endpoint for RTS
-      setRtsSections(res.data.data || []);
+      const { data } = await api.get("/question/rts"); // Backend route
+      setRtsSections(data.data || []);
     } catch (err) {
       console.error("Failed to fetch RTS sections:", err);
     } finally {
@@ -44,7 +44,7 @@ const ManageRTSs = () => {
   const fetchUnusedQuestions = async () => {
     setUnusedLoading(true);
     try {
-      const res = await axios.get("/api/question/rts/get/unused"); // Endpoint for unused RTS questions
+      const res = await api.get("/question/rts/get/unused"); // Endpoint for unused RTS questions
       setAvailableQuestions(res.data.data || {});
     } catch (err) {
       console.error("Failed to fetch unused RTS questions:", err);
@@ -76,9 +76,9 @@ const ManageRTSs = () => {
       };
 
       if (editingId) {
-        await axios.put(`/api/question/rts/${editingId}`, payload);
+        await api.put(`/question/rts/${editingId}`, payload);
       } else {
-        await axios.post("/api/question/rts", payload);
+        await api.post("/question/rts", payload);
       }
       setIsModalOpen(false);
       await fetchRTSSections();
@@ -122,23 +122,23 @@ const ManageRTSs = () => {
     setIsModalOpen(true);
     setSubmitLoading(true);
     try {
-      const res = await axios.get(`/api/question/rts/${section._id}`);
+      const res = await api.get(`/question/rts/${section._id}`);
       const detailedSection = res.data.data;
       setForm({
         title: detailedSection.title,
         rtsQuestions: detailedSection.rtsQuestions || [],
       });
 
-      const unusedRes = await axios.get("/api/question/rts/get/unused");
-      const fetchedUnusedQuestions = unusedRes.data.data || {};
+      const { data } = await api.get("/question/rts/get/unused");
+      const fetchedUnusedQuestions = data.data || {};
 
       const filteredAvailableQuestions = {};
       const typeKey = getAvailableQuestionsKey("rtsQuestions");
       if (fetchedUnusedQuestions[typeKey]) {
-          const sectionQuestionIds = new Set(detailedSection[typeKey]?.map(q => q._id.toString()));
-          filteredAvailableQuestions[typeKey] = fetchedUnusedQuestions[typeKey].filter(
-              q => !sectionQuestionIds.has(q._id.toString())
-          );
+        const sectionQuestionIds = new Set(detailedSection[typeKey]?.map(q => q._id.toString()));
+        filteredAvailableQuestions[typeKey] = fetchedUnusedQuestions[typeKey].filter(
+          q => !sectionQuestionIds.has(q._id.toString())
+        );
       }
       setAvailableQuestions(filteredAvailableQuestions);
     } catch (err) {
@@ -152,7 +152,7 @@ const ManageRTSs = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this RTS section? This cannot be undone.")) {
       try {
-        await axios.delete(`/api/question/rts/${id}`);
+        await api.delete(`/api/question/rts/${id}`);
         fetchRTSSections();
       } catch (err) {
         console.error("Error deleting RTS section:", err);
@@ -181,7 +181,7 @@ const ManageRTSs = () => {
         </h3>
         <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] border-b pb-2">
           {form[questionType].length === 0 ? (
-             <span className="text-sm text-slate-400 italic">No questions selected.</span>
+            <span className="text-sm text-slate-400 italic">No questions selected.</span>
           ) : (
             form[questionType].map((q) => (
               <span key={q._id || q} className="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full"> {/* Purple color */}
@@ -192,7 +192,7 @@ const ManageRTSs = () => {
           )}
         </div>
         {unusedLoading && !editingId ? (
-          <Loader2 className="animate-spin mx-auto text-purple-400" size={24} /> 
+          <Loader2 className="animate-spin mx-auto text-purple-400" size={24} />
         ) : (
           <div className="space-y-2 max-h-48 overflow-y-auto p-2 border rounded-lg bg-white">
             {questionsToDisplay.length === 0 ? (
@@ -252,7 +252,7 @@ const ManageRTSs = () => {
         {/* LIST OF RTS SECTIONS */}
         <div className="space-y-4">
           {loading ? (
-            <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto text-purple-500" size={40} /></div> 
+            <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto text-purple-500" size={40} /></div>
           ) : filteredRTSSections.length === 0 ? (
             <div className="py-20 text-center text-slate-500">No Respond to a Situation sections found.</div>
           ) : (
@@ -271,7 +271,7 @@ const ManageRTSs = () => {
                   <p>Questions: {section.rtsQuestions?.length || 0}</p>
                 </div>
                 <div className="col-span-3 flex justify-end gap-2">
-                  <button onClick={() => { setViewData(section); setIsViewModalOpen(true); }} className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg"><Eye size={18} /></button> 
+                  <button onClick={() => { setViewData(section); setIsViewModalOpen(true); }} className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg"><Eye size={18} /></button>
                   <button onClick={() => handleEditClick(section)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"><Edit size={18} /></button>
                   <button onClick={() => handleDelete(section._id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"><Trash2 size={18} /></button>
                 </div>
@@ -300,7 +300,7 @@ const ManageRTSs = () => {
                   />
 
                   {submitLoading ? (
-                     <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-purple-500" size={32}/></div> 
+                    <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-purple-500" size={32} /></div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                       {renderQuestionSelection("rtsQuestions", Volume2)} {/* Using Volume2 as RTS questions usually have an audio prompt */}

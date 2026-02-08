@@ -4,7 +4,7 @@ import {
   FileText // Icon for Summarize Written Text
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout"; // Adjust path as needed
 
@@ -32,8 +32,8 @@ const ManageSWTs = () => {
   const fetchSWTSections = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/question/swt"); // Backend controller route
-      setSwtSections(res.data.data || []);
+      const { data } = await api.get("/question/swt"); // Backend controller route
+      setSwtSections(data.data || []);
     } catch (err) {
       console.error("Failed to fetch Summarize Written Text sections:", err);
     } finally {
@@ -45,8 +45,8 @@ const ManageSWTs = () => {
     setUnusedLoading(true);
     try {
       // Use the new single endpoint for all unused questions
-      const res = await axios.get("/api/question/swt/get/unused");
-      setAvailableQuestions(res.data.data || {});
+      const { data } = await api.get("/question/swt/get/unused");
+      setAvailableQuestions(data.data || {});
     } catch (err) {
       console.error("Failed to fetch unused Summarize Written Text questions:", err);
     } finally {
@@ -82,9 +82,9 @@ const ManageSWTs = () => {
       };
 
       if (editingId) {
-        await axios.put(`/api/question/swt/${editingId}`, payload); // Backend update route
+        await api.put(`/question/swt/${editingId}`, payload); // Backend update route
       } else {
-        await axios.post("/api/question/swt", payload); // Backend create route
+        await api.post("/question/swt", payload); // Backend create route
       }
       setIsModalOpen(false);
       await fetchSWTSections();
@@ -148,10 +148,10 @@ const ManageSWTs = () => {
       const availableKey = getAvailableQuestionsKey(formQuestionType);
 
       if (fetchedUnusedQuestions[availableKey]) {
-          const sectionQuestionIds = new Set(detailedSection[formQuestionType]?.map(q => q._id.toString()));
-          filteredAvailableQuestions[availableKey] = fetchedUnusedQuestions[availableKey].filter(
-              q => !sectionQuestionIds.has(q._id.toString())
-          );
+        const sectionQuestionIds = new Set(detailedSection[formQuestionType]?.map(q => q._id.toString()));
+        filteredAvailableQuestions[availableKey] = fetchedUnusedQuestions[availableKey].filter(
+          q => !sectionQuestionIds.has(q._id.toString())
+        );
       }
       setAvailableQuestions(filteredAvailableQuestions);
     } catch (err) {
@@ -163,9 +163,9 @@ const ManageSWTs = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this Summarize Written Text section? This cannot be undone.")) {
+    if (window.confirm("Are you sure you want to delete this SWT section?")) {
       try {
-        await axios.delete(`/api/question/swt/${id}`); // Backend delete route
+        await api.delete("/question/swt/" + id); // Backend delete route
         fetchSWTSections();
       } catch (err) {
         console.error("Error deleting Summarize Written Text section:", err);
@@ -194,7 +194,7 @@ const ManageSWTs = () => {
         </h3>
         <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] border-b pb-2">
           {form[questionType].length === 0 ? (
-             <span className="text-sm text-slate-400 italic">No questions selected.</span>
+            <span className="text-sm text-slate-400 italic">No questions selected.</span>
           ) : (
             form[questionType].map((q) => (
               <span key={q._id || q} className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full"> {/* Orange color */}
@@ -313,7 +313,7 @@ const ManageSWTs = () => {
                   />
 
                   {submitLoading ? (
-                     <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-orange-500" size={32}/></div>
+                    <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-orange-500" size={32} /></div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                       {renderQuestionSelection("SummarizeTextQuestions", FileText)}
@@ -362,8 +362,8 @@ const ManageSWTs = () => {
                               <p className="font-semibold text-slate-700">{q.text || `Question ID: ${q._id || q}`}</p>
                               {q.sampleAnswer && ( // If you have a sample answer field
                                 <div className="mt-2 text-sm text-slate-600 border-t pt-2">
-                                    <p className="font-medium">Sample Answer:</p>
-                                    <p className="text-slate-500">{q.sampleAnswer}</p>
+                                  <p className="font-medium">Sample Answer:</p>
+                                  <p className="text-slate-500">{q.sampleAnswer}</p>
                                 </div>
                               )}
                             </div>

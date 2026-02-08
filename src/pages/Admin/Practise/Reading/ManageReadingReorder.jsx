@@ -5,7 +5,7 @@ import {
     X, PlusCircle, ArrowUp, ArrowDown, Shuffle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -40,8 +40,8 @@ const ManageReadingReorder = () => {
         if (!user || (!user._id && !user.id)) return;
         setLoading(true);
         try {
-            const res = await axios.get(`/api/reading-reorder/get/${user._id || user.id}`);
-            setQuestions(res.data.data || []);
+            const { data } = await api.get(`/reading-reorder/get/${user._id}`);
+            setQuestions(data.data || []);
         } catch (err) {
             console.error(err);
         } finally {
@@ -83,7 +83,7 @@ const ManageReadingReorder = () => {
             // If this fails, I might need to check routes.
             // Actually, I didn't see a delete in the controller snippet! 
             // But I will try the standard convention.
-            await axios.delete(`/api/reading-reorder/${id}`);
+            await api.delete(`/reading-reorder/${id}`);
             fetchQuestions();
         } catch (err) {
             // Fallback for demo/if route missing
@@ -125,10 +125,9 @@ const ManageReadingReorder = () => {
             };
 
             if (editingId) {
-                // await axios.put ...
-                alert("Edit not fully implemented in this demo.");
+                await api.put(`/reading-reorder/${editingId}`, payload);
             } else {
-                await axios.post("/api/reading-reorder/add", payload);
+                await api.post("/reading-reorder/add", payload);
             }
             setIsModalOpen(false);
             fetchQuestions();

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import axios from "axios";
+import api from "../../../services/api";
 import {
   Plus, Edit, Trash2, X, Upload,
   Search, Headphones, Clock, CheckCircle2,
@@ -40,8 +40,8 @@ const ManageShortAnswer = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/short-answer/get/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/short-answer/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {

@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, CheckCircle, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Hash, BarChart2, Info, X, Circle, Eye, Languages } from 'lucide-react';
-import { submitReadingMultiChoiceSingleAnswerAttempt, getReadingMultiChoiceSingleAnswerAttempts } from '../../services/api';
+import api, { submitReadingMultiChoiceSingleAnswerAttempt, getReadingMultiChoiceSingleAnswerAttempts } from '../../services/api';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
+// import axios from 'axios'; // Removed direct axios import
+
 export const getReadingMultiChoiceSingleAnswerCommunityAttempts = (questionId) =>
-  axios.get(
-    `/api/reading-multi-choice-single-answer/${questionId}/community`
+  api.get(
+    `/reading-multi-choice-single-answer/${questionId}/community`
   );
 
 

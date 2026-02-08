@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
+// import axios from 'axios'; // Removed direct axios import
+
 
 // Layout
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
@@ -33,7 +34,7 @@ import HighlightIncorrectWords from '../listening/HighLightIncorrectWords';
 import ListeningFIB from '../listening/ListeningFIB';
 import ListeningMultiChoiceMultiAnswer from '../listening/ListeningMultiChoiceMultiAnswer';
 import WriteFromDictation from '../listening/WriteFromDictation';
-import { getWriteFromDictationQuestions } from '../../services/api';
+import api, { getWriteFromDictationQuestions } from '../../services/api';
 
 
 const PracticeCard = ({ title, icon, color, count, total, onClick }) => {
@@ -158,7 +159,7 @@ function Practice() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const { data } = await axios.get('/api/dashboard/stats', { withCredentials: true });
+                const { data } = await api.get('/dashboard/stats');
                 if (data.success) {
                     setStats(data.data);
                 }
@@ -173,8 +174,7 @@ function Practice() {
     const fetchReadAloud = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/read-aloud/questions/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/read-aloud/questions/${user._id}`);
             if (data.success) setReadAloudQuestions(data.data);
         } catch (err) { setError('Failed to fetch Read Aloud'); }
         finally { setLoading(false); }
@@ -183,8 +183,7 @@ function Practice() {
     const fetchRepeatSentences = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/repeat-sentence/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/repeat-sentence/get/${user._id}`);
             setRepeatSentenceQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -193,8 +192,7 @@ function Practice() {
     const fetchImageSentences = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/image/questions/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/image/questions/${user._id}`);
             setImageQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -203,8 +201,7 @@ function Practice() {
     const fetchShortAnswerQuestion = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/short-answer/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/short-answer/get/${user._id}`);
             setShortAnswerQuestion(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -213,8 +210,7 @@ function Practice() {
     const fetchSummarizeGroupQuestion = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/summarize-group/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/summarize-group/get/${user._id}`);
             setSummarizeGroupQuestion(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -223,8 +219,7 @@ function Practice() {
     const fetchRespondSituationQuestion = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/respond-situation/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/respond-situation/get/${user._id}`);
             setRespondSituationQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -234,8 +229,7 @@ function Practice() {
     const fetchReTellQuestion = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/retell-lecture/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/retell-lecture/get/${user._id}`);
             setRetellQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -244,8 +238,7 @@ function Practice() {
     const fetchReadingMultiChoiceMultiAnswer = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/reading-multi-choice-multi-answer/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/reading-multi-choice-multi-answer/get/${user._id}`);
             setReadingMultiChoiceMultiAnswerQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -254,8 +247,7 @@ function Practice() {
     const fetchReadingMultiChoiceSingleAnswer = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/reading-multi-choice-single-answer/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/reading-multi-choice-single-answer/get/${user._id}`);
             setReadingMultiChoiceSingleAnswerQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -264,8 +256,7 @@ function Practice() {
     const fetchReadingFIBDropdown = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/reading-fib-dropdown/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/reading-fib-dropdown/get/${user._id}`);
             setReadingFIBDropdownQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -274,8 +265,7 @@ function Practice() {
     const fetchReadingFIBDragDrop = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/reading-fib-drag-drop/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/reading-fib-drag-drop/get/${user._id}`);
             setReadingFIBDragDropQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -284,8 +274,7 @@ function Practice() {
     const fetchReadingReorder = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/reading-reorder/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/reading-reorder/get/${user._id}`);
             setReadingReorderQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -298,8 +287,7 @@ function Practice() {
     const fetchSummarizeWrittenText = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/summarize-text/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/summarize-text/get/${user._id}`);
             setSummarizeTextQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -308,8 +296,7 @@ function Practice() {
     const fetchEssayQuestions = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/essay/get/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/essay/get/${user._id}`);
             setEssayQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -319,10 +306,8 @@ function Practice() {
     const fetchSummarizeSpokenText = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/sst/questions/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/sst/questions/${user._id}`);
             setSSTQuestions(data?.data || []);
-
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };
@@ -330,8 +315,7 @@ function Practice() {
     const fetchListeningMCQMultiple = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/listening-multi-choice-multi-answer/questions/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/listening-multi-choice-multi-answer/questions/${user._id}`);
             setListeningMCQMultipleQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -340,8 +324,7 @@ function Practice() {
     const fetchListeningFillBlanks = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/listening-fib/questions/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/listening-fib/questions/${user._id}`);
             setListeningFIBQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -359,10 +342,8 @@ function Practice() {
     const fetchHighlightSummary = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/hcs/attempts/${user._id}`);
-            const data = await response.json();
+            const { data } = await api.get(`/hcs/attempts/${user._id}`);
             setHCSQuestions(data?.data || []);
-
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };
@@ -370,11 +351,8 @@ function Practice() {
     const fetchListeningMCQSingle = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/choose-single-answer/${user._id}`);
-            const data = await response.json();
-
+            const { data } = await api.get(`/choose-single-answer/${user._id}`);
             setListeningMCQSingleQuestions(data?.data || []);
-
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };
@@ -382,11 +360,8 @@ function Practice() {
     const fetchSelectMissingWord = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/select-missing-word/${user._id}`);
-            const data = await response.json();
-
+            const { data } = await api.get(`/select-missing-word/${user._id}`);
             setSelectMissingWordQuestions(data?.data || []);
-
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };
@@ -394,11 +369,8 @@ function Practice() {
     const fetchHighlightIncorrectWords = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/hiw/${user._id}`);
-            const data = await response.json();
-
+            const { data } = await api.get(`/hiw/${user._id}`);
             setHighlightIncorrectWordsQuestions(data?.data || []);
-
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };
@@ -689,9 +661,9 @@ function Practice() {
                                     >
                                         <div className="col-span-8 flex items-center gap-3">
                                             <span className="font-semibold text-slate-700">#{q._id.toString().substring(0, 5).toUpperCase()}</span>
-                                            <h3 className="text-slate-500 text-sm">({q.name || q.title}) <span className={`${q.isPredictive ? "bg-blue-400 p-2 m-2 rounded text-white":""}`}>{q.isPredictive? "Predictive":""}</span> </h3>
+                                            <h3 className="text-slate-500 text-sm">({q.name || q.title}) <span className={`${q.isPredictive ? "bg-blue-400 p-2 m-2 rounded text-white" : ""}`}>{q.isPredictive ? "Predictive" : ""}</span> </h3>
                                         </div>
-                                        
+
                                         <div className="col-span-2 flex justify-center">
                                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${q.difficulty === 'Hard' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700'
                                                 }`}>

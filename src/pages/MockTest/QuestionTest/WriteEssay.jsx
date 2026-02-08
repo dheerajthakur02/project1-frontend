@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import api from "../../../services/api";
 
 // --- WRITE ESSAY COMPONENT ---
 export default function WriteEssayMockTest({ backendData }) {
@@ -39,16 +40,11 @@ export default function WriteEssayMockTest({ backendData }) {
     setIsLoadingResult(true);
 
     try {
-      const response = await fetch("/api/writing/calculate-essay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          testId: backendData._id,
-          answers: [{ questionId, content: essayText }],
-        }),
+      const { data } = await api.post("/writing/calculate-essay", {
+        testId: backendData._id,
+        answers: [{ questionId, content: essayText }],
       });
-      const result = await response.json();
-      setTestResult(result.data);
+      setTestResult(data.data);
     } catch (err) {
       console.error("Scoring Error:", err);
     } finally {
@@ -64,12 +60,12 @@ export default function WriteEssayMockTest({ backendData }) {
     if (action === "undo") document.execCommand("undo");
     if (action === "redo") document.execCommand("redo");
     if (action === "copy") {
-        navigator.clipboard.writeText(essayText.substring(textarea.selectionStart, textarea.selectionEnd));
+      navigator.clipboard.writeText(essayText.substring(textarea.selectionStart, textarea.selectionEnd));
     }
     if (action === "cut") {
-        navigator.clipboard.writeText(essayText.substring(textarea.selectionStart, textarea.selectionEnd));
-        const newText = essayText.slice(0, textarea.selectionStart) + essayText.slice(textarea.selectionEnd);
-        setEssayText(newText);
+      navigator.clipboard.writeText(essayText.substring(textarea.selectionStart, textarea.selectionEnd));
+      const newText = essayText.slice(0, textarea.selectionStart) + essayText.slice(textarea.selectionEnd);
+      setEssayText(newText);
     }
     // Note: 'Paste' usually requires user permission/trigger in modern browsers
   };
@@ -156,7 +152,7 @@ export default function WriteEssayMockTest({ backendData }) {
           Save and Exit
         </button>
         {step === 0 && (
-          <button 
+          <button
             onClick={handleSubmit}
             className="bg-[#008199] text-white px-10 py-1.5 rounded text-sm font-bold shadow-md hover:bg-[#006b81]"
           >
@@ -182,16 +178,16 @@ function ResultScreen({ testResult, isLoadingResult }) {
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Essay Results</h1>
       <div className="grid grid-cols-2 gap-4 text-left">
         <div className="p-4 border rounded bg-blue-50">
-           <p className="text-xs text-gray-500 uppercase">Grammar & Spelling</p>
-           <p className="text-xl font-bold">{testResult?.scores?.grammar || 0} / 90</p>
+          <p className="text-xs text-gray-500 uppercase">Grammar & Spelling</p>
+          <p className="text-xl font-bold">{testResult?.scores?.grammar || 0} / 90</p>
         </div>
         <div className="p-4 border rounded bg-orange-50">
-           <p className="text-xs text-gray-500 uppercase">Content & Structure</p>
-           <p className="text-xl font-bold">{testResult?.scores?.content || 0} / 90</p>
+          <p className="text-xs text-gray-500 uppercase">Content & Structure</p>
+          <p className="text-xl font-bold">{testResult?.scores?.content || 0} / 90</p>
         </div>
       </div>
-      <button 
-        onClick={() => window.location.reload()} 
+      <button
+        onClick={() => window.location.reload()}
         className="mt-8 bg-[#fb8c00] text-white px-8 py-2 rounded uppercase font-bold text-xs"
       >
         Try Another Question

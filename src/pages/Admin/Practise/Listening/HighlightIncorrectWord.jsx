@@ -5,7 +5,7 @@ import {
   Type, MousePointer2, Highlighter, FileText, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -43,8 +43,8 @@ const ManageHIW = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/hiw/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/hiw/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error("Fetch Error:", err);
     } finally {
@@ -75,9 +75,9 @@ const ManageHIW = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/hiw/${editingId}`, fd);
+        await api.put(`/hiw/${editingId}`, fd);
       } else {
-        await axios.post("/api/hiw/add", fd);
+        await api.post("/hiw/add", fd);
       }
       setIsModalOpen(false);
       fetchQuestions();
@@ -91,7 +91,7 @@ const ManageHIW = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Permanent delete this question?")) return;
     try {
-      await axios.delete(`/api/hiw/${id}`);
+      await api.delete(`/hiw/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete Error:", err);

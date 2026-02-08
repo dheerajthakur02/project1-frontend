@@ -5,7 +5,7 @@ import {
   FileText, AudioLines, Type, ListOrdered, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -36,8 +36,8 @@ const ManageListeningFIB = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/listening-fib/questions/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/listening-fib/questions/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) { console.error(err); } finally { setLoading(false); }
   };
 
@@ -56,8 +56,8 @@ const ManageListeningFIB = () => {
     if (form.audio) fd.append("audio", form.audio);
 
     try {
-      if (editingId) await axios.put(`/api/listening-fib/${editingId}`, fd);
-      else await axios.post("/api/listening-fib/add", fd);
+      if (editingId) await api.put(`/listening-fib/${editingId}`, fd);
+      else await api.post("/listening-fib/add", fd);
       setIsModalOpen(false);
       fetchQuestions();
     } catch (err) { console.error(err); } finally { setSubmitLoading(false); }

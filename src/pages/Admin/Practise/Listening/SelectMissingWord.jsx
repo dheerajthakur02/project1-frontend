@@ -5,7 +5,7 @@ import {
   VolumeX, ListFilter, AudioLines, FileText, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -47,8 +47,8 @@ const ManageSelectMissingWord = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/select-missing-word/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/select-missing-word/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error("Fetch Error:", err);
     } finally {
@@ -83,9 +83,9 @@ const ManageSelectMissingWord = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/select-missing-word/${editingId}`, fd);
+        await api.put(`/select-missing-word/${editingId}`, fd);
       } else {
-        await axios.post("/api/select-missing-word/add", fd);
+        await api.post("/select-missing-word/add", fd);
       }
       setIsModalOpen(false);
       fetchQuestions();
@@ -99,7 +99,7 @@ const ManageSelectMissingWord = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this question permanently?")) return;
     try {
-      await axios.delete(`/api/select-missing-word/${id}`);
+      await api.delete(`/select-missing-word/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete Error:", err);

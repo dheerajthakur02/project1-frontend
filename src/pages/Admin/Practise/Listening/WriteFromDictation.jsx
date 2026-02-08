@@ -5,7 +5,7 @@ import {
   Keyboard, FileText, AudioLines, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -40,8 +40,8 @@ const ManageWriteFromDictation = () => {
     setLoading(true);
     try {
       // Endpoint based on your controller
-      const res = await axios.get(`/api/write-from-dictation/questions/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/write-from-dictation/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error("Fetch Error:", err);
     } finally {
@@ -66,9 +66,9 @@ const ManageWriteFromDictation = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/write-from-dictation/${editingId}`, fd);
+        await api.put(`/write-from-dictation/${editingId}`, fd);
       } else {
-        await axios.post("/api/write-from-dictation/create", fd);
+        await api.post("/write-from-dictation/add", fd);
       }
       setIsModalOpen(false);
       fetchQuestions();
@@ -82,7 +82,7 @@ const ManageWriteFromDictation = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this dictation question?")) return;
     try {
-      await axios.delete(`/api/write-from-dictation/${id}`);
+      await api.delete(`/write-from-dictation/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete Error:", err);

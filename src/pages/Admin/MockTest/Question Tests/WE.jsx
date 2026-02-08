@@ -11,7 +11,8 @@ import AdminLayout from "../../../../components/Admin/AdminLayout"; // Adjust pa
 // IMPORTANT: Configure Axios base URL here or in a global setup file.
 // This ensures all relative paths like "/api/..." correctly point to your root API.
 // If your backend is on a different port/domain, replace "http://localhost:5173" with its actual address.
-axios.defaults.baseURL = 'http://localhost:5173'; // Assuming your backend is served from the same origin
+// axios.defaults.baseURL removed to support deployment
+// Assuming your backend is served from the same origin
 
 const ManageWriteEssays = () => {
   const { user } = useSelector((state) => state.auth);
@@ -153,10 +154,10 @@ const ManageWriteEssays = () => {
       const filteredAvailableQuestions = {};
       const typeKey = getAvailableQuestionsKey("essayQuestions"); // This will be "essay"
       if (fetchedUnusedQuestions[typeKey]) {
-          const sectionQuestionIds = new Set(detailedSection.essayQuestions?.map(q => q._id.toString())); // Use detailedSection.essayQuestions
-          filteredAvailableQuestions[typeKey] = fetchedUnusedQuestions[typeKey].filter(
-              q => !sectionQuestionIds.has(q._id.toString())
-          );
+        const sectionQuestionIds = new Set(detailedSection.essayQuestions?.map(q => q._id.toString())); // Use detailedSection.essayQuestions
+        filteredAvailableQuestions[typeKey] = fetchedUnusedQuestions[typeKey].filter(
+          q => !sectionQuestionIds.has(q._id.toString())
+        );
       }
       setAvailableQuestions(filteredAvailableQuestions);
     } catch (err) {
@@ -200,7 +201,7 @@ const ManageWriteEssays = () => {
         </h3>
         <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] border-b pb-2">
           {form[questionType].length === 0 ? (
-             <span className="text-sm text-slate-400 italic">No questions selected.</span>
+            <span className="text-sm text-slate-400 italic">No questions selected.</span>
           ) : (
             form[questionType].map((q) => (
               <span key={q._id || q} className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full"> {/* Blue color */}
@@ -319,7 +320,7 @@ const ManageWriteEssays = () => {
                   />
 
                   {submitLoading ? (
-                     <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-blue-500" size={32}/></div>
+                    <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-blue-500" size={32} /></div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                       {renderQuestionSelection("essayQuestions", FileText)} {/* FileText for content of essay */}

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Hash, BarChart2, Info, X, Eye, Languages } from 'lucide-react';
-import { submitReadingFIBDropdownAttempt, getReadingFIBDropdownAttempts } from '../../services/api'; // Ensure this is imported
+import api, { submitReadingFIBDropdownAttempt, getReadingFIBDropdownAttempts } from '../../services/api'; // Ensure this is imported
 import { useSelector } from 'react-redux';
-import axios from 'axios';
+// import axios from 'axios'; // Removed direct axios import
+
 
 const AttemptHistory = ({ questionId, currentAttemptId, onSelectAttempt }) => {
   const [activeTab, setActiveTab] = useState("my"); // my | community
@@ -188,7 +189,7 @@ const EmptyState = ({ text }) => (
 );
 
 export const getReadingFIBDropdownCommunityAttempts = (questionId) =>
-  axios.get(`/api/reading-fib-dropdown/${questionId}/community`);
+  api.get(`/reading-fib-dropdown/${questionId}/community`);
 
 
 const ReadingFIBDropdown = ({ question, setActiveSpeechQuestion, nextButton, previousButton, shuffleButton }) => {

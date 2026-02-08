@@ -22,8 +22,9 @@ import {
   Users,
   FastForward
 } from "lucide-react";
-import { submitHIWAttempt } from "../../services/api";
-import axios from "axios";
+import api, { submitHIWAttempt } from "../../services/api";
+// import axios from "axios"; // Removed direct axios import
+
 
 const Toast = ({ show, onClose, title, children }) => {
   if (!show) return null;
@@ -43,8 +44,8 @@ const Toast = ({ show, onClose, title, children }) => {
 };
 
 export const getHIWCommunityAttempts = (questionId) =>
-  axios.get(
-    `/api/hiw/${questionId}/community`
+  api.get(
+    `/hiw/${questionId}/community`
   );
 
 const AttemptHistoryHIW = ({ questionId, currentAttemptId, onSelectAttempt }) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../../components/Admin/AdminLayout';
-import axios from 'axios';
+import api from '../../../services/api';
 import {
     Save, Map, Mic, PenTool, BookOpen, Headphones,
     CheckCircle2, AlertCircle, Loader2, ArrowRight, ArrowLeft
@@ -13,11 +13,11 @@ const SECTIONS = {
         icon: Mic,
         color: 'text-rose-500 bg-rose-50 border-rose-200',
         types: [
-            { id: 'readAloud', label: 'Read Aloud', api: '/api/read-aloud', count: 6 },
-            { id: 'repeatSentence', label: 'Repeat Sentence', api: '/api/repeat-sentence/all', count: 10 },
-            { id: 'describeImage', label: 'Describe Image', api: '/api/image/all', count: 6 },
-            { id: 'reTellLecture', label: 'Re-tell Lecture', api: '/api/retell-lecture/all', count: 3 },
-            { id: 'answerShortQuestion', label: 'Answer Short Question', api: '/api/short-answer/all', count: 10 }
+            { id: 'readAloud', label: 'Read Aloud', api: '/read-aloud', count: 6 },
+            { id: 'repeatSentence', label: 'Repeat Sentence', api: '/repeat-sentence/all', count: 10 },
+            { id: 'describeImage', label: 'Describe Image', api: '/image/all', count: 6 },
+            { id: 'reTellLecture', label: 'Re-tell Lecture', api: '/retell-lecture/all', count: 3 },
+            { id: 'answerShortQuestion', label: 'Answer Short Question', api: '/short-answer/all', count: 10 }
         ]
     },
     WRITING: {
@@ -26,8 +26,8 @@ const SECTIONS = {
         icon: PenTool,
         color: 'text-blue-500 bg-blue-50 border-blue-200',
         types: [
-            { id: 'summarizeWrittenText', label: 'Summarize Written Text', api: '/api/summarize-text/all', count: 2 },
-            { id: 'writeEssay', label: 'Write Essay', api: '/api/essay/all', count: 1 }
+            { id: 'summarizeWrittenText', label: 'Summarize Written Text', api: '/summarize-text/all', count: 2 },
+            { id: 'writeEssay', label: 'Write Essay', api: '/essay/all', count: 1 }
         ]
     },
     READING: {
@@ -36,11 +36,11 @@ const SECTIONS = {
         icon: BookOpen,
         color: 'text-emerald-500 bg-emerald-50 border-emerald-200',
         types: [
-            { id: 'fillInTheBlanksDropdown', label: 'FIB Dropdown', api: '/api/reading-fib-dropdown', count: 5 }, // Mounted at /api/reading-fib-dropdown
-            { id: 'multipleChoiceMultiple', label: 'MCQ Multiple', api: '/api/reading-multi-choice-multi-answer', count: 2 }, // Mounted as such
-            { id: 'reOrderParagraphs', label: 'Re-order Paragraphs', api: '/api/reading-reorder', count: 2 },
-            { id: 'fillInTheBlanksDragDrop', label: 'FIB Drag & Drop', api: '/api/reading-fib-drag-drop', count: 4 }, // Mounted as such
-            { id: 'multipleChoiceSingle', label: 'MCQ Single', api: '/api/reading-multi-choice-single-answer', count: 2 } // Mounted as such
+            { id: 'fillInTheBlanksDropdown', label: 'FIB Dropdown', api: '/reading-fib-dropdown', count: 5 }, // Mounted at /api/reading-fib-dropdown
+            { id: 'multipleChoiceMultiple', label: 'MCQ Multiple', api: '/reading-multi-choice-multi-answer', count: 2 }, // Mounted as such
+            { id: 'reOrderParagraphs', label: 'Re-order Paragraphs', api: '/reading-reorder', count: 2 },
+            { id: 'fillInTheBlanksDragDrop', label: 'FIB Drag & Drop', api: '/reading-fib-drag-drop', count: 4 }, // Mounted as such
+            { id: 'multipleChoiceSingle', label: 'MCQ Single', api: '/reading-multi-choice-single-answer', count: 2 } // Mounted as such
         ]
     },
     LISTENING: {
@@ -49,14 +49,14 @@ const SECTIONS = {
         icon: Headphones,
         color: 'text-purple-500 bg-purple-50 border-purple-200',
         types: [
-            { id: 'summarizeSpokenText', label: 'Summarize Spoken Text', api: '/api/sst/all', count: 2 },
-            { id: 'multipleChoiceMultiple', label: 'MCQ Multiple', api: '/api/listening-multi-choice-multi-answer', count: 2 }, // Mounted as such
-            { id: 'fillInTheBlanks', label: 'Fill in Blanks', api: '/api/listening-fib', count: 2 },
-            { id: 'highlightCorrectSummary', label: 'Highlight Correct Summary', api: '/api/hcs', count: 2 },
-            { id: 'multipleChoiceSingle', label: 'MCQ Single', api: '/api/choose-single-answer', count: 2 }, // Mounted as /api/choose-single-answer ? Check server.js line 124
-            { id: 'selectMissingWord', label: 'Select Missing Word', api: '/api/select-missing-word', count: 2 }, // Mounted as such
-            { id: 'highlightIncorrectWords', label: 'Highlight Incorrect Words', api: '/api/hiw', count: 2 }, // Mounted as such
-            { id: 'writeFromDictation', label: 'Write From Dictation', api: '/api/write-from-dictation', count: 3 } // Mounted as such
+            { id: 'summarizeSpokenText', label: 'Summarize Spoken Text', api: '/sst/all', count: 2 },
+            { id: 'multipleChoiceMultiple', label: 'MCQ Multiple', api: '/listening-multi-choice-multi-answer', count: 2 }, // Mounted as such
+            { id: 'fillInTheBlanks', label: 'Fill in Blanks', api: '/listening-fib', count: 2 },
+            { id: 'highlightCorrectSummary', label: 'Highlight Correct Summary', api: '/hcs', count: 2 },
+            { id: 'multipleChoiceSingle', label: 'MCQ Single', api: '/choose-single-answer', count: 2 }, // Mounted as /api/choose-single-answer ? Check server.js line 124
+            { id: 'selectMissingWord', label: 'Select Missing Word', api: '/select-missing-word', count: 2 }, // Mounted as such
+            { id: 'highlightIncorrectWords', label: 'Highlight Incorrect Words', api: '/hiw', count: 2 }, // Mounted as such
+            { id: 'writeFromDictation', label: 'Write From Dictation', api: '/write-from-dictation', count: 3 } // Mounted as such
         ]
     }
 };
@@ -89,7 +89,7 @@ const ManageFullMockTest = () => {
                     // Handle dynamic endpoints or generic "get all" logic
                     // Adjust endpoints as needed based on backend inspection
                     console.log(`Fetching ${type.label} from ${type.api}`);
-                    const res = await axios.get(type.api, { withCredentials: true });
+                    const res = await api.get(type.api);
                     const data = res.data.data || res.data; // Handle various response structures
 
                     setAvailableQuestions(prev => ({

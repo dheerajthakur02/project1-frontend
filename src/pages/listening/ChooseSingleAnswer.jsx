@@ -3,9 +3,10 @@ import {
   ArrowLeft, Volume2, RotateCcw, ChevronRight, X, Play, CheckCircle2, Info, Headphones, BookOpen, Share2, History, Calendar, Trash2, Languages, Eye, RefreshCw, ChevronLeft, Pause, Users,
   User, FileText, Check
 } from "lucide-react";
-import { submitChooseSingleAnswerAttempt, submitHighlightAttempt } from "../../services/api";
+import api, { submitChooseSingleAnswerAttempt, submitHighlightAttempt } from "../../services/api";
 import { useSelector } from "react-redux";
-import axios from "axios";
+// import axios from "axios"; // Removed direct axios import
+
 
 const PREP_TIME = 3;
 
@@ -47,11 +48,11 @@ function AttemptHistory({ question, userId }) {
       if (mode === "my") {
         setAttempts(question?.lastAttempts || []);
       } else {
-        const res = await axios.get(
-          `/api/choose-single-answer/${question._id}/community`
+        const { data } = await api.get(
+          `/choose-single-answer/${question._id}/community`
         );
 
-        const formattedAttempts = res.data.data.flatMap((item) =>
+        const formattedAttempts = data.data.flatMap((item) =>
           item.attempts.map((attempt) => ({
             ...attempt,
             user: item.user,

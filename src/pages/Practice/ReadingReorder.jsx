@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, CheckCircle, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Hash, BarChart2, Info, X, GripVertical, ArrowRight, Eye, Languages } from 'lucide-react';
-import { submitReadingReorderAttempt, getReadingReorderAttempts } from '../../services/api';
+import api, { submitReadingReorderAttempt, getReadingReorderAttempts } from '../../services/api';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
+// import axios from 'axios'; // Removed direct axios import
+
 export const getReadingReorderCommunityAttempts = (questionId) =>
-  axios.get(
-    `/api/reading-reorder/${questionId}/community`
+  api.get(
+    `/reading-reorder/${questionId}/community`
   );
 
 

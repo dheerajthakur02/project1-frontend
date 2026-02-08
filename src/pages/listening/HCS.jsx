@@ -26,8 +26,9 @@ import {
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
-import { submitHighlightAttempt } from "../../services/api";
-import axios from "axios";
+import api, { submitHighlightAttempt } from "../../services/api";
+// import axios from "axios"; // Removed direct axios import
+
 
 const PREP_TIME = 3;
 
@@ -39,9 +40,9 @@ const AttemptHistory = ({ question, attempts, setResult, setStatus, onSelectAtte
   const fetchCommunityAttempts = async () => {
     try {
       setLoadingCommunity(true);
-      const res = await axios.get(`api/hcs/${question._id}/community`);
+      const { data } = await api.get(`/hcs/${question._id}/community`);
 
-      setCommunityAttempts(res?.data?.data);
+      setCommunityAttempts(data?.data);
 
     } catch (err) {
       console.error("Community fetch error:", err);

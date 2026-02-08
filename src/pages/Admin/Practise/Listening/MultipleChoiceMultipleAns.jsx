@@ -5,7 +5,7 @@ import {
   PlusCircle, Edit, Trash2, Search, Eye, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -43,8 +43,8 @@ const ManageListeningMCMA = () => {
     setLoading(true);
     try {
       // Ensure this endpoint matches your server route
-      const res = await axios.get(`/api/listening-multi-choice-multi-answer/questions/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/listening-multi-choice-multi-answer/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error("Fetch Error:", err);
     } finally {
@@ -88,9 +88,9 @@ const ManageListeningMCMA = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/listening-multi-choice-multi-answer/${editingId}`, fd);
+        await api.put(`/listening-multi-choice-multi-answer/${editingId}`, fd);
       } else {
-        await axios.post("/api/listening-multi-choice-multi-answer/add", fd);
+        await api.post("/listening-multi-choice-multi-answer/add", fd);
       }
       setIsModalOpen(false);
       fetchQuestions();
@@ -105,7 +105,7 @@ const ManageListeningMCMA = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Permanent delete this question?")) return;
     try {
-      await axios.delete(`/api/listening-multi-choice-multi-answer/${id}`);
+      await api.delete(`/listening-multi-choice-multi-answer/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete Error:", err);

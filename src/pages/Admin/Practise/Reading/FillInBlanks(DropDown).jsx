@@ -6,7 +6,7 @@ import {
   MoreVertical, X, PlusCircle, AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -38,8 +38,8 @@ const ManageReadingFIBDropdown = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/reading-fib-dropdown/get/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/reading-fib-dropdown/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -76,7 +76,7 @@ const ManageReadingFIBDropdown = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this question?")) return;
     try {
-      await axios.delete(`/api/reading-fib-dropdown/${id}`);
+      await api.delete(`/reading-fib-dropdown/${id}`);
       fetchQuestions();
     } catch (err) { console.error(err); }
   };
@@ -85,9 +85,9 @@ const ManageReadingFIBDropdown = () => {
     e.preventDefault();
     try {
       if (editingId) {
-        await axios.put(`/api/reading-fib-dropdown/${editingId}`, form);
+        await api.put(`/reading-fib-dropdown/${editingId}`, form);
       } else {
-        await axios.post("/api/reading-fib-dropdown/add", form);
+        await api.post("/reading-fib-dropdown/add", form);
       }
       setIsModalOpen(false);
       fetchQuestions();

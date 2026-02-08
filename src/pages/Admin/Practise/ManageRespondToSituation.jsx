@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import axios from "axios";
+import api from "../../../services/api";
 import {
   Plus, Edit, Trash2, X, Upload,
   Search, Mic2, Clock, Tag,
@@ -42,8 +42,8 @@ const ManageRespondSituation = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/respond-situation/get/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/respond-situation/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {

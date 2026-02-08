@@ -7,7 +7,8 @@ import {
   CheckCircle,
   Target
 } from "lucide-react";
-import axios from "axios";
+// import axios from "axios"; // Removed direct axios import
+import api from "../../services/api";
 
 const WrittenAttemptHistory = ({ question, onSelectAttempt, module }) => {
   const [activeTab, setActiveTab] = useState("my_answer");
@@ -48,13 +49,13 @@ const WrittenAttemptHistory = ({ question, onSelectAttempt, module }) => {
 
     try {
       setLoadingCommunity(true);
-      const res = await axios.get(
-        `/api/${module}/community/${question._id}`
+      const { data: responseData } = await api.get(
+        `/${module}/community/${question._id}`
       );
 
       // API returns questions array → pick first
       const data =
-        res?.data?.data?.[0]?.communityAttempts || [];
+        responseData?.data?.[0]?.communityAttempts || [];
 
       // Flatten user → attempts
       const flattened = data.flatMap((u) =>
@@ -143,11 +144,10 @@ export default WrittenAttemptHistory;
 const Tab = ({ label, icon, count, active, onClick }) => (
   <button
     onClick={onClick}
-    className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition ${
-      active
+    className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition ${active
         ? "border-purple-600 text-purple-600"
         : "border-transparent text-slate-500 hover:text-slate-700"
-    }`}
+      }`}
   >
     <div className="w-5 h-5 rounded bg-purple-100 flex items-center justify-center">
       {icon}

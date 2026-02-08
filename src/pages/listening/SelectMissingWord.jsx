@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 //import { ArrowLeft, Volume2, RotateCcw, ChevronRight, X, Play, CheckCircle2, Info, Headphones, BookOpen, Share2, History, Calendar, Trash2, Languages, Eye, RefreshCw, ChevronLeft } from "lucide-react";
-import { submitChooseSingleAnswerAttempt, submitHighlightAttempt, submitSelectMissingWordAttempt } from "../../services/api";
+import api, { submitChooseSingleAnswerAttempt, submitHighlightAttempt, submitSelectMissingWordAttempt } from "../../services/api";
 import { useSelector } from "react-redux";
 
 // import React, { useEffect, useRef, useState } from "react";
@@ -27,7 +27,8 @@ import {
   X,
   FileText
 } from "lucide-react";
-import axios from "axios";
+// import axios from "axios"; // Removed direct axios import
+
 
 const PREP_TIME = 3;
 
@@ -64,9 +65,9 @@ const AttemptHistory = ({ question, attempts, setResult, setStatus, onSelectAtte
 
 
 
-      const res = await axios.get(`api/select-missing-word/${question._id}/community`);
+      const { data } = await api.get(`/select-missing-word/${question._id}/community`);
 
-      setCommunityAttempts(res?.data?.data);
+      setCommunityAttempts(data?.data);
 
 
     } catch (err) {

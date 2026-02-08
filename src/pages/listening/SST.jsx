@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Clock, Volume2, RotateCcw, ChevronRight, X, ChevronLeft, RefreshCw, CheckCircle, Shuffle, History, Share2, Trash2, FileText, Eye } from "lucide-react";
 import { useSelector } from "react-redux";
 
-import { submitSummarizeSpokenAttempt, submitSummarizeWrittenAttempt } from "../../services/api";
-import axios from "axios";
+import api, { submitSummarizeSpokenAttempt, submitSummarizeWrittenAttempt } from "../../services/api";
+// import axios from "axios"; // Removed direct axios import
+
 
 const MAX_TIME = 600;
 const MIN_WORDS = 1;
@@ -116,11 +117,11 @@ export default function SST({ question, setActiveSpeechQuestion, nextButton, pre
   const fetchCommunityAttempts = async () => {
     try {
       setLoadingCommunity(true);
-      const res = await axios.get(`/api/sst/${question._id}/community`)
-      console.log(res?.data?.data)
-      const data = res?.data?.data
-      if (data) {
-        setCommunityAttempts(data);
+      const { data } = await api.get(`/sst/${question._id}/community`)
+      console.log(data?.data)
+      // const data = res?.data?.data // res is undefined, using data directly
+      if (data?.data) {
+        setCommunityAttempts(data?.data);
       }
     } catch (err) {
       console.error(err);

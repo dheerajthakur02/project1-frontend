@@ -5,7 +5,7 @@ import {
   AudioLines, FileText, MessageSquare, Tag
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -26,8 +26,8 @@ const ManageSST = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/sst/questions/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/sst/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) { console.error(err); } finally { setLoading(false); }
   };
 
@@ -51,9 +51,11 @@ const ManageSST = () => {
     });
 
     try {
-      if (editingId) await axios.put(`/api/sst/questions/${editingId}`, fd);
-      else await axios.post("/api/sst/add", fd);
-      setIsModalOpen(false);
+      if (editingId) {
+        await api.put(`/sst/${editingId}`, fd);
+      } else {
+        await api.post("/sst/add", fd);
+      } setIsModalOpen(false);
       fetchQuestions();
     } catch (err) { console.error(err); } finally { setSubmitLoading(false); }
   };
@@ -111,7 +113,7 @@ const ManageSST = () => {
                 <div className="col-span-3 flex justify-end gap-2">
                   <button onClick={() => { setViewData(q); setIsViewModalOpen(true); }} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"><Eye size={18} /></button>
                   <button onClick={() => { setEditingId(q._id); setForm({ ...q, keywords: q.keywords?.join(", "), audio: null, transcript: q.transcript || "", isPredictive: q.isPredictive || false }); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"><Edit size={18} /></button>
-                  <button onClick={async () => { if (window.confirm("Delete?")) { await axios.delete(`/api/sst/${q._id}`); fetchQuestions(); } }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"><Trash2 size={18} /></button>
+                  <button onClick={async () => { if (window.confirm("Delete?")) await api.delete(`/sst/${q._id}`); fetchQuestions(); }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"><Trash2 size={18} /></button>
                 </div>
               </motion.div>
             ))
@@ -196,7 +198,7 @@ const ManageSST = () => {
           )}
         </AnimatePresence>
       </div>
-    </AdminLayout>
+    </AdminLayout >
   );
 };
 

@@ -5,7 +5,7 @@ import {
   FileText, AudioLines, FileSearch, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -44,8 +44,8 @@ const ManageHighlightSummary = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/hsc/attempts/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/hcs/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error("Fetch Error:", err);
     } finally {
@@ -78,9 +78,9 @@ const ManageHighlightSummary = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/hsc/questions/${editingId}`, fd);
+        await api.put(`/hcs/${editingId}`, fd);
       } else {
-        await axios.post("/api/hsc/add", fd);
+        await api.post("/hcs/add", fd);
       }
       setIsModalOpen(false);
       fetchQuestions();
@@ -94,7 +94,7 @@ const ManageHighlightSummary = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Permanent delete this question?")) return;
     try {
-      await axios.delete(`/api/hsc/${id}`);
+      await api.delete(`/hcs/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete Error:", err);

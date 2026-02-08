@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
-import axios from 'axios';
+// import axios from 'axios'; // Removed direct axios import
+
 import {
   ArrowLeft,
   BookOpen,
@@ -22,14 +23,14 @@ import {
   X,
 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
-import { submitReadAloudAttempt, getReadAloudHistory } from '../../services/api'; // Not directly used but good to keep
+import api, { submitReadAloudAttempt, getReadAloudHistory } from '../../services/api'; // Not directly used but good to keep
 import { useSelector } from 'react-redux';
 
 
 
 const getCommunityAttempts = async (questionId) => {
-  const response = await axios.get(`/api/attempts/community/${questionId}`)
-  return response?.data;
+  const { data } = await api.get(`/attempts/community/${questionId}`)
+  return data;
 };
 
 const AttemptHistory = ({ questionId, currentAttemptId, onSelectAttempt }) => {

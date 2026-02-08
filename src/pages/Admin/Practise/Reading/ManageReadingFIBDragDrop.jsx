@@ -5,7 +5,7 @@ import {
     X, PlusCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -38,8 +38,8 @@ const ManageReadingFIBDragDrop = () => {
     const fetchQuestions = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`/api/reading-fib-drag-drop/get/${user._id}`);
-            setQuestions(res.data.data || []);
+            const { data } = await api.get(`/reading-fib-drag-drop/get/${user._id}`);
+            setQuestions(data.data || []);
         } catch (err) {
             console.error(err);
         } finally {
@@ -64,7 +64,7 @@ const ManageReadingFIBDragDrop = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this question?")) return;
         try {
-            await axios.delete(`/api/reading-fib-drag-drop/${id}`);
+            await api.delete(`/reading-fib-drag-drop/${id}`);
             fetchQuestions();
         } catch (err) { console.error(err); }
     };
@@ -76,10 +76,12 @@ const ManageReadingFIBDragDrop = () => {
             // For simplicity in this UI, we will check if correctAnswers map is valid relative to placeholders in text.
             // But for now we just submit.
 
+            const payload = { ...form };
+
             if (editingId) {
-                // await axios.put ...
+                await api.put(`/reading-fib-drag-drop/${editingId}`, payload);
             } else {
-                await axios.post("/api/reading-fib-drag-drop/add", form);
+                await api.post("/reading-fib-drag-drop/add", payload);
             }
             setIsModalOpen(false);
             fetchQuestions();

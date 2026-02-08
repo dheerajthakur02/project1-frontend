@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Hash, BarChart2, Info, X, Eye, Languages } from 'lucide-react';
-import { submitReadingMultiChoiceMultiAnswerAttempt, getReadingMultiChoiceMultiAnswerAttempts } from '../../services/api';
+import api, { submitReadingMultiChoiceMultiAnswerAttempt, getReadingMultiChoiceMultiAnswerAttempts } from '../../services/api';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
+// import axios from 'axios'; // Removed direct axios import
+
 
 
 const getReadingMultiChoiceMultiAnswerCommunityAttempts = (questionId) =>
-  axios.get(`/api/reading-multi-choice-multi-answer/${questionId}/community`);
+  api.get(`/reading-multi-choice-multi-answer/${questionId}/community`);
 
 const AttemptHistory = ({ questionId, currentAttemptId, onSelectAttempt }) => {
   const [activeTab, setActiveTab] = useState("my"); // my | community

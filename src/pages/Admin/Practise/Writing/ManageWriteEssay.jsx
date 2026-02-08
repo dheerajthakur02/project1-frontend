@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import axios from "axios";
+import api from "../../../../services/api";
 import {
   Plus, Edit, Trash2, X, Search,
   FileText, Clock, BarChart3,
@@ -43,8 +43,8 @@ const ManageWriteEssay = () => {
     setLoading(true);
     try {
       // Using the aggregate controller route provided
-      const res = await axios.get(`/api/essay/get/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/essay/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
@@ -116,9 +116,9 @@ const ManageWriteEssay = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/essay/${editingId}`, form);
+        await api.put(`/essay/${editingId}`, form);
       } else {
-        await axios.post("/api/essay/add", form);
+        await api.post("/essay/add", form);
       }
       setOpenModal(false);
       fetchQuestions();
@@ -132,7 +132,7 @@ const ManageWriteEssay = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Permanent delete this essay prompt?")) return;
     try {
-      await axios.delete(`/api/essay/${id}`);
+      await api.delete(`/essay/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete error:", err);

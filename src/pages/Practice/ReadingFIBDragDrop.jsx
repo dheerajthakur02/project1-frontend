@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, CheckCircle, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Hash, BarChart2, Info, X, GripVertical, Eye, Languages } from 'lucide-react';
-import { submitReadingFIBDragDropAttempt, getReadingFIBDragDropAttempts } from '../../services/api';
+import api, { submitReadingFIBDragDropAttempt, getReadingFIBDragDropAttempts } from '../../services/api';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
+// import axios from 'axios'; // Removed direct axios import
+
 
 export const getReadingFIBDragDropCommunityAttempts = (questionId) =>
-  axios.get(
-    `/api/reading-fib-drag-drop/${questionId}/community`
+  api.get(
+    `/reading-fib-drag-drop/${questionId}/community`
   );
 
 

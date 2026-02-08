@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, CheckCircle, RefreshCw, ChevronLeft, ChevronRight, Shuffle, Hash, BarChart2, Info, X, Play, Pause, Volume2, Languages, Eye, Users, FileText } from 'lucide-react';
-import { submitListeningMCQMultipleAttempt, getListeningMCQMultipleQuestions } from '../../services/api';
+import api, { submitListeningMCQMultipleAttempt, getListeningMCQMultipleQuestions } from '../../services/api';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
+// import axios from 'axios'; // Removed direct axios import
+
 
 
 const Toast = ({ show, onClose, title, children }) => {
@@ -38,9 +39,9 @@ const AttemptHistory = ({ question, attempts, onSelectAttempt }) => {
     const fetchCommunityAttempts = async () => {
         try {
             setLoadingCommunity(true);
-            const res = await axios.get(`api/listening-multi-choice-multi-answer/${question._id}/community`);
+            const { data } = await api.get(`/listening-multi-choice-multi-answer/${question._id}/community`);
 
-            setCommunityAttempts(res?.data?.data);
+            setCommunityAttempts(data?.data);
 
         } catch (err) {
             console.error("Community fetch error:", err);

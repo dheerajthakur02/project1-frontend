@@ -5,7 +5,7 @@ import {
     X, PlusCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -39,8 +39,8 @@ const ManageReadingMCMA = () => {
     const fetchQuestions = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`/api/reading-multi-choice-multi-answer/get/${user._id}`);
-            setQuestions(res.data.data || []);
+            const { data } = await api.get(`/reading-multi-choice-multi-answer/get/${user._id}`);
+            setQuestions(data.data || []);
         } catch (err) {
             console.error(err);
         } finally {
@@ -74,7 +74,7 @@ const ManageReadingMCMA = () => {
         if (!window.confirm("Are you sure you want to delete this question?")) return;
         try {
             // Assuming delete endpoint exists standardly
-            await axios.delete(`/api/reading-multi-choice-multi-answer/${id}`);
+            await api.delete(`/reading-multi-choice-multi-answer/${id}`);
             fetchQuestions();
         } catch (err) { console.error(err); }
     };
@@ -83,9 +83,9 @@ const ManageReadingMCMA = () => {
         e.preventDefault();
         try {
             if (editingId) {
-                // await axios.put(`/api/reading-multi-choice-multi-answer/${editingId}`, form);
+                await api.put(`/reading-multi-choice-multi-answer/${editingId}`, form);
             } else {
-                await axios.post("/api/reading-multi-choice-multi-answer/add", form);
+                await api.post("/reading-multi-choice-multi-answer/add", form);
             }
             setIsModalOpen(false);
             fetchQuestions();

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import axios from "axios";
+import api from "../../../../services/api";
 import {
   Plus, Edit, Trash2, X, Search,
   FileText, Clock, BarChart3,
@@ -43,8 +43,8 @@ const ManageSummarizeText = () => {
     setLoading(true);
     try {
       // Matches the aggregate controller logic provided
-      const res = await axios.get(`/api/summarize-text/get/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/summarize-text/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
@@ -106,9 +106,9 @@ const ManageSummarizeText = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/summarize-text/${editingId}`, form);
+        await api.put(`/summarize-text/${editingId}`, form);
       } else {
-        await axios.post("/api/summarize-text/add", form);
+        await api.post("/summarize-text/add", form);
       }
       setOpenModal(false);
       fetchQuestions();
@@ -122,7 +122,7 @@ const ManageSummarizeText = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this passage?")) return;
     try {
-      await axios.delete(`/api/summarize-text/${id}`);
+      await api.delete(`/summarize-text/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete error:", err);
@@ -179,7 +179,7 @@ const ManageSummarizeText = () => {
                   <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Passage Details</th>
                   <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Constraints</th>
                   <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Difficulty</th>
-                    <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Predictive</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Predictive</th>
                   <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -229,7 +229,7 @@ const ManageSummarizeText = () => {
 
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold border uppercase ${q.isPredictive ? "bg-blue-400":""}`}>
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold border uppercase ${q.isPredictive ? "bg-blue-400" : ""}`}>
                           {q.isPredictive}
                         </span>
                       </td>
@@ -320,33 +320,33 @@ const ManageSummarizeText = () => {
                   </div>
 
                   <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Predictive
-                  </label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Predictive
+                    </label>
 
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setForm((prev) => ({
-                          ...prev,
-                          isPredictive: !prev.isPredictive,
-                        }))
-                      }
-                      className={`relative w-12 h-6 rounded-full transition-colors duration-300
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((prev) => ({
+                            ...prev,
+                            isPredictive: !prev.isPredictive,
+                          }))
+                        }
+                        className={`relative w-12 h-6 rounded-full transition-colors duration-300
                         ${form.isPredictive ? "bg-indigo-600" : "bg-slate-300"}`}
-                    >
-                      <span
-                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300
+                      >
+                        <span
+                          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300
                           ${form.isPredictive ? "translate-x-6" : "translate-x-0"}`}
-                      />
-                    </button>
+                        />
+                      </button>
 
-                    <span className="text-sm text-slate-600">
-                      {form.isPredictive ? "ON" : "OFF"}
-                    </span>
+                      <span className="text-sm text-slate-600">
+                        {form.isPredictive ? "ON" : "OFF"}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
 
                   <button

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import api from "../../../services/api";
 
 // --- SUMMARIZE WRITTEN TEXT COMPONENT ---
 export default function SWT({ backendData }) {
@@ -10,7 +11,7 @@ export default function SWT({ backendData }) {
   // Extract question data from backend data provided
   const question = backendData?.SummarizeTextQuestions?.[0] || {};
   const questionId = question._id;
-  
+
   // Set global timer based on answerTime from backend (600s = 10 mins)
   const [globalTimeLeft, setGlobalTimeLeft] = useState(question.answerTime || 600);
 
@@ -41,16 +42,11 @@ export default function SWT({ backendData }) {
     setIsLoadingResult(true);
 
     try {
-      const response = await fetch("/api/writing/calculate-swt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          testId: backendData._id,
-          answers: [{ questionId, content: summaryText }],
-        }),
+      const { data } = await api.post("/writing/calculate-swt", {
+        testId: backendData._id,
+        answers: [{ questionId, content: summaryText }],
       });
-      const result = await response.json();
-      setTestResult(result.data);
+      setTestResult(data.data);
     } catch (err) {
       console.error("Scoring Error:", err);
     } finally {
@@ -157,7 +153,7 @@ export default function SWT({ backendData }) {
           Save and Exit
         </button>
         {step === 0 && (
-          <button 
+          <button
             onClick={handleSubmit}
             className="bg-[#008199] text-white px-10 py-1.5 rounded text-sm font-bold shadow-md hover:bg-[#006b81] tracking-wide"
           >
@@ -183,16 +179,16 @@ function ResultScreen({ testResult, isLoadingResult }) {
       <h1 className="text-2xl font-bold mb-6 text-gray-800">SWT Practice Result</h1>
       <div className="grid grid-cols-2 gap-4 text-left">
         <div className="p-4 border rounded bg-blue-50">
-           <p className="text-xs text-gray-500 uppercase font-bold">Content</p>
-           <p className="text-xl font-bold">{testResult?.scores?.content || 0} / 90</p>
+          <p className="text-xs text-gray-500 uppercase font-bold">Content</p>
+          <p className="text-xl font-bold">{testResult?.scores?.content || 0} / 90</p>
         </div>
         <div className="p-4 border rounded bg-green-50">
-           <p className="text-xs text-gray-500 uppercase font-bold">Grammar & Vocabulary</p>
-           <p className="text-xl font-bold">{testResult?.scores?.grammar || 0} / 90</p>
+          <p className="text-xs text-gray-500 uppercase font-bold">Grammar & Vocabulary</p>
+          <p className="text-xl font-bold">{testResult?.scores?.grammar || 0} / 90</p>
         </div>
       </div>
-      <button 
-        onClick={() => window.location.reload()} 
+      <button
+        onClick={() => window.location.reload()}
         className="mt-8 bg-[#fb8c00] text-white px-8 py-2 rounded uppercase font-bold text-xs"
       >
         Retake Practice

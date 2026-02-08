@@ -6,7 +6,8 @@ import {
   Info,
   Eye
 } from "lucide-react";
-import axios from "axios";
+// import axios from "axios"; // Removed direct axios import
+import api from "../../services/api";
 
 const ImageAttemptHistory = ({ question, onSelectAttempt, module }) => {
   const [activeTab, setActiveTab] = useState("my_answer");
@@ -23,11 +24,11 @@ const ImageAttemptHistory = ({ question, onSelectAttempt, module }) => {
 
     try {
       setLoadingCommunity(true);
-      const res = await axios.get(
-        `/api/${module}/community/${question._id}`
+      const { data } = await api.get(
+        `/${module}/community/${question._id}`
       );
-      console.log(res?.data?.data)
-      setCommunityAttempts(res?.data?.data || []);
+      console.log(data?.data)
+      setCommunityAttempts(data?.data || []);
     } catch (err) {
       console.error("Error fetching community attempts", err);
     } finally {
@@ -113,11 +114,10 @@ export default ImageAttemptHistory;
 const Tab = ({ label, icon, count, active, onClick }) => (
   <button
     onClick={onClick}
-    className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition ${
-      active
+    className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition ${active
         ? "border-purple-600 text-purple-600"
         : "border-transparent text-slate-500 hover:text-slate-700"
-    }`}
+      }`}
   >
     <div className="w-5 h-5 rounded bg-purple-100 flex items-center justify-center">
       {icon}

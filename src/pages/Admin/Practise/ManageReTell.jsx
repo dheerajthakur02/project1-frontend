@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import axios from "axios";
+import api from "../../../services/api";
 import {
   Plus, Edit, Trash2, X, Eye, Upload,
   Search, Headphones, Clock, BarChart,
@@ -39,8 +39,8 @@ const ManageRetellLecture = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/retell-lecture/get/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/retell-lecture/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -97,7 +97,7 @@ const ManageRetellLecture = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/retell-lecture/${editingId}`, fd);
+        await api.put(`/retell-lecture/${editingId}`, fd);
       } else {
         await axios.post("/api/retell-lecture/add", fd);
       }

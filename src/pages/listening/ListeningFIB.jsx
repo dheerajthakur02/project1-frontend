@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Play, Pause, ChevronRight, Users, CheckCircle, Volume2, Hash, RefreshCw, Shuffle, X, Info, BarChart2, ChevronLeft, Languages, Eye } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { submitListeningFIBAttempt } from '../../services/api';
-import axios from 'axios';
+import api, { submitListeningFIBAttempt } from '../../services/api';
+// import axios from 'axios'; // Removed direct axios import
+
 
 
 
@@ -14,9 +15,9 @@ const AttemptHistory = ({ question, attempts, onSelectAttempt }) => {
     const fetchCommunityAttempts = async () => {
         try {
             setLoadingCommunity(true);
-            const res = await axios.get(`api/listening-fib/${question._id}/community`);
+            const { data } = await api.get(`/listening-fib/${question._id}/community`);
 
-            setCommunityAttempts(res?.data?.data);
+            setCommunityAttempts(data?.data);
 
         } catch (err) {
             console.error("Community fetch error:", err);

@@ -4,7 +4,7 @@ import {
   PlusCircle, Search, Headphones, Eye, Edit, Trash2, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../../../../services/api";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../../../components/Admin/AdminLayout";
 
@@ -43,8 +43,8 @@ const ManageListeningMCSA = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/choose-single-answer/${user._id}`);
-      setQuestions(res.data.data || []);
+      const { data } = await api.get(`/choose-single-answer/get/${user._id}`);
+      setQuestions(data.data || []);
     } catch (err) {
       console.error("Fetch Error:", err);
     } finally {
@@ -77,9 +77,9 @@ const ManageListeningMCSA = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/choose-single-answer/${editingId}`, fd);
+        await api.put(`/choose-single-answer/${editingId}`, fd);
       } else {
-        await axios.post("/api/choose-single-answer/add", fd);
+        await api.post("/choose-single-answer/add", fd);
       }
       setIsModalOpen(false);
       fetchQuestions();
@@ -93,7 +93,7 @@ const ManageListeningMCSA = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this question?")) return;
     try {
-      await axios.delete(`/api/choose-single-answer/${id}`);
+      await api.delete(`/choose-single-answer/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete Error:", err);

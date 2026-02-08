@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 //import { ArrowLeft, Clock, Volume2, RotateCcw, ChevronRight, X, ChevronLeft, RefreshCw, CheckCircle, Shuffle, History, Share2, Trash2, Info, Hash, Languages, Eye } from "lucide-react";
 import { useSelector } from "react-redux";
-import { submitWriteFromDictationAttempt } from "../../services/api";
+import api, { submitWriteFromDictationAttempt } from "../../services/api";
 
 const MAX_TIME = 60; // Usually short for WFD
 
@@ -26,7 +26,8 @@ import {
   Info,
   FileText
 } from "lucide-react";
-import axios from "axios";
+// import axios from "axios"; // Removed direct axios import
+
 
 const Toast = ({ show, onClose, title, children }) => {
   if (!show) return null;
@@ -61,10 +62,10 @@ function WFDAttemptHistory({ question }) {
   const fetchCommunityAttempts = async () => {
     try {
 
-      const res = await axios.get(`api/write-from-dictation/${question._id}/community`);
+      const { data } = await api.get(`/write-from-dictation/${question._id}/community`);
 
-      console.log(res?.data?.data)
-      setCommunity(res?.data?.data);
+      console.log(data?.data)
+      setCommunity(data?.data);
 
     } catch (err) {
       console.error("Community fetch error:", err);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 import logo from '../../assets/logo.png';
 
 
@@ -42,17 +43,10 @@ const PersonalDetails = () => {
         setError('');
 
         try {
-            const response = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ ...formData, exam: selectedProduct }),
-            });
+            const { data } = await api.post('/auth/register', { ...formData, exam: selectedProduct });
+            // const data = await response.json(); // API returns data directly in axios response.data
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!data.success) {
                 throw new Error(data.message || 'Registration failed');
             }
 

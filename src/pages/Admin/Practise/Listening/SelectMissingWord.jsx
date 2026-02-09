@@ -35,13 +35,12 @@ const ManageSelectMissingWord = () => {
     ],
     difficulty: "Medium",
     audio: null,
-    difficulty: "Medium",
-    audio: null,
     transcript: "",
     isPredictive: false
   };
   const [form, setForm] = useState(initialForm);
 
+  
   /* ------------------- API HANDLERS ------------------- */
 
   const fetchQuestions = async () => {
@@ -113,11 +112,10 @@ const ManageSelectMissingWord = () => {
       options: q.options.map(o => ({ text: o.text, isCorrect: o.isCorrect })),
       difficulty: q.difficulty || "Medium",
       audio: null,
-      difficulty: q.difficulty || "Medium",
-      audio: null,
       transcript: q.transcript || "",
       isPredictive: q.isPredictive || false
     });
+
     setIsModalOpen(true);
   };
 

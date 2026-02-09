@@ -116,9 +116,9 @@ const ManageRespondSituation = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/respond-situation/${editingId}`, fd);
+        await api.put(`/respond-situation/${editingId}`, fd);
       } else {
-        await axios.post("/api/respond-situation/add", fd);
+        await api.post("/respond-situation/add", fd);
       }
       setOpenModal(false);
       fetchQuestions();
@@ -132,7 +132,7 @@ const ManageRespondSituation = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this RTS question?")) return;
     try {
-      await axios.delete(`/api/respond-situation/${id}`);
+      await api.delete(`/respond-situation/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete error:", err);

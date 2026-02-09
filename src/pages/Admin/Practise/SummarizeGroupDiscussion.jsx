@@ -107,9 +107,9 @@ const ManageSummarizeGroup = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/summarize-group/${editingId}`, fd);
+        await api.put(`/summarize-group/${editingId}`, fd);
       } else {
-        await axios.post("/api/summarize-group/add", fd);
+        await api.post("/summarize-group/add", fd);
       }
       setOpenModal(false);
       fetchQuestions();
@@ -123,7 +123,7 @@ const ManageSummarizeGroup = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Permanent delete this question?")) return;
     try {
-      await axios.delete(`/api/summarize-group/${id}`);
+      await api.delete(`/summarize-group/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete error:", err);

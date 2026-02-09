@@ -31,8 +31,6 @@ const ManageHIW = () => {
     mistakes: [], // Array of { index, word }
     difficulty: "Medium",
     audio: null,
-    difficulty: "Medium",
-    audio: null,
     transcript: "",
     isPredictive: false
   };

@@ -101,10 +101,10 @@ const ManageReadAloud = () => {
         try {
             if (editingId) {
                 // Updated API endpoint for Read Aloud
-                await axios.put(`/api/read-aloud/${editingId}`, fd);
+                await api.put(`/read-aloud/${editingId}`, fd);
             } else {
                 // Updated API endpoint for Read Aloud
-                await axios.post('/api/read-aloud', fd);
+                await api.post('/read-aloud', fd);
             }
             setOpenModal(false);
             fetchQuestions();
@@ -119,7 +119,7 @@ const ManageReadAloud = () => {
         if (!window.confirm('Are you sure you want to delete this question?')) return;
         try {
             // Updated API endpoint for Read Aloud
-            await axios.delete(`/api/read-aloud/${id}`);
+            await api.delete(`/read-aloud/${id}`);
             setQuestions(questions.filter(q => q._id !== id));
         } catch (err) {
             console.error(err);

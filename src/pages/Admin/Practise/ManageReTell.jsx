@@ -99,7 +99,7 @@ const ManageRetellLecture = () => {
       if (editingId) {
         await api.put(`/retell-lecture/${editingId}`, fd);
       } else {
-        await axios.post("/api/retell-lecture/add", fd);
+        await api.post("/retell-lecture/add", fd);
       }
       setOpenModal(false);
       fetchQuestions();
@@ -113,7 +113,7 @@ const ManageRetellLecture = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this lecture?")) return;
     try {
-      await axios.delete(`/api/retell-lecture/${id}`);
+      await api.delete(`/retell-lecture/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error(err);
@@ -122,7 +122,7 @@ const ManageRetellLecture = () => {
 
   const handleView = async (id) => {
     try {
-      const res = await axios.get(`/api/retell-lecture/${id}`);
+      const res = await api.get(`/retell-lecture/${id}`);
       setViewData(res.data.data);
       setViewModal(true);
     } catch (err) {

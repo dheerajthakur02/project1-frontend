@@ -130,7 +130,7 @@ const ManageListeningFIB = () => {
               <div className="col-span-3 flex justify-end gap-2">
                 <button onClick={() => { setViewData(q); setIsViewModalOpen(true); }} className="p-3 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"><Eye size={20} /></button>
                 <button onClick={() => handleEditClick(q)} className="p-3 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"><Edit size={20} /></button>
-                <button onClick={async () => { if (window.confirm("Delete?")) { await axios.delete(`/api/listening-fib/${q._id}`); fetchQuestions(); } }} className="p-3 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={20} /></button>
+                <button onClick={async () => { if (window.confirm("Delete?")) { await api.delete(`/listening-fib/${q._id}`); fetchQuestions(); } }} className="p-3 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={20} /></button>
               </div>
             </motion.div>
           ))}

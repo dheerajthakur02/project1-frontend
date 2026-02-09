@@ -113,13 +113,13 @@ const ManageDescribeImage = () => {
         try {
             if (editingId) {
                 // Updated API endpoint for Describe Image
-                await axios.put(`/api/image/questions/${editingId}`, fd, {
+                await api.put(`/image/questions/${editingId}`, fd, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true
                 });
             } else {
                 // Updated API endpoint for Describe Image
-                await axios.post('/api/image/questions', fd, {
+                await api.post('/image/questions', fd, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true
                 });
@@ -138,7 +138,7 @@ const ManageDescribeImage = () => {
         if (!window.confirm('Are you sure you want to delete this question?')) return;
         try {
             // Updated API endpoint for Describe Image
-            await axios.delete(`/api/image/questions/${id}`, { withCredentials: true });
+            await api.delete(`/image/questions/${id}`, { withCredentials: true });
             setQuestions(questions.filter(q => q._id !== id));
             alert("Deleted successfully");
         } catch (err) {

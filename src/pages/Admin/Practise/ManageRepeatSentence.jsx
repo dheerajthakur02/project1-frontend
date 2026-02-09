@@ -107,13 +107,13 @@ const ManageRepeatSentence = () => {
         try {
             if (editingId) {
                 // Updated API endpoint for Repeat Sentence
-                await axios.put(`/api/repeat-sentence/${editingId}`, fd, {
+                await api.put(`/repeat-sentence/${editingId}`, fd, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true
                 });
             } else {
                 // Updated API endpoint for Repeat Sentence
-                await axios.post('/api/repeat-sentence/add', fd, {
+                await api.post('/repeat-sentence/add', fd, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true
                 });
@@ -132,7 +132,7 @@ const ManageRepeatSentence = () => {
         if (!window.confirm('Are you sure you want to delete this question?')) return;
         try {
             // Updated API endpoint for Repeat Sentence
-            await axios.delete(`/api/repeat-sentence/${id}`, { withCredentials: true });
+            await api.delete(`/repeat-sentence/${id}`, { withCredentials: true });
             setQuestions(questions.filter(q => q._id !== id));
             alert("Deleted successfully");
         } catch (err) {

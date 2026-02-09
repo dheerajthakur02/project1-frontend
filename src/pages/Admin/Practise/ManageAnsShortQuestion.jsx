@@ -107,9 +107,9 @@ const ManageShortAnswer = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/short-answer/${editingId}`, fd);
+        await api.put(`/short-answer/${editingId}`, fd);
       } else {
-        await axios.post(`/api/short-answer/add`, fd);
+        await api.post(`/short-answer/add`, fd);
       }
       setOpenModal(false);
       fetchQuestions();
@@ -123,7 +123,7 @@ const ManageShortAnswer = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this question?")) return;
     try {
-      await axios.delete(`/api/short-answer/${id}`);
+      await api.delete(`/short-answer/${id}`);
       setQuestions(questions.filter(q => q._id !== id));
     } catch (err) {
       console.error("Delete error:", err);

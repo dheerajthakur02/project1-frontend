@@ -34,7 +34,8 @@ import HighlightIncorrectWords from '../listening/HighLightIncorrectWords';
 import ListeningFIB from '../listening/ListeningFIB';
 import ListeningMultiChoiceMultiAnswer from '../listening/ListeningMultiChoiceMultiAnswer';
 import WriteFromDictation from '../listening/WriteFromDictation';
-import api, { getWriteFromDictationQuestions } from '../../services/api';
+import api, { fetchUserProfile, getWriteFromDictationQuestions } from '../../services/api';
+import { setCredentials } from '../../redux/slices/authSlice';
 
 
 const PracticeCard = ({ title, icon, color, count, total, onClick }) => {
@@ -155,6 +156,8 @@ function Practice() {
 
     // --- FETCH FUNCTIONS ---
 
+   
+
     // Fetch Stats
     useEffect(() => {
         const fetchStats = async () => {
@@ -183,7 +186,8 @@ function Practice() {
     const fetchRepeatSentences = async () => {
         setLoading(true);
         try {
-            const { data } = await api.get(`/repeat-sentence/get/${user._id}`);
+            const { data } = await api.get(`/repeat-sentence/get/${user?._id}`);
+            console.log(data)
             setRepeatSentenceQuestions(data?.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }

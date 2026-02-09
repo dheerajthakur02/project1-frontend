@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import api, { fetchUserProfile } from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import PracticedHistory from '../../components/Dashboard/PracticedHistory';
 import AverageMockScore from '../../components/Dashboard/AverageMockScore';
 import VideoSection from '../../components/Dashboard/VideoSection';
 import BannerSlider from '../../components/Dashboard/BannerSlider';
+import { setCredentials } from '../../redux/slices/authSlice';
 
 const PracticeCard = ({ title, icon, color, count, total, onClick }) => {
     const colorClasses = {
@@ -54,18 +55,38 @@ const PracticeCard = ({ title, icon, color, count, total, onClick }) => {
 };
 
 const Dashboard = () => {
-    const { user } = useSelector((state) => state.auth);
+    const dispatch =  useDispatch();
+    
+    const { user, token } = useSelector((state) => state.auth);
     const displayName = user?.name || "Student";
+  const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+     useEffect(() => {
+            const loadProfile = async () => {
+                setLoading(true)
+                try {
+                    const res = await fetchUserProfile();
+                    if (res.success && res.data) {
+                        dispatch(setCredentials({ user: res.data, token }));
+                    }
+                } catch (error) {
+                    console.error("Failed to load profile", error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            loadProfile();
+        }, [dispatch, token]);
 
     const [dashboardData, setDashboardData] = useState({
         history: [],
         mockScore: 0
     });
-    const [loading, setLoading] = useState(true);
+  
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             try {
                 const { data } = await api.get('/dashboard/data');
                 if (data.success) {
@@ -79,6 +100,15 @@ const Dashboard = () => {
         };
         fetchData();
     }, []);
+
+    if (loading) {
+  return (
+    <DashboardLayout>
+      <Spinner />
+    </DashboardLayout>
+  );
+}
+
 
     return (
         <DashboardLayout>
@@ -203,3 +233,9 @@ const Dashboard = () => {
 
 export default Dashboard;
 
+
+const Spinner = () => (
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="w-12 h-12 border-4 border-slate-300 border-t-slate-900 rounded-full animate-spin"></div>
+  </div>
+);

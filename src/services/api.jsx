@@ -1,7 +1,7 @@
 import axios from 'axios';
 
  export const API_BASE_URL = "https://project1-backend-4u0d.onrender.com/api";
-//  export const API_BASE_URL = "http://localhost:5000/api";
+// export const API_BASE_URL = "http://localhost:5000/api";
 //export const API_BASE_URL = (window.location.hostname === "localhost") ? "https://project1-backend-4u0d.onrender.com/api" : "https://project1-backend-4u0d.onrender.com/api";
 
 const api = axios.create({
@@ -519,3 +519,20 @@ export const getReadAloudHistory = async (questionId) => {
 
 
 
+export const updateProfile = async (userData) => {
+  try {
+    const response = await api.put('/auth/profile', userData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};
+
+export const changePassword = async (passwordData) => {
+  try {
+    const response = await api.post('/auth/change-password', passwordData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error("Network Error");
+  }
+};

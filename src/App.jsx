@@ -27,6 +27,7 @@ import SectionResultPage from './pages/MockTest/SectionalTest/SectionResultPage'
 
 import PracticeHistoryPage from './pages/Dashboard/PracticeHistoryPage';
 import ProfilePage from './pages/Dashboard/ProfilePage';
+import SettingsPage from './pages/Dashboard/SettingsPage';
 
 import Home from './pages/Home';
 import Contact from './pages/Contact';
@@ -110,6 +111,7 @@ function App() {
 
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="/practice-history" element={<PracticeHistoryPage />} />
         <Route path="/practice" element={<Practice />} />
         <Route path="/practice/:id" element={<ReadAloudSession />} />

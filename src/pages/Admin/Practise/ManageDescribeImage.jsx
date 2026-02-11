@@ -298,14 +298,14 @@ const ManageDescribeImage = () => {
                                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                                 animate={{ scale: 1, opacity: 1, y: 0 }}
                                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                                className="bg-white w-full max-w-lg rounded-2xl shadow-2xl relative overflow-hidden"
+                                className="bg-white w-full max-w-lg rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
                             >
-                                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
                                     <h2 className="text-xl font-bold text-slate-800">{editingId ? 'Edit Question' : 'Add New Question'}</h2>
                                     <button onClick={() => setOpenModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20} /></button>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                                <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700 mb-1">Question Title</label>
                                         <input

@@ -265,7 +265,7 @@ const SummarizeWrittenText = ({ question, setActiveSpeechQuestion, nextButton, p
                     <ScoreBox label="Content" value={`${result.content}/4`} />
                     <ScoreBox label="Grammar" value={`${result.grammar}/2`} />
                     <ScoreBox label="Vocabulary" value={`${result.vocabulary}/2`} />
-                    <ScoreBox label="Form" value={`${result.form}/1`} />
+                    <ScoreBox label="Form" value={`${result.form}/2`} />
                   </div>
                 </div>
               </div>

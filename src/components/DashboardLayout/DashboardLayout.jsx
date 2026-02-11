@@ -139,7 +139,13 @@ const DashboardLayout = ({ children }) => {
                                             <User size={18} />
                                             Profile
                                         </button>
-                                        <button className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-primary-600 rounded-lg transition-colors text-sm font-medium">
+                                        <button
+                                            onClick={() => {
+                                                navigate('/settings');
+                                                setShowDropdown(false);
+                                            }}
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-primary-600 rounded-lg transition-colors text-sm font-medium"
+                                        >
                                             <Settings size={18} />
                                             Settings
                                         </button>

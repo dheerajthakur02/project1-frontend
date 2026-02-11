@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { User, Mail, Phone, Calendar, Award, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { User, Mail, Phone, Award, CheckCircle, AlertCircle, Clock, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
-// import { fetchUserProfile } from '../../services/api'; 
-// We can use the one from api service if exported, or just rely on Redux state if updated by layout
 import { fetchUserProfile } from '../../services/api';
 import { setCredentials } from '../../redux/slices/authSlice';
 
@@ -51,26 +50,33 @@ const ProfilePage = () => {
             <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                        <User size={32} />
-                    </div>
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-800">My Profile</h1>
-                        <p className="text-slate-500">Manage your account settings and view your progress</p>
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                            <User size={32} />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold text-slate-800">My Profile</h1>
+                            <p className="text-slate-500">View your account details and progress</p>
+                        </div>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Left Column: Personal Details */}
                     <div className="md:col-span-2 space-y-6">
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                <span className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
-                                    <User size={18} />
-                                </span>
-                                Personal Information
-                            </h2>
+                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                    <span className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+                                        <User size={18} />
+                                    </span>
+                                    Personal Information
+                                </h2>
+                                <Link to="/settings" className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
+                                    <Settings size={14} /> Edit
+                                </Link>
+                            </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1">
@@ -137,8 +143,8 @@ const ProfilePage = () => {
                                 <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden mb-2">
                                     <div
                                         className={`h-full rounded-full transition-all duration-1000 ${!user?.isPremium && (user?.practiceAttemptCount || 0) >= 10
-                                                ? 'bg-red-500'
-                                                : 'bg-gradient-to-r from-blue-500 to-purple-600'
+                                            ? 'bg-red-500'
+                                            : 'bg-gradient-to-r from-blue-500 to-purple-600'
                                             }`}
                                         style={{ width: `${!user?.isPremium ? Math.min(((user?.practiceAttemptCount || 0) / 10) * 100, 100) : 100}%` }}
                                     ></div>
@@ -200,9 +206,9 @@ const ProfilePage = () => {
                                 )}
 
                                 {!user?.isPremium && (
-                                    <button className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-purple-200">
+                                    <Link to='/pricing' className="w-full block text-center py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-purple-200">
                                         Upgrade Now
-                                    </button>
+                                    </Link>
                                 )}
                             </div>
                         </div>

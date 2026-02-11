@@ -79,7 +79,7 @@ const ManageHighlightSummary = () => {
 
     try {
       if (editingId) {
-        await api.put(`/hcs/${editingId}`, fd);
+        await api.put(`/hcs/questions/${editingId}`, fd);
       } else {
         await api.post("/hcs/add", fd);
       }

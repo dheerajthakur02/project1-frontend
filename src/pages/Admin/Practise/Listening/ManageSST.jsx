@@ -52,7 +52,7 @@ const ManageSST = () => {
 
     try {
       if (editingId) {
-        await api.put(`/sst/${editingId}`, fd);
+        await api.put(`/sst/questions/${editingId}`, fd);
       } else {
         await api.post("/sst/add", fd);
       } setIsModalOpen(false);

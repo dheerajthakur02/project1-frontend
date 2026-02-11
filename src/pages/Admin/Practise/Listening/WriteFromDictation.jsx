@@ -68,7 +68,7 @@ const ManageWriteFromDictation = () => {
       if (editingId) {
         await api.put(`/write-from-dictation/${editingId}`, fd);
       } else {
-        await api.post("/write-from-dictation/add", fd);
+        await api.post("/write-from-dictation/create", fd);
       }
       setIsModalOpen(false);
       fetchQuestions();

@@ -728,14 +728,14 @@ const ResultModal = ({ result, onClose, onRedo, question, nextButton }) => {
             <div className="grid grid-cols-3 gap-4">
               <Stat title="Correct" value={correct} color="green" />
               <Stat title="Wrong" value={wrong} color="red" />
-              <Stat title="Total" value={correct+wrong} color="orange" />
+              <Stat title="Total" value={correct + wrong} color="orange" />
             </div>
 
 
             {/* CORRECT ANSWERS */}
             <div className="border rounded-[2.5rem] overflow-hidden shadow-sm">
               <div className="bg-green-50 px-8 py-4 font-bold text-lg">
-                Selected Answers
+                Correct Answers
               </div>
 
               <div className="p-6 space-y-4 max-h-[220px] overflow-y-auto">
